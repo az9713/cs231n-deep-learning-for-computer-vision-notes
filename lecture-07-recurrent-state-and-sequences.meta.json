@@ -1,0 +1,163 @@
+{
+  "title": "Recurrent state, sequence learning, and credit across time",
+  "number": 7,
+  "video_id": "kG2lAPBF7zA",
+  "source_type": "local machine transcription and official extracted slide text",
+  "sections": [
+    {
+      "section": "tasks",
+      "start": 295,
+      "end": 474,
+      "lecture_material": "Sequence input/output structures and visual applications",
+      "research_extension": "None",
+      "teaching_construction": "Inspection video tasks",
+      "evidence_class": "lecture + stated enhancement"
+    },
+    {
+      "section": "recurrence",
+      "start": 474,
+      "end": 1168,
+      "lecture_material": "Recurrent hidden states, shared update maps, outputs",
+      "research_extension": "Explicit dimensions",
+      "teaching_construction": "Shape ledger",
+      "evidence_class": "lecture + stated enhancement"
+    },
+    {
+      "section": "construction",
+      "start": 1168,
+      "end": 1436,
+      "lecture_material": "Recurrent computation and step-by-step state evolution",
+      "research_extension": "None",
+      "teaching_construction": "Original rising-edge state machine",
+      "evidence_class": "lecture + stated enhancement"
+    },
+    {
+      "section": "bptt",
+      "start": 1436,
+      "end": 1882,
+      "lecture_material": "Unrolled losses and shared parameter gradients",
+      "research_extension": "Explicit reverse recurrence",
+      "teaching_construction": "Scalar derivative and matrix notation",
+      "evidence_class": "lecture + stated enhancement"
+    },
+    {
+      "section": "truncation",
+      "start": 1882,
+      "end": 2100,
+      "lecture_material": "Truncated backpropagation and retaining state",
+      "research_extension": "Full versus truncated gradient distinction",
+      "teaching_construction": "Two-step polynomial counterexample",
+      "evidence_class": "lecture + stated enhancement"
+    },
+    {
+      "section": "language",
+      "start": 2100,
+      "end": 3040,
+      "lecture_material": "Embeddings, next-token prediction, sampling, beam search",
+      "research_extension": "Joint probability versus local greedy decisions",
+      "teaching_construction": "Two-branch beam example",
+      "evidence_class": "lecture + stated enhancement"
+    },
+    {
+      "section": "vision",
+      "start": 3040,
+      "end": 3503,
+      "lecture_material": "Captioning, question answering, dialog and navigation",
+      "research_extension": "Grounding and causal interpretation limits",
+      "teaching_construction": "Inspection caption failure cases",
+      "evidence_class": "lecture + stated enhancement"
+    },
+    {
+      "section": "gradients",
+      "start": 3503,
+      "end": 3895,
+      "lecture_material": "Vanishing and exploding gradients; clipping",
+      "research_extension": "Jacobian norm bound",
+      "teaching_construction": "Nilpotent matrix counterexample",
+      "evidence_class": "lecture + stated enhancement"
+    },
+    {
+      "section": "gates",
+      "start": 3895,
+      "end": 4303,
+      "lecture_material": "LSTM, additive paths, contemporary recurrent architectures",
+      "research_extension": "Forget-gate lineage and memory bounds",
+      "teaching_construction": "Retention calculations",
+      "evidence_class": "lecture + stated enhancement"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "None",
+      "research_extension": "None",
+      "teaching_construction": "Original finite-difference recurrent gradient check",
+      "evidence_class": "teaching construction"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Concepts from the full lecture",
+      "research_extension": "None",
+      "teaching_construction": "Six original fully solved exercises",
+      "evidence_class": "teaching construction"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Course synthesis",
+      "research_extension": "None",
+      "teaching_construction": "Scope and deployment cautions",
+      "evidence_class": "teaching construction"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official Lecture 7 slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_7.pdf",
+      "supports": "Recurrent networks and visual sequence tasks"
+    },
+    {
+      "title": "On the difficulty of training recurrent neural networks",
+      "url": "https://arxiv.org/abs/1211.5063",
+      "supports": "Long-range gradient difficulties and clipping"
+    },
+    {
+      "title": "Learning to Forget",
+      "url": "https://doi.org/10.1162/089976600300015015",
+      "supports": "Adaptive forget gate"
+    },
+    {
+      "title": "Visualizing and Understanding Recurrent Networks",
+      "url": "https://arxiv.org/abs/1506.02078",
+      "supports": "Inspection of recurrent representations"
+    },
+    {
+      "title": "Show and Tell",
+      "url": "https://arxiv.org/abs/1411.4555",
+      "supports": "Neural image captioning"
+    },
+    {
+      "title": "Deep Visual-Semantic Alignments",
+      "url": "https://arxiv.org/abs/1412.2306",
+      "supports": "Image descriptions and visual-semantic learning"
+    },
+    {
+      "title": "RWKV",
+      "url": "https://arxiv.org/abs/2305.13048",
+      "supports": "Recurrent architecture context"
+    },
+    {
+      "title": "Mamba",
+      "url": "https://arxiv.org/abs/2312.00752",
+      "supports": "Selective state spaces; bounded architectural comparison"
+    }
+  ],
+  "limitations": [
+    "Machine transcription can contain errors; names and equations were corrected against primary sources.",
+    "Slide text was read; this is not a claim of complete audiovisual review.",
+    "Original numerical fixtures verify the displayed derivations, not benchmark training results."
+  ]
+}

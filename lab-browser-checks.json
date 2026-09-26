@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "network": "HTTP and HTTPS blocked",
+  "checks": [
+    {
+      "viewport": 1280,
+      "sum": 1,
+      "sharper": true,
+      "precision": 0.15384615384615385,
+      "greaterPrevalence": true,
+      "endpointError": 0.00046287473463024753,
+      "displayedTemp": "0.10",
+      "displayedPrevalence": "10.0%",
+      "displayedSteps": "500",
+      "overflow": false,
+      "mathErrors": 0
+    },
+    {
+      "viewport": 390,
+      "sum": 1,
+      "sharper": true,
+      "precision": 0.15384615384615385,
+      "greaterPrevalence": true,
+      "endpointError": 0.00046287473463024753,
+      "displayedTemp": "0.10",
+      "displayedPrevalence": "10.0%",
+      "displayedSteps": "500",
+      "overflow": false,
+      "mathErrors": 0
+    }
+  ]
+}

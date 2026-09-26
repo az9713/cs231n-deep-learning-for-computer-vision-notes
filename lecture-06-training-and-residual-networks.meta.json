@@ -1,0 +1,184 @@
+{
+  "title": "Making a convolutional model trainable",
+  "number": 6,
+  "video_id": "aVJy4O5TOk8",
+  "source_type": "Local automatic speech recognition checked against official slide text",
+  "sections": [
+    {
+      "section": "system",
+      "start": 5,
+      "end": 218,
+      "lecture_material": "Building and training a CNN.",
+      "research_extension": "None.",
+      "teaching_construction": "Inspection example separates representation, optimization, and generalization.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "normalization",
+      "start": 218,
+      "end": 577,
+      "lecture_material": "Layer, batch, instance, and group normalization.",
+      "research_extension": "Primary normalization definitions and inference behavior.",
+      "teaching_construction": "Explicit axes, epsilon variance, and original row-versus-column example.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "dropout",
+      "start": 577,
+      "end": 970,
+      "lecture_material": "Random masks, feature co-adaptation, and train/test scaling.",
+      "research_extension": "Original dropout paper.",
+      "teaching_construction": "Keep/drop distinction, exact expectation/variance, nonlinear counterexample.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "architecture",
+      "start": 1318,
+      "end": 2525,
+      "lecture_material": "VGG small filters, deeper-network degradation, residual maps.",
+      "research_extension": "Original VGG and ResNet papers, basic versus bottleneck blocks.",
+      "teaching_construction": "Original parameter count, residual Jacobian, identity and projection caveats.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "initialization",
+      "start": 970,
+      "end": 1318,
+      "lecture_material": "Activation families and derivative behavior.",
+      "research_extension": "None.",
+      "teaching_construction": "Qualified claims about saturation and full Jacobians.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "initialization",
+      "start": 2525,
+      "end": 2952,
+      "lecture_material": "Kaiming initialization and fan-in.",
+      "research_extension": "Original rectifier paper derivation.",
+      "teaching_construction": "Second-moment derivation, assumptions, and original 288-fan-in fixture.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "data",
+      "start": 2952,
+      "end": 3503,
+      "lecture_material": "Preprocessing, flips, crops, color jitter, cutout, and test-time views.",
+      "research_extension": "None.",
+      "teaching_construction": "Target-preservation contracts and probability-averaging equation.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "transfer",
+      "start": 3503,
+      "end": 4035,
+      "lecture_material": "Frozen features, fine-tuning, domain similarity, and brief LoRA discussion.",
+      "research_extension": "DeCAF and LoRA primary papers.",
+      "teaching_construction": "1539-parameter head; state-freezing caveat and low-rank shape accounting.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "diagnosis",
+      "start": 4035,
+      "end": 4262,
+      "lecture_material": "Tiny-subset fitting, learning-rate trials, curves, and random search.",
+      "research_extension": "Original random-search paper.",
+      "teaching_construction": "Initial-loss check and corrected metric direction/mode caveats.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Local mechanisms revisited.",
+      "research_extension": "None.",
+      "teaching_construction": "Executed normalization, dropout, residual finite-difference, and count checks.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Chapter concepts revisited.",
+      "research_extension": "None.",
+      "teaching_construction": "Six original problems with complete solutions.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Synthesis of architecture and training.",
+      "research_extension": "None.",
+      "teaching_construction": "Separates local numerical checks from empirical model selection.",
+      "evidence_class": "Lecture content with bounded research clarifications and original teaching derivations."
+    }
+  ],
+  "references": [
+    {
+      "title": "Lecture 6 recording",
+      "url": "https://www.youtube.com/watch?v=aVJy4O5TOk8",
+      "supports": "Primary lecture sequence."
+    },
+    {
+      "title": "Lecture 6 official slides",
+      "url": "https://cs231n.stanford.edu/2025/slides/lecture_6.pdf",
+      "supports": "Architecture diagrams, normalization axes, and training guidance."
+    },
+    {
+      "title": "Batch Normalization",
+      "url": "https://arxiv.org/abs/1502.03167",
+      "supports": "Batch-dependent normalization."
+    },
+    {
+      "title": "Layer Normalization",
+      "url": "https://arxiv.org/abs/1607.06450",
+      "supports": "Within-example normalization."
+    },
+    {
+      "title": "Group Normalization",
+      "url": "https://arxiv.org/abs/1803.08494",
+      "supports": "Grouping of channels within examples."
+    },
+    {
+      "title": "Dropout",
+      "url": "https://jmlr.org/papers/v15/srivastava14a.html",
+      "supports": "Stochastic regularization context."
+    },
+    {
+      "title": "Very Deep Convolutional Networks for Large-Scale Image Recognition",
+      "url": "https://arxiv.org/abs/1409.1556",
+      "supports": "VGG small-filter architecture."
+    },
+    {
+      "title": "Deep Residual Learning for Image Recognition",
+      "url": "https://arxiv.org/abs/1512.03385",
+      "supports": "Residual formulation, projections, and bottleneck distinction."
+    },
+    {
+      "title": "Delving Deep into Rectifiers",
+      "url": "https://arxiv.org/abs/1502.01852",
+      "supports": "Initialization assumptions and second-moment analysis."
+    },
+    {
+      "title": "DeCAF",
+      "url": "https://proceedings.mlr.press/v32/donahue14.html",
+      "supports": "Transferred learned image representations."
+    },
+    {
+      "title": "LoRA",
+      "url": "https://arxiv.org/abs/2106.09685",
+      "supports": "Low-rank parameter updates, bounded clarification of lecture mention."
+    },
+    {
+      "title": "Random Search for Hyper-Parameter Optimization",
+      "url": "https://jmlr.org/papers/v13/bergstra12a.html",
+      "supports": "Search-budget allocation argument."
+    }
+  ],
+  "limitations": [
+    "Complete transcript and extracted slide text were read; no claim of complete audiovisual review.",
+    "Primary research clarifications do not imply benchmark reproduction.",
+    "Examples and exercises are original and deterministic; no actual CNN training accuracy is claimed.",
+    "Rendered reader validation is tracked separately."
+  ]
+}

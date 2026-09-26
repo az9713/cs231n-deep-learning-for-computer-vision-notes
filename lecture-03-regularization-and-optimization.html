@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="93889c72e3a7650b6e73b00fd0aa08083b49e2fa4e9e63dcb5f9d589f3207155"><title>Choosing a solution and finding it · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc" aria-label="On this page"><h2>On this page</h2></aside><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><header class="chapter-header">
+<p class="eyebrow">Chapter 3 · CS231N, Spring 2025</p>
+<h1>Choosing a solution and finding it</h1>
+<p class="lead">Regularization changes which parameter settings we prefer. Optimization changes how we search for them. Treating those as separate questions explains why smaller training loss, faster convergence, and better deployment performance need not arrive together.</p>
+<p class="source-note">Grounded in the complete regularization and optimization lecture, with official slides used to correct notation and separate the appendix from spoken material. The inspection examples, scalar derivations, diagnostic experiments, and exercises are original teaching additions.</p>
+</header>
+
+<section aria-labelledby="objective">
+<h2 id="objective">1. The objective contains a preference, not just a fit score <a class="timestamp" href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=697" aria-label="Lecture at 11:37">11:37</a></h2>
+<p>Our visual inspection system has collected many photographs of acceptable, scratched, and gouged parts. A highly flexible predictor can fit both meaningful defect structure and accidental details of the collected images. Scratched parts may have been photographed under one lamp or placed on a distinctive tray. Reducing training error can reinforce those shortcuts. The engineering goal is useful behavior on future parts, and training fit is only one piece of evidence about it.</p>
+<p>Let \(\theta\in\mathbb R^P\) collect the model’s \(P\) adjustable parameters. A training pair \((x_i,y_i)\) consists of input image \(x_i\) and target label \(y_i\), for \(i=1,\ldots,N\). The predictor is \(f_\theta\), and the per-example loss is \(\ell(f_\theta(x_i),y_i)\). A regularized objective takes the form</p>
+<div class="equation">\[
+J(\theta)=\underbrace{\frac1N\sum_{i=1}^N
+\ell(f_\theta(x_i),y_i)}_{L_{\mathrm{data}}(\theta)}
++\lambda R(\theta).
+\]</div>
+<p>The first term, \(L_{\mathrm{data}}\), measures average training fit. The regularizer \(R\) expresses a preference among parameter settings, and the nonnegative strength \(\lambda\) controls how strongly that preference enters. We choose \(\lambda\) using development evidence such as validation performance, preserving the final test for evaluation.</p>
+<p>The lecture motivates regularization through a curve that fits every training point and a smoother curve that generalizes better in the illustration. This is an instructive example, not a theorem that every simpler-looking function is more accurate. The intended result is improved performance on relevant unseen data; deliberately making training predictions worse is not an independent goal. A regularizer can improve, worsen, or leave unchanged both training and test behavior.</p>
+<p>There is also no single universal definition of model simplicity. A sparse linear model uses fewer input coefficients. A small-norm parameter vector favors a different kind of solution. Architectural constraints, data augmentation, and stochastic training can affect learned behavior through other mechanisms. Later lectures develop some of these methods. Here we analyze explicit penalties because their effects can be calculated.</p>
+<p>For an inspection model, the practical record should distinguish training data loss, regularization penalty, total objective, and validation metric. If the total objective rises after increasing \(\lambda\), that does not alone mean the optimizer got worse: the objective itself changed. Likewise, two runs with different penalties should not be compared solely by their total training objective.</p>
+<p><a href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=697">Lecture anchor: data fit and regularization</a>.</p>
+</section>
+
+<section aria-labelledby="penalties">
+<h2 id="penalties">2. Why squared and absolute penalties behave differently <a class="timestamp" href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=926" aria-label="Lecture at 15:26">15:26</a></h2>
+<p>Use the conventions \(R_2(\theta)=\frac12\sum_j\theta_j^2\) and \(R_1(\theta)=\sum_j|\theta_j|\), where \(j\) indexes parameters. The factor one-half in \(R_2\) makes its derivative equal to \(\theta\). Some implementations omit it and obtain \(2\theta\); then the numerical meaning of \(\lambda\) changes. A notation choice is harmless only when the objective and implementation agree.</p>
+<p>Suppose two inspection features are identical over all training examples, so a linear predictor depends only on the sum of their weights. If a required sum is \(a\), then writing the weights as \(u\) and \(a-u\) gives squared penalty</p>
+<div class="equation">\[
+\frac12\big(u^2+(a-u)^2\big)
+=\left(u-\frac a2\right)^2+\frac{a^2}{4}.
+\]</div>
+<p>This is minimized by spreading the total equally, at \(u=a/2\). For \(a=2\), weights \((2,0)\) and \((1,1)\) produce the same predictions, but their squared penalties are 2 and 1. Their absolute penalties are both 2. This mirrors the lecture’s important tie example: an \(L_1\) penalty does not strictly prefer the sparse vector in every comparison.</p>
+<p>To see where sparsity actually comes from, isolate one coefficient \(w\). Let \(a\) be its preferred value from a local quadratic data-fitting term. Consider the original scalar objective</p>
+<div class="equation">\[
+F_1(w)=\frac12(w-a)^2+\lambda|w|.
+\]</div>
+<p>For \(w&gt;0\), the derivative is \(w-a+\lambda\), giving candidate \(w=a-\lambda\), valid only when \(a&gt;\lambda\). For \(w&lt;0\), the derivative is \(w-a-\lambda\), giving \(w=a+\lambda\), valid only when \(a&lt;-\lambda\). At zero, the absolute-value function has a corner. Its <strong>subgradient</strong> is the interval \([-1,1]\): these slopes support the convex function from below. Zero minimizes \(F_1\) when \(0\in-a+\lambda[-1,1]\), equivalently \(|a|\leq\lambda\).</p>
+<div class="equation">\[
+w^\star=\operatorname{sign}(a)\max(|a|-\lambda,0).
+\]</div>
+<p>This is soft thresholding. It gives an entire interval of nonzero preferred values \(a\) that become exactly zero. For \(a=0.3\) and \(\lambda=0.5\), the optimum is zero. With the squared penalty instead, \(F_2(w)=\frac12(w-a)^2+\frac\lambda2w^2\), differentiation gives \(w^\star=a/(1+\lambda)=0.2\). Squared shrinkage reduces the coefficient continuously but does not set this nonzero \(a\) exactly to zero.</p>
+<p>The scalar derivation explains a mechanism; it does not assert that a general correlated design matrix decomposes into independent copies of this problem. Nor will an arbitrary fixed-step implementation necessarily reach exact zeros merely because the objective contains \(L_1\). Nonsmooth optimization methods must respect the corner. The <a href="https://jmlr.org/papers/v12/duchi11a.html">adaptive subgradient research of Duchi, Hazan, and Singer</a> belongs to the broader literature on using gradient information with geometry and constraints; it does not turn a finite difference at a corner into an ordinary derivative.</p>
+<p>An elastic-net penalty combines absolute and squared terms. Which preference helps our inspection system depends on feature redundancy, scaling, noise, and the task. Rescaling an input changes which coefficient magnitudes are necessary for the same prediction, so regularization strength is meaningful only together with preprocessing and the model parameterization.</p>
+</section>
+
+<section aria-labelledby="gradient">
+<h2 id="gradient">3. A gradient is local information <a class="timestamp" href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=1463" aria-label="Lecture at 24:23">24:23</a></h2>
+<p>Optimization seeks parameter values with low \(J\). The lecture’s blindfolded walker metaphor emphasizes that an optimizer usually lacks a complete map of the loss landscape. A gradient is the vector of partial derivatives \(\nabla J(\theta)\). It tells us how the objective changes to first order near the current parameters, holding the training data fixed.</p>
+<p>For a small displacement \(\delta\in\mathbb R^P\), differentiability gives \(J(\theta+\delta)\approx J(\theta)+\nabla J(\theta)^\mathsf T\delta\). Among directions \(u\) with Euclidean norm one, the directional derivative is minimized by \(u=-\nabla J/\|\nabla J\|_2\), when the gradient is nonzero. This follows from the Cauchy–Schwarz inequality, which bounds the inner product below by \(-\|\nabla J\|_2\). “Steepest” is relative to this norm and local approximation.</p>
+<p>Gradient descent uses learning rate \(\eta_t&gt;0\) at iteration \(t\):</p>
+<div class="equation">\[
+\theta_{t+1}=\theta_t-\eta_t\nabla J(\theta_t).
+\]</div>
+<p>A fixed learning rate is not a fixed distance traveled: the step length is \(\eta_t\|\nabla J(\theta_t)\|_2\). More importantly, a direction that decreases the linear approximation need not decrease the true function after a large finite step. Curvature can make the step overshoot.</p>
+<p>To calculate derivatives, we can differentiate an explicit formula or use automatic differentiation through its computation. A finite difference offers an independent numerical check. For coordinate unit vector \(e_j\) and small positive \(h\), the central approximation is \([J(\theta+he_j)-J(\theta-he_j)]/(2h)\). Choosing ever smaller \(h\) is not always better: truncation error decreases, but subtracting nearly equal floating-point values eventually magnifies roundoff.</p>
+<p>At a nondifferentiable point, a finite difference does not create a classical derivative. For example, the central difference of \(|w|\) at zero is zero for every \(h\), even though the left and right derivatives disagree. That zero can be a valid subgradient, but the justification comes from nonsmooth analysis, not from declaring the corner differentiable. Gradient checks should distinguish a true implementation error from a check crossing a kink.</p>
+<p>Stopping also requires a specified criterion. We may set an iteration budget, inspect objective improvement, or track gradient size under appropriate assumptions. Early stopping based on validation performance makes the stopping point another development choice. A small gradient is not by itself proof of a globally optimal model or good generalization.</p>
+<p><a href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=1463">Lecture anchor: local search and derivative checks</a>.</p>
+</section>
+
+<section aria-labelledby="curvature">
+<h2 id="curvature">4. A quadratic reveals the learning-rate boundary exactly <a class="timestamp" href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=2294" aria-label="Lecture at 38:14">38:14</a></h2>
+<p>Take one scalar parameter \(w\) with objective \(F(w)=\frac a2w^2\), where curvature \(a&gt;0\). Its gradient is \(aw\). A fixed learning rate \(\eta\) gives</p>
+<div class="equation">\[
+w_{t+1}=(1-\eta a)w_t,\qquad
+w_t=(1-\eta a)^t w_0.
+\]</div>
+<p>For any nonzero initialization \(w_0\), convergence to zero occurs exactly when \(|1-\eta a|&lt;1\), or \(0&lt;\eta&lt;2/a\). If \(0&lt;\eta a&lt;1\), the iterates approach without changing sign. If \(1&lt;\eta a&lt;2\), they alternate sides but shrink. At \(\eta a=2\), they oscillate forever with unchanged magnitude. Above two, oscillation grows.</p>
+<p>For \(a=4\) and \(w_0=1\), learning rate 0.4 multiplies the parameter by \(-0.6\) each step. After twenty steps its magnitude is about \(3.656\times10^{-5}\). Learning rate 0.6 multiplies by \(-1.4\); after twenty steps the magnitude is about 836.68. Both update directions are negative gradients. The difference is the size of the move relative to curvature.</p>
+<p>For a positive-definite quadratic \(F(\theta)=\frac12\theta^\mathsf TH\theta\), the symmetric matrix \(H\) is its Hessian, the matrix of second derivatives. Along an eigenvector with eigenvalue \(\mu\), the same scalar multiplier is \(1-\eta\mu\). Stability in every direction therefore requires \(0&lt;\eta&lt;2/\mu_{\max}\), where \(\mu_{\max}\) is the largest eigenvalue. If the smallest eigenvalue \(\mu_{\min}\) is much smaller, the stable rate forced by the steep direction may make progress in the flat direction slow.</p>
+<p>The ratio \(\kappa=\mu_{\max}/\mu_{\min}\) is the spectral condition number for this positive-definite case. It explains the narrow-valley picture in the lecture. Adding \(\frac\lambda2\|\theta\|_2^2\) shifts the Hessian to \(H+\lambda I\), changing the ratio to \((\mu_{\max}+\lambda)/(\mu_{\min}+\lambda)\). It improves that ratio here, but also changes the objective and its preferred solution. Adding a modest squared penalty does not automatically make an arbitrary deep-network objective globally convex.</p>
+<p>A saddle point is another phenomenon. The function \(F(u,v)=u^2-v^2\) has zero gradient at the origin, yet decreases along the \(v\) direction and increases along \(u\). Starting exactly there with a deterministic gradient method and no stored momentum leaves the parameters there. Perturbations can change that outcome, but noise and momentum do not guarantee escape from every unfavorable region. The lecture’s connection to <a href="https://arxiv.org/abs/1406.2572">Dauphin and colleagues’ saddle-point study</a> motivates examining curvature rather than interpreting every zero gradient as a local minimum.</p>
+</section>
+
+<section aria-labelledby="stochastic">
+<h2 id="stochastic">5. Minibatches exchange computation for gradient noise <a class="timestamp" href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=2174" aria-label="Lecture at 36:14">36:14</a></h2>
+<p>Computing a full gradient requires processing all \(N\) examples. A minibatch \(\mathcal B_t\) of \(B\) examples gives the estimator</p>
+<div class="equation">\[
+g_t=\frac1B\sum_{i\in\mathcal B_t}\nabla_\theta
+\ell(f_{\theta_t}(x_i),y_i)+\lambda\nabla R(\theta_t),
+\qquad \theta_{t+1}=\theta_t-\eta_t g_t.
+\]</div>
+<p>For a nonsmooth regularizer, the derivative term needs an appropriate replacement or a different update formulation. Under uniform independent sampling and a differentiable objective, the expected minibatch data gradient at fixed \(\theta_t\) equals the full data gradient. Biased sampling or uncorrected class reweighting changes the expected objective. The regularization term is added once at its stated strength, not multiplied by the minibatch size.</p>
+<p>The estimator is noisy because different batches contain different parts and lighting conditions. If independent per-example gradients have covariance matrix \(\Sigma\), the covariance of their average is \(\Sigma/B\). This simple formula assumes independent sampling and finite second moments; sampling without replacement has a finite-population correction, and correlated examples can reduce the benefit of a large batch. It is not a theorem that doubling batch size doubles training speed or improves test accuracy.</p>
+<p>An <strong>epoch</strong> commonly means one pass through the training examples, often in a shuffled order. Shuffling without replacement differs from drawing each batch independently with replacement. Either can be useful, but reasoning about one should not silently assume the other. In the inspection case, repeated near-identical frames may add much less independent information than new physical parts.</p>
+<p>Training curves are consequently diagnostic signals rather than complete explanations. A noisy minibatch loss can rise even when the full objective improves. A flat validation metric can hide improving probabilities that do not change the predicted labels. Compare runs using a defined sampling process, an equal resource budget when appropriate, and metrics aligned with the application.</p>
+<p><a href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=2174">Lecture anchor: minibatch updates and the difficulties of plain SGD</a>.</p>
+</section>
+
+<section aria-labelledby="momentum">
+<h2 id="momentum">6. Momentum remembers direction; RMSProp rescales coordinates <a class="timestamp" href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=2596" aria-label="Lecture at 43:16">43:16</a></h2>
+<p>Momentum adds state. One convention stores a filtered gradient \(v_t\), initialized at zero, and uses coefficient \(0\leq\rho&lt;1\): \(v_t=\rho v_{t-1}+g_t\), followed by \(\theta_{t+1}=\theta_t-\eta_t v_t\). Here \(g_t\) is the current gradient estimate. This is an exponentially weighted sum, not a normalized average unless an additional factor is included.</p>
+<p>With constant gradient \(g\), expanding the recurrence gives \(v_t=g(1-\rho^t)/(1-\rho)\) after \(t\) updates. With \(\rho=0.9\), the eventual magnitude is ten times \(g\). This explains why the learning-rate convention must be considered together with the momentum convention. Persistent directions accumulate; alternating contributions partly cancel. The <a href="https://proceedings.mlr.press/v28/sutskever13.html">initialization and momentum study by Sutskever and colleagues</a> provides an empirical and analytical research context for these choices.</p>
+<p>A second convention stores the actual parameter displacement, for example \(r_t=\rho r_{t-1}-\eta g_t\), then adds \(r_t\) to parameters. With a fixed \(\eta\) and matched initialization, setting \(r_t=-\eta v_t\) makes these forms equivalent. When \(\eta_t\) changes, moving its factor inside or outside the recurrence without adjusting state can change the algorithm. The algebraic condition is more useful than assuming that every implementation called “momentum” is identical.</p>
+<p>RMSProp instead keeps an exponentially weighted squared-gradient statistic \(a_t=\beta a_{t-1}+(1-\beta)g_t^{\odot2}\), with \(0\leq\beta&lt;1\). The symbol \(\odot2\) denotes elementwise squaring. A common update is \(\theta_{t+1}=\theta_t-\eta_t g_t/(\sqrt{a_t}+\epsilon)\), with elementwise division and a small positive stabilizer \(\epsilon\). The historical <a href="https://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf">Tieleman–Hinton lecture slides</a> introduce this adaptation.</p>
+<p>Coordinates with a larger history of squared gradients receive a smaller multiplier, while coordinates with a smaller history receive a larger one. The update can therefore change direction, not merely shorten the whole vector. It does not measure Hessian curvature directly: gradient magnitude also depends on location, noise, and parameterization. At an exactly zero gradient with no other state, dividing by a smaller number does not produce useful movement.</p>
+<p>The official appendix also discusses AdaGrad, which accumulates squared gradients without exponential forgetting. In a coordinate whose squared-gradient sum keeps growing, its effective learning-rate multiplier shrinks. It need not decay to zero if that cumulative sum remains bounded. This appendix connection helps explain RMSProp’s forgetting mechanism while preserving the distinction from material developed aloud.</p>
+</section>
+
+<section aria-labelledby="adam">
+<h2 id="adam">7. Adam’s moments and the precise role of bias correction <a class="timestamp" href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=3235" aria-label="Lecture at 53:55">53:55</a></h2>
+<p>Adam combines a running first moment and a running second raw moment of gradients. These are statistical moments: a mean-like quantity and an average of squared values. With zero initial state, coefficients \(\beta_1,\beta_2\in[0,1)\), and update count \(t=1,2,\ldots\), define</p>
+<div class="equation">\[
+m_t=\beta_1m_{t-1}+(1-\beta_1)g_t,\qquad
+v_t=\beta_2v_{t-1}+(1-\beta_2)g_t^{\odot2}.
+\]</div>
+<p>Here \(v_t\) is a squared-gradient statistic, unlike the momentum-only convention in the previous section. The meaning is local to this algorithm. The corrected quantities are \(\widehat m_t=m_t/(1-\beta_1^t)\) and \(\widehat v_t=v_t/(1-\beta_2^t)\), and the update subtracts \(\eta_t\widehat m_t/(\sqrt{\widehat v_t}+\epsilon)\).</p>
+<p>For a constant scalar gradient \(g\), the recurrence gives \(m_t=(1-\beta_1^t)g\) and \(v_t=(1-\beta_2^t)g^2\). Dividing removes the initial zero-state attenuation exactly in this case. Under stationary gradient moments, the same calculation applies to expectations. With changing gradient statistics, it corrects initialization weighting but does not make the estimate an exact description of the current gradient distribution.</p>
+<p>At the first step, the corrected values are \(g\) and \(g^2\). Ignoring \(\epsilon\) for nonzero \(g\), the step magnitude is therefore \(\eta_t\). Without correction, it is \(\eta_t(1-\beta_1)/\sqrt{1-\beta_2}\). For \(\beta_1=0.9,\beta_2=0.999\), that factor is about 3.162. The denominator is not generally zero; the issue is the relative attenuation of the two initialized statistics. If \(g=0\), a positive \(\epsilon\) makes the update zero rather than undefined.</p>
+<p>The <a href="https://arxiv.org/pdf/1412.6980">original Adam algorithm and initialization analysis</a> specify these operations. They provide a reproducible procedure, not a universal guarantee of finding a global minimum or the best generalizing model. Learning rate, moment coefficients, precision, and implementation conventions still matter. Our exact first-step calculation checks the formula in a controlled case; it does not reproduce the paper’s experiments.</p>
+</section>
+
+<section aria-labelledby="decay">
+<h2 id="decay">8. Weight decay and an L2 penalty coincide only in special updates <a class="timestamp" href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=3433" aria-label="Lecture at 57:13">57:13</a></h2>
+<p>With plain gradient descent and squared penalty \(\frac\lambda2\|\theta\|_2^2\), write the data gradient as \(g\). The update is \(\theta^+=\theta-\eta(g+\lambda\theta)=(1-\eta\lambda)\theta-\eta g\). Thus including the penalty in the gradient is identical to shrinking the old parameters by \(1-\eta\lambda\) and taking the data-gradient step. This equivalence assumes precisely that update and coefficient convention.</p>
+<p>For an adaptive update using a diagonal scaling matrix \(D\), adding the penalty first gives \(\theta^+=\theta-\eta Dg-\eta\lambda D\theta\). Decoupled shrinkage gives \(\theta^+=(1-\eta\lambda)\theta-\eta Dg\). Their difference is \(-\eta\lambda(D-I)\theta\), generally nonzero. Actual Adam adds another interaction because including the penalty in \(g_t\) also changes the running moment estimates.</p>
+<p>For an original numerical illustration, take \(\theta=(1,1)\), \(g=(0,0)\), \(\eta=0.1\), \(\lambda=0.2\), and fixed \(D=\operatorname{diag}(1,10)\). Coupled scaling yields \((0.98,0.8)\); decoupled decay yields \((0.98,0.98)\). This isolates the algebraic distinction and is not a complete Adam trajectory. <a href="https://arxiv.org/abs/1711.05101">Loshchilov and Hutter’s decoupled weight-decay paper</a> develops the AdamW modification and evaluates it experimentally.</p>
+<p>AdamW forms its moment estimates from the data gradient and applies parameter shrinkage separately. A strength value chosen for coupled L2 regularization is not automatically transferable unchanged to decoupled decay. Optimizer names are therefore insufficient experiment records: document which parameters are decayed, the coefficient convention, and the learning-rate schedule.</p>
+</section>
+
+<section aria-labelledby="schedules">
+<h2 id="schedules">9. Schedules and curvature methods change the search <a class="timestamp" href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=3567" aria-label="Lecture at 59:27">59:27</a></h2>
+<p>A large learning rate can make early progress while preventing later refinement. A small one can be stable but slow. A schedule changes \(\eta_t\) during training. Step decay multiplies it by a factor at chosen milestones. Linear decay decreases it at a constant rate. For a cosine schedule over \(T\) updates, one explicit form is</p>
+<div class="equation">\[
+\eta_t=\eta_{\min}
++\frac{\eta_{\max}-\eta_{\min}}2
+\left(1+\cos\frac{\pi t}{T}\right),\quad 0\leq t\leq T.
+\]</div>
+<p>It begins at \(\eta_{\max}\) and ends at \(\eta_{\min}\). The endpoints and the unit of \(t\)—updates or epochs—must be specified. Linear warmup starts below the intended rate and increases over an initial interval before the main schedule. An inverse-square-root schedule is another possibility, with an offset or separate warmup avoiding a singularity at zero. These choices alter the observed loss curve, so a bend in that curve can reflect the schedule rather than a new capability learned at that moment.</p>
+<p>The lecture presents proportional learning-rate scaling when increasing minibatch size as an empirical rule. <a href="https://arxiv.org/abs/1706.02677">Goyal and colleagues’ large-minibatch ImageNet study</a> combines such scaling with warmup in a particular training regime. The rough motivation is to compare several small-batch steps to one larger-batch step while assuming gradients change little between those steps. That approximation can fail early in training or with a large enough batch increase. It is a starting hypothesis to validate, not an unlimited scaling law.</p>
+<p>Second-order methods use curvature explicitly. For a twice-differentiable objective, a local quadratic approximation is \(J(\theta+\delta)\approx J(\theta)+g^\mathsf T\delta+\frac12\delta^\mathsf TH\delta\), with gradient \(g\) and Hessian \(H\). If \(H\) is positive definite, minimizing this model solves \(H\delta=-g\), giving the Newton step. One solves the linear system rather than explicitly computing an inverse in a practical numerical implementation.</p>
+<p>A dense Hessian has \(P^2\) entries, which is prohibitive for very large parameter counts. This explains why the lecture does not treat dense Newton updates as a standard large-network recipe. It does not rule out Hessian-vector products, structured curvature approximations, or limited-memory quasi-Newton methods. An indefinite Hessian can also make the naive Newton direction inappropriate for minimization. More derivative information helps only when the algorithm handles it correctly and its cost is justified.</p>
+<p>For our inspection system, choose optimizers and schedules using a defined validation protocol and training budget. A method that reaches low training loss quickly may generalize worse; a method that needs more updates may process fewer examples per update. Record data exposure, elapsed time, and validation behavior rather than using a single convergence plot to answer every comparison.</p>
+<p><a href="https://www.youtube.com/watch?v=dyNGd06MWn4&amp;t=3567">Lecture anchor: learning-rate schedules and second-order methods</a>.</p>
+</section>
+
+<section aria-labelledby="implementation">
+<h2 id="implementation">10. Three small checks that diagnose different mistakes</h2>
+<p>The code checks the quadratic stability boundary, Adam’s first update with constant nonzero gradient, and the coupled-versus-decoupled distinction. These are separate mathematical fixtures, not competing trained image classifiers. NumPy arrays use floating-point values; the companion <a href="numerical-lab.html">numerical laboratory</a> exposes the quadratic behavior interactively.</p>
+<pre><code class="language-python">import math
+import numpy as np
+from numerical_lab import quadratic_descent
+
+stable = quadratic_descent(4., 0.4, 1., 20)
+unstable = quadratic_descent(4., 0.6, 1., 20)
+boundary = quadratic_descent(4., 0.5, 1., 4)
+assert abs(stable[-1]) &lt; 0.0001
+assert abs(unstable[-1]) &gt; 800
+assert boundary.tolist() == [1., -1., 1., -1., 1.]
+
+g, beta1, beta2 = 2., 0.9, 0.999
+m = (1 - beta1) * g
+v = (1 - beta2) * g * g
+corrected = (m / (1 - beta1)) / math.sqrt(v / (1 - beta2))
+uncorrected = m / math.sqrt(v)
+assert math.isclose(corrected, 1.)
+assert math.isclose(uncorrected, math.sqrt(10.))
+
+theta = np.array([1., 1.])
+diagonal = np.array([1., 10.])
+rate, strength = 0.1, 0.2
+coupled = theta - rate * diagonal * (strength * theta)
+decoupled = (1 - rate * strength) * theta
+assert np.allclose(coupled, [0.98, 0.8])
+assert np.allclose(decoupled, [0.98, 0.98])</code></pre>
+<p>The Adam fixture omits \(\epsilon\) only because \(g=2\) makes the denominator nonzero and the purpose is to verify the exact bias factor. A reusable optimizer must include its chosen stabilizer and maintain state across updates. The diagonal-scaling fixture holds the scaling fixed; it isolates the update algebra without pretending to simulate Adam’s changing moments.</p>
+</section>
+
+<section aria-labelledby="exercises">
+<h2 id="exercises">11. Exercises with complete solutions</h2>
+<details class="exercise"><summary>Exercise 1 · A penalty can tie rather than select</summary>
+<p>Two identical features require weights summing to 2. Compare weights \((2,0)\), \((1,1)\), and \((3,-1)\) under the chapter’s \(L_1\) and half-squared \(L_2\) penalties.</p>
+<div class="solution"><p>The absolute penalties are 2, 2, and 4. The half-squared penalties are 2, 1, and 5. All three produce the same prediction when the features are identical, but squared regularization favors the balanced pair. Absolute regularization ties the first two and penalizes the cancellation in the third. This shows why a tendency toward sparsity must not be rewritten as a strict preference for every sparse candidate.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 2 · Find the exact zero interval</summary>
+<p>Minimize \(\frac12(w-a)^2+0.4|w|\) for \(a=0.2,-0.7,1.3\). Compare the result for \(a=0.2\) with a squared penalty of strength 0.4.</p>
+<div class="solution"><p>Soft thresholding gives \(0,-0.3,0.9\), respectively. For the squared penalty, the minimizer at \(a=0.2\) is \(0.2/1.4=1/7\), about 0.142857. The absolute penalty sets the first value exactly to zero because \(|a|\leq0.4\); the squared penalty shrinks it but preserves its nonzero sign. These results assume the scalar quadratic data term with unit curvature. Different curvature changes the effective threshold.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 3 · A narrow valley constrains the whole step</summary>
+<p>For \(F(u,v)=\frac12(u^2+100v^2)\), find the stable interval for a common fixed learning rate. At rate 0.01, how do the two coordinates change in one step?</p>
+<div class="solution"><p>The Hessian eigenvalues are 1 and 100, so stability for arbitrary initialization requires \(0&lt;\eta&lt;0.02\). At \(\eta=0.01\), the update multiplies \(u\) by 0.99 and \(v\) by zero. The steep coordinate reaches its quadratic optimum in one step, while the flat coordinate decreases by only 1% per step. A rate near one would be attractive for \(u\) alone but destabilizes \(v\). The example explains conditioning without requiring a complicated network.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 4 · State the assumption behind a variance reduction</summary>
+<p>A scalar per-example gradient has variance 9. What is the variance of an average of 36 independent gradients? What if all 36 values are exact duplicates of the same random gradient?</p>
+<div class="solution"><p>With independence, the variance is \(9/36=0.25\), so the standard deviation is 0.5. With exact duplication, averaging returns the same random value and the variance remains 9. The difference comes from covariance terms, not from arithmetic on the batch size. In an image dataset, repeated or tightly correlated frames can reduce how much new statistical information a larger nominal batch supplies.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 5 · Correct both Adam moments</summary>
+<p>At the first step with scalar gradient 3, \(\beta_1=0.9\), and \(\beta_2=0.999\), compute both initialized moments and both corrected moments. Ignore the stabilizer only for this nonzero-gradient calculation.</p>
+<div class="solution"><p>The first moment is \(m_1=0.1(3)=0.3\); the second raw moment is \(v_1=0.001(9)=0.009\). Their corrections give \(\widehat m_1=3\) and \(\widehat v_1=9\). The corrected ratio is 1; the uncorrected ratio is \(0.3/\sqrt{0.009}=\sqrt{10}\). Correcting only the denominator or only the numerator would create a different ratio. This is initialization weighting, not an inevitable division by zero.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 6 · Separate a new objective from a new optimizer</summary>
+<p>A run uses plain gradient descent on \(L_{\mathrm{data}}+\frac\lambda2\|\theta\|^2\). Another uses the same gradient rule but doubles \(\lambda\). A third keeps \(\lambda\) fixed and adds momentum. Which comparison changes the objective, and which changes the search?</p>
+<div class="solution"><p>Doubling \(\lambda\) changes the objective’s tradeoff between fitting data and shrinking parameters. Adding momentum with the same gradient objective changes the search dynamics and introduces state. Even with an unchanged objective, different finite-time trajectories can reach different parameter settings or local minima. Better validation performance in one run cannot be attributed to a single cause unless the experiment controls the other differences. Coupled versus decoupled decay introduces a further optimizer-dependent distinction, so those settings must also be recorded.</p></div>
+</details>
+</section>
+
+<section aria-labelledby="boundaries">
+<h2 id="boundaries">12. What the experiments do and do not establish</h2>
+<p>The lecture supplies the trajectory from regularization through gradient methods, momentum, adaptive updates, schedules, and curvature. The exact scalar and quadratic analyses show why several intuitions work under named assumptions. They also show where the intuitions stop: sparsity is not automatic, a descent direction does not guarantee a descending finite step, and initialization correction does not prove convergence or calibration.</p>
+<p>The numerical examples certify small pieces of update algebra. They do not rank optimizers on a real visual dataset. The next chapter introduces nonlinear networks and backpropagation, where the same distinction between objective, derivative, and optimizer becomes essential to understanding the computation.</p>
+</section>
+<!-- BOOK-CONTENT-END --></article><nav class="page-turn" aria-label="Chapter navigation"><a rel="prev" href="lecture-02-classification-and-linear-models.html">Previous available chapter</a><a href="index.html">Lecture index</a><a rel="next" href="lecture-04-networks-and-backpropagation.html">Next available chapter</a></nav></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

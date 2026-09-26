@@ -1,0 +1,171 @@
+{
+  "status": "passed",
+  "expected_chapters": 18,
+  "chapter_pages": 18,
+  "failures": [],
+  "warnings": [],
+  "chapters": [
+    {
+      "chapter": "lecture-01-visual-intelligence.html",
+      "h2": 9,
+      "timestamps": 6,
+      "code_blocks": 1,
+      "words": 4465,
+      "metadata_sections": 9,
+      "references": 13
+    },
+    {
+      "chapter": "lecture-02-classification-and-linear-models.html",
+      "h2": 10,
+      "timestamps": 7,
+      "code_blocks": 1,
+      "words": 4456,
+      "metadata_sections": 10,
+      "references": 7
+    },
+    {
+      "chapter": "lecture-03-regularization-and-optimization.html",
+      "h2": 12,
+      "timestamps": 9,
+      "code_blocks": 1,
+      "words": 4383,
+      "metadata_sections": 12,
+      "references": 8
+    },
+    {
+      "chapter": "lecture-04-networks-and-backpropagation.html",
+      "h2": 10,
+      "timestamps": 7,
+      "code_blocks": 1,
+      "words": 4071,
+      "metadata_sections": 10,
+      "references": 7
+    },
+    {
+      "chapter": "lecture-05-convolution-and-spatial-structure.html",
+      "h2": 10,
+      "timestamps": 7,
+      "code_blocks": 1,
+      "words": 3940,
+      "metadata_sections": 10,
+      "references": 8
+    },
+    {
+      "chapter": "lecture-06-training-and-residual-networks.html",
+      "h2": 11,
+      "timestamps": 8,
+      "code_blocks": 1,
+      "words": 3978,
+      "metadata_sections": 12,
+      "references": 12
+    },
+    {
+      "chapter": "lecture-07-recurrent-state-and-sequences.html",
+      "h2": 12,
+      "timestamps": 9,
+      "code_blocks": 1,
+      "words": 3973,
+      "metadata_sections": 12,
+      "references": 8
+    },
+    {
+      "chapter": "lecture-08-attention-and-transformers.html",
+      "h2": 14,
+      "timestamps": 10,
+      "code_blocks": 1,
+      "words": 3887,
+      "metadata_sections": 14,
+      "references": 9
+    },
+    {
+      "chapter": "lecture-09-detection-segmentation-and-explanation.html",
+      "h2": 14,
+      "timestamps": 11,
+      "code_blocks": 1,
+      "words": 3864,
+      "metadata_sections": 14,
+      "references": 14
+    },
+    {
+      "chapter": "lecture-10-video-motion-and-memory.html",
+      "h2": 13,
+      "timestamps": 10,
+      "code_blocks": 1,
+      "words": 3726,
+      "metadata_sections": 13,
+      "references": 10
+    },
+    {
+      "chapter": "lecture-11-distributed-training.html",
+      "h2": 14,
+      "timestamps": 11,
+      "code_blocks": 1,
+      "words": 4031,
+      "metadata_sections": 14,
+      "references": 11
+    },
+    {
+      "chapter": "lecture-12-self-supervised-representations.html",
+      "h2": 14,
+      "timestamps": 11,
+      "code_blocks": 1,
+      "words": 4051,
+      "metadata_sections": 14,
+      "references": 13
+    },
+    {
+      "chapter": "lecture-13-generative-models-and-variational-inference.html",
+      "h2": 12,
+      "timestamps": 9,
+      "code_blocks": 1,
+      "words": 3135,
+      "metadata_sections": 12,
+      "references": 7
+    },
+    {
+      "chapter": "lecture-14-adversarial-generation-and-diffusion.html",
+      "h2": 13,
+      "timestamps": 10,
+      "code_blocks": 1,
+      "words": 3354,
+      "metadata_sections": 13,
+      "references": 9
+    },
+    {
+      "chapter": "lecture-15-geometry-and-neural-scenes.html",
+      "h2": 15,
+      "timestamps": 12,
+      "code_blocks": 1,
+      "words": 3724,
+      "metadata_sections": 15,
+      "references": 10
+    },
+    {
+      "chapter": "lecture-16-vision-and-language.html",
+      "h2": 11,
+      "timestamps": 8,
+      "code_blocks": 1,
+      "words": 2656,
+      "metadata_sections": 11,
+      "references": 8
+    },
+    {
+      "chapter": "lecture-17-robot-learning.html",
+      "h2": 9,
+      "timestamps": 7,
+      "code_blocks": 1,
+      "words": 3263,
+      "metadata_sections": 9,
+      "references": 5
+    },
+    {
+      "chapter": "lecture-18-human-centered-vision.html",
+      "h2": 9,
+      "timestamps": 7,
+      "code_blocks": 1,
+      "words": 3491,
+      "metadata_sections": 9,
+      "references": 8
+    }
+  ]
+}

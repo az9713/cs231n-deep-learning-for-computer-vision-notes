@@ -1,0 +1,162 @@
+{
+  "title": "From pixels to visual intelligence",
+  "number": 1,
+  "video_id": "2fq9wYslV0A",
+  "source_type": "locally generated automatic speech recognition; official slide text checked",
+  "sections": [
+    {
+      "section": "seeing",
+      "start": 5.17,
+      "end": 200.98,
+      "lecture_material": "AI, machine learning, deep learning, and computer vision scope",
+      "research_extension": "None required for introductory definitions",
+      "teaching_construction": "Persistent visual-inspection case; input and target contract",
+      "evidence_class": "lecture synthesis plus original teaching example"
+    },
+    {
+      "section": "inverse",
+      "start": 200.98,
+      "end": 1115.57,
+      "lecture_material": "Vision evolution, image capture versus understanding, Marr's representation hierarchy",
+      "research_extension": "Ideal camera projection from Stanford camera notes; Marr book date checked against publisher",
+      "teaching_construction": "Pinhole scale-ambiguity derivation and two-point numerical check",
+      "evidence_class": "lecture synthesis; exact identity under stated camera assumptions"
+    },
+    {
+      "section": "representations",
+      "start": 462.3,
+      "end": 1538.4,
+      "lecture_material": "Receptive fields, block-world, summer vision project, edges, grouping, local features, human context",
+      "research_extension": "Hubel-Wiesel, MIT proposal, and SIFT primary sources",
+      "teaching_construction": "Feature-map bottleneck, task-relative invariance, red-tray shortcut",
+      "evidence_class": "primary historical evidence plus original arguments"
+    },
+    {
+      "section": "learning",
+      "start": 1538.4,
+      "end": 2537.07,
+      "lecture_material": "Neural history, learned representations, ImageNet, AlexNet, algorithms-data-compute interaction",
+      "research_extension": "Neocognitron learning correction, backprop primary paper, ILSVRC and AlexNet benchmark definitions",
+      "teaching_construction": "Empirical-risk model; split-unit and deployment interpretation",
+      "evidence_class": "historical research plus mathematical definition and original examples"
+    },
+    {
+      "section": "evaluation",
+      "start": 2537.07,
+      "end": 2704.27,
+      "lecture_material": "Bias, societal impact, human-centered evaluation",
+      "research_extension": "Model Cards documentation framework",
+      "teaching_construction": "Subgroup error mixture and cost-sensitive threshold with complete assumptions",
+      "evidence_class": "hypothetical arithmetic and exact conditional expected-cost comparison"
+    },
+    {
+      "section": "tasks",
+      "start": 2142.06,
+      "end": 3767.06,
+      "lecture_material": "Task diversity, course modules, self-supervision, generation, video,3D,vision-language,robotics,human-centered aims",
+      "research_extension": "No current performance claims",
+      "teaching_construction": "Output-space progression of inspection case and temporal-average information loss",
+      "evidence_class": "lecture synthesis plus exact counterexample"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Capture-understanding distinction and evaluation motivations",
+      "research_extension": "None",
+      "teaching_construction": "Executable projection and mixture arithmetic; no trained model or deployment claim",
+      "evidence_class": "independent numerical fixture"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidates chapter concepts",
+      "research_extension": "Benchmark arithmetic uses verified published numbers",
+      "teaching_construction": "Six original exercises with complete solutions",
+      "evidence_class": "original assessment"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Lecture scope and course progression",
+      "research_extension": "Evidence boundaries",
+      "teaching_construction": "Synthesis of modeled limits",
+      "evidence_class": "editorial synthesis"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official CS231N Spring 2025 schedule",
+      "url": "https://cs231n.stanford.edu/2025/schedule.html",
+      "supports": "Lecture identity and course progression"
+    },
+    {
+      "title": "Official Lecture 1 slides, part 1",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_1_part_1.pdf",
+      "supports": "Historical and conceptual lecture context"
+    },
+    {
+      "title": "Official Lecture 1 slides, part 2",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_1_part_2.pdf",
+      "supports": "Course topics and terminology"
+    },
+    {
+      "title": "Stanford CS231A camera models",
+      "url": "https://web.stanford.edu/class/cs231a/course_notes/01-camera-models.pdf",
+      "supports": "Pinhole model and projection assumptions"
+    },
+    {
+      "title": "Marr, Vision, MIT Press",
+      "url": "https://mitpress.mit.edu/9780262288989/vision/",
+      "supports": "Original publication date1982 and representation framework"
+    },
+    {
+      "title": "Hubel and Wiesel,1959",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/14403679/",
+      "supports": "Receptive-field experiments in cat cortex"
+    },
+    {
+      "title": "The Summer Vision Project,1966",
+      "url": "https://dspace.mit.edu/handle/1721.1/6125",
+      "supports": "Actual proposal scope and date"
+    },
+    {
+      "title": "Lowe, SIFT,2004",
+      "url": "https://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf",
+      "supports": "Local feature matching and stated invariances"
+    },
+    {
+      "title": "Fukushima, Neocognitron,1980",
+      "url": "https://www.cs.princeton.edu/courses/archive/spr08/cos598B/Readings/Fukushima1980.pdf",
+      "supports": "Self-organizing learning; correction of manual-parameter simplification"
+    },
+    {
+      "title": "Rumelhart,Hinton,Williams,1986",
+      "url": "https://www.cs.toronto.edu/~hinton/absps/naturebp.pdf",
+      "supports": "Learning internal representations via error derivatives"
+    },
+    {
+      "title": "ImageNet Large Scale Visual Recognition Challenge",
+      "url": "https://arxiv.org/abs/1409.0575",
+      "supports": "Benchmark task and evaluation infrastructure"
+    },
+    {
+      "title": "AlexNet,2012",
+      "url": "https://papers.nips.cc/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf",
+      "supports": "2012 top-five error15.3% versus26.2%; distinguish metric and subset"
+    },
+    {
+      "title": "Model Cards for Model Reporting",
+      "url": "https://arxiv.org/abs/1810.03993",
+      "supports": "Intended-use and disaggregated evaluation documentation"
+    }
+  ],
+  "limitations": [
+    "ASR may mishear names; official slides and primary sources corrected named examples.",
+    "Slide text was read; no claim of exhaustive audiovisual inspection.",
+    "Numerical cases are original hypothetical teaching examples, not Stanford experiments.",
+    "Chapter is one of18; course completion requires all chapters and validation."
+  ]
+}

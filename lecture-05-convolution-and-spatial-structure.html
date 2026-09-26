@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="c65d776960b6b50da770f69ebd93709a64f15225fc3a813c9d550155096cc502"><title>Convolution, spatial structure, and the cost of downsampling · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc" aria-label="On this page"><h2>On this page</h2></aside><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><header class="chapter-header">
+<p class="eyebrow">Chapter 5 · CS231N, Spring 2025</p>
+<h1>Convolution, spatial structure, and the cost of downsampling</h1>
+<p class="lead">Convolution gives a learned local rule the same meaning at many image locations. Pooling and stride compress the resulting maps. Their usefulness depends on which spatial distinctions the task can afford to lose.</p>
+<p class="source-note">Based on the full Lecture 5 transcript and official slide text. The manufacturing-inspection case, numerical examples, equivariance proof, counterexamples, and exercises are original teaching constructions. Research extensions clarify boundaries that the lecture intentionally treats informally.</p>
+</header>
+
+<section aria-labelledby="features">
+<h2 id="features">1. What should the inspection model preserve? <a class="timestamp" href="https://www.youtube.com/watch?v=f3g1zGdxptI&amp;t=83" aria-label="Lecture at 1:23">1:23</a></h2>
+<p>A scratch can appear near either edge of a manufactured part. Our classifier should recognize its local appearance wherever it occurs. A dense network can in principle learn this behavior, but its architecture does not require the same rule at different positions. We would prefer to spend examples learning what a scratch looks like instead of independently relearning that rule at every possible location.</p>
+<p>The lecture begins by connecting the preceding chapters into a general recipe: choose input and output tensors, define a parameterized computation, measure its errors with a scalar loss, differentiate that loss, and optimize the parameters. Convolution changes the computation inside this recipe. It does not require a different principle of learning or a different interpretation of gradients.</p>
+<p>Before learning the representation jointly with the classifier, a common approach was to design image features. A color histogram counts pixels in color bins. It can distinguish a predominantly red image from a predominantly green one, but it deliberately forgets where those colors occurred. Two inspection images with the same pixel colors can have identical histograms even when one contains a connected scratch and the other contains scattered harmless marks.</p>
+<p>A histogram of oriented gradients instead summarizes local edge directions. Such features retain some local structure and suppress other details. Concatenating several feature families can expose more information to a classifier, but it does not recover information that every chosen feature discards. The lecture uses these examples to explain the move toward learning the feature extractor together with the final predictor.</p>
+<p>End-to-end learning means that a training objective adjusts parameters throughout the chosen computation. It does not eliminate design choices. We still choose the data, labels, loss, operators, connectivity, and tensor sizes. Convolution encodes an <strong>inductive bias</strong>: a structural preference for local processing with shared parameters. Whether that preference is helpful depends on the task. A defect’s position may be irrelevant to classification, yet crucial to deciding which portion of a part needs repair.</p>
+<p>Flattening an image into a vector is mathematically invertible when its original shape is known. The problem is therefore not literal destruction of pixel information. A generic dense layer simply fails to exploit adjacency and repeated local structure in its parameterization. Convolution keeps spatial axes explicit and constrains how those positions interact.</p>
+<p><a href="https://www.youtube.com/watch?v=f3g1zGdxptI&amp;t=830">Lecture anchor: image features and learned representations</a>.</p>
+</section>
+
+<section aria-labelledby="operator">
+<h2 id="operator">2. One local rule, reused across the image <a class="timestamp" href="https://www.youtube.com/watch?v=f3g1zGdxptI&amp;t=1832" aria-label="Lecture at 30:32">30:32</a></h2>
+<p>We use a channels-first convention. Let \(X\in\mathbb R^{N\times C_{\mathrm{in}}\times H\times W}\) contain a batch of \(N\) images, each with \(C_{\mathrm{in}}\) channels, height \(H\), and width \(W\). An RGB image has three input channels, but an internal feature map may have many more. Channels represent different measurements at a location; they are not additional spatial coordinates.</p>
+<p>Let \(K_h\) and \(K_w\) be kernel height and width. A filter bank \(A\in\mathbb R^{C_{\mathrm{out}}\times C_{\mathrm{in}}\times K_h\times K_w}\) contains \(C_{\mathrm{out}}\) filters. Each filter spans all input channels in the ordinary, ungrouped operation considered here. A bias vector \(b\in\mathbb R^{C_{\mathrm{out}}}\) supplies one scalar per output channel.</p>
+<p>For integer stride \(s\geq1\), symmetric padding \(p\geq0\), and dilation one, define</p>
+<div class="equation">\[
+Y_{n,o,i,j}=b_o+
+\sum_{c=0}^{C_{\mathrm{in}}-1}
+\sum_{u=0}^{K_h-1}\sum_{v=0}^{K_w-1}
+A_{o,c,u,v}\,X^{\mathrm{pad}}_{n,c,si+u,sj+v}.
+\]</div>
+<p>Here \(n\) indexes examples, \(o\) output channels, \(i,j\) output positions, and \(u,v\) offsets within the kernel. The padded input \(X^{\mathrm{pad}}\) adds \(p\) values on each side, taken as zero unless stated otherwise. Every output scalar is a dot product between one filter and one input patch, followed by a bias addition. Changing position changes the patch, while the filter coefficients remain the same.</p>
+<p>This formula is technically <strong>cross-correlation</strong>, because the kernel is not reversed. Deep-learning libraries conventionally call it convolution; the <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html">official Conv2d documentation</a> states that convention. A mathematical convolution can be obtained by reversing the spatial kernel. Since filters are learned, either convention can describe the same family of functions, but an implementation or hand calculation must use one convention consistently.</p>
+<p>As a deliberately small inspection example, take a single-channel patch</p>
+<div class="equation">\[
+X=\begin{bmatrix}1&2&0\\0&3&1\\2&1&4\end{bmatrix},
+\qquad
+A=\begin{bmatrix}1&0\\0&-1\end{bmatrix},
+\qquad b=0.
+\]</div>
+<p>With stride one and no padding, the four outputs are \(-2,1,-1,-1\), arranged as a \(2\times2\) map. The upper-left value is \(1-3=-2\); the upper-right value is \(2-1=1\). This filter measures one diagonal contrast. We chose it for arithmetic clarity; a trained network would learn its coefficients from the downstream objective.</p>
+<p>A second filter produces a second map, not a second image in the batch. Thus batch size, channel count, and spatial dimensions have different roles even though all appear as tensor axes. The bias for a filter is broadcast across every position and every example. It is not independently learned at each spatial coordinate.</p>
+<p><a href="https://www.youtube.com/watch?v=f3g1zGdxptI&amp;t=1950">Lecture anchor: local templates, channels, and shared filter banks</a>.</p>
+</section>
+
+<section aria-labelledby="dimensions">
+<h2 id="dimensions">3. Derive the output shape before counting parameters <a class="timestamp" href="https://www.youtube.com/watch?v=f3g1zGdxptI&amp;t=2998" aria-label="Lecture at 49:58">49:58</a></h2>
+<p>Consider one spatial axis of length \(H\), padded to length \(H+2p\). A kernel of length \(K_h\) can start at positions \(0,s,2s,\ldots\). Its final element must remain inside the padded input. The largest legal integer output index therefore satisfies \(si+K_h\leq H+2p\). Counting index zero gives</p>
+<div class="equation">\[
+H'=\left\lfloor\frac{H+2p-K_h}{s}\right\rfloor+1,
+\qquad
+W'=\left\lfloor\frac{W+2p-K_w}{s}\right\rfloor+1.
+\]</div>
+<p>The formulas assume each kernel fits at least once. The floor matters when the final step would overshoot. For an eight-pixel axis, a three-pixel kernel, stride two, and no padding, the legal starts are 0, 2, and 4, so the output length is three. A nonexistent half-position does not create a fractional output. The lecture’s simpler expressions apply directly to examples with exact divisibility.</p>
+<p>For stride one and an odd square kernel of width \(K\), padding \(p=(K-1)/2\) preserves spatial size. This is a statement about dimensions, not about preservation of information. Zero padding invents a boundary condition. A feature near the image border can see zeros where an interior feature sees real measurements. Consequently, equal-sized input and output maps need not behave identically under translations that cross the boundary.</p>
+<p>Our inspection network receives \(32\times32\) RGB crops. Suppose its first layer has eight \(3\times3\) filters, stride one, and padding one. Its output has shape \(N\times8\times32\times32\). There are \(8(3\cdot3\cdot3+1)=224\) learned scalars: 216 filter coefficients and eight biases. Increasing batch size changes the activations and compute, but not this parameter count.</p>
+<p>A dense layer mapping the same 3,072 input scalars to the same 8,192 output scalars would require \(3{,}072\cdot8{,}192+8{,}192=25{,}174{,}016\) parameters. The comparison holds the output count fixed to expose the structural difference. It does not claim equal expressivity: the convolution has far fewer allowed connections and forces many positions to share coefficients. That restriction is precisely its inductive bias.</p>
+<p>The direct convolution evaluates 8,192 dot products of length 27 per image, or 221,184 multiply-accumulate operations, excluding bias additions. A multiply-accumulate is often counted as two floating-point operations, so “MACs” and “FLOPs” must not be silently interchanged. Actual runtime also depends on memory traffic, layout, precision, and the implementation’s algorithm.</p>
+<p>The lecture’s \(3\times32\times32\) input with ten \(5\times5\) filters instead has 760 parameters and 768,000 MACs when padding preserves size. These counts illustrate why shared parameters do not imply negligible compute: the same coefficient participates in many output calculations. <a href="https://arxiv.org/abs/1603.07285">Dumoulin and Visin’s convolution-arithmetic guide</a> develops the relationship between sizes, padding, and stride in greater detail.</p>
+</section>
+
+<section aria-labelledby="learning">
+<h2 id="learning">4. Learning shared filters and composing layers <a class="timestamp" href="https://www.youtube.com/watch?v=f3g1zGdxptI&amp;t=2214" aria-label="Lecture at 36:54">36:54</a></h2>
+<p>The kernel sizes, channel counts, and strides are architectural hyperparameters chosen before a particular training run. The numbers inside \(A\) and \(b\) are parameters adjusted during training. Ordinary gradient descent changes their values while leaving their tensor shapes fixed. Selecting a kernel size by validation and learning its values by backpropagation are different operations.</p>
+<p>Let \(G_{n,o,i,j}=\partial L/\partial Y_{n,o,i,j}\) be the upstream derivative of a scalar loss \(L\). Applying the chain rule to the forward definition gives</p>
+<div class="equation">\[
+\frac{\partial L}{\partial A_{o,c,u,v}}
+=\sum_{n,i,j}G_{n,o,i,j}
+X^{\mathrm{pad}}_{n,c,si+u,sj+v},
+\qquad
+\frac{\partial L}{\partial b_o}=\sum_{n,i,j}G_{n,o,i,j}.
+\]</div>
+<p>Each coefficient receives contributions from every place it was used. This is the same branch-accumulation rule from Chapter 4, now applied to spatial sharing. If the loss is a batch mean, its upstream derivative already carries the appropriate averaging; adding another division here would alter the intended derivative.</p>
+<p>For the small \(3\times3\) example, choose the teaching objective \(L=\sum_{i,j}Y_{i,j}\), so every upstream derivative is one. Summing the four overlapping patches gives the kernel gradient \(\begin{bmatrix}6&6\\6&9\end{bmatrix}\), and the bias gradient is four. A coefficient’s gradient combines evidence across locations rather than assigning each location its own independent detector.</p>
+<p>Stacking convolutions extends this mechanism to learned feature maps. The next layer’s input-channel count must equal the previous layer’s output-channel count. A channel in that next layer combines evidence from several earlier maps and nearby positions. Merely stacking affine operations remains affine, however. Nonlinearities such as ReLU allow the composition to express functions unavailable to one affine map. Boundary handling can complicate whether several affine convolutions can be represented as one standard finite-image convolution, but it does not change their affine character.</p>
+<p>Identical initialization can preserve an unwanted symmetry when the rest of the network and update rule treat the filters symmetrically. Distinct random initialization breaks that symmetry, allowing filters to specialize. This does not guarantee each filter learns a different useful concept, and identical incoming filters alone need not imply identical gradients if their downstream connections already differ.</p>
+<p>First-layer filters trained on natural images often resemble edge or color-contrast detectors. Higher-layer activation visualizations may reveal responses to larger patterns. These are empirical observations about a trained model, not a promise that every unit has a unique human-readable meaning. A filter with high responses to several wheel images could also respond to other circular or textured structures.</p>
+<p>The lecture places this design in the progression from LeNet-style document recognition to AlexNet and later systems. Its transformer discussion anticipates Chapter 8: the <a href="https://arxiv.org/abs/2010.11929">Vision Transformer paper</a> demonstrated strong image recognition by applying a transformer to image patches at scale. This does not make convolution obsolete; it changes the architectural options and the data-and-compute regimes in which they are compared.</p>
+</section>
+
+<section aria-labelledby="receptive">
+<h2 id="receptive">5. How far can an output see? <a class="timestamp" href="https://www.youtube.com/watch?v=f3g1zGdxptI&amp;t=3142" aria-label="Lecture at 52:22">52:22</a></h2>
+<p>A unit’s <strong>theoretical receptive field</strong> is the region of the original input that can influence it through the computation graph. This is different from the kernel window in the immediately preceding layer. A \(3\times3\) kernel applied to a feature map can depend on a much larger original image region because each feature already aggregates earlier pixels.</p>
+<p>For one spatial axis, let \(r_\ell\) be receptive-field span after layer \(\ell\), and \(j_\ell\) the spacing, measured in original-input pixels, between adjacent layer-\(\ell\) outputs. Start with \(r_0=j_0=1\). A layer with kernel width \(k_\ell\), stride \(s_\ell\), and dilation one obeys</p>
+<div class="equation">\[
+r_\ell=r_{\ell-1}+(k_\ell-1)j_{\ell-1},
+\qquad
+j_\ell=s_\ell j_{\ell-1}.
+\]</div>
+<p>The second equation follows because one output step skips \(s_\ell\) locations in the preceding map. The first follows because the kernel covers \(k_\ell\) adjacent preceding units; the distance between the first and last centers is \((k_\ell-1)j_{\ell-1}\), added to the support of one unit. This counts the interior support span; boundary clipping and padding can reduce the number of real image pixels involved.</p>
+<p>Three \(3\times3\), stride-one convolutions have receptive-field widths 3, 5, and 7. Insert a \(2\times2\), stride-two pooling layer between the second and third convolutions: the widths become 3, 5, 6, and 10, while the jumps become 1, 1, 2, and 2. The final convolution adds four original pixels to the span because its neighboring inputs are already two original pixels apart.</p>
+<p>Repeated stride-two layers can make this span grow rapidly, but they also coarsen the output grid. A broad field of view is not a free improvement. An inspection model that downsamples too early may miss a narrow scratch, even if its final units can theoretically depend on the whole part.</p>
+<p>The word “effective” is sometimes used informally for this accumulated support, including in the lecture. Research also uses <strong>effective receptive field</strong> for how strongly different input locations actually influence an output, often measured through gradients. <a href="https://arxiv.org/abs/1701.04128">Luo and colleagues</a> study this distinction. Having a path from a pixel to a unit does not imply that path carries substantial influence in the trained model.</p>
+</section>
+
+<section aria-labelledby="pooling">
+<h2 id="pooling">6. Pooling compresses positions within each channel <a class="timestamp" href="https://www.youtube.com/watch?v=f3g1zGdxptI&amp;t=3528" aria-label="Lecture at 58:48">58:48</a></h2>
+<p>Pooling applies a fixed reduction independently to local spatial windows in each channel. Unlike an ordinary convolution, it does not mix input channels and usually has no learned coefficients. A \(2\times2\) window with stride two halves even spatial dimensions and retains the channel count. Kernel size, stride, boundary handling, and reduction function still need to be specified.</p>
+<p>For the original activation map</p>
+<div class="equation">\[
+Z=\begin{bmatrix}
+1&4&2&0\\
+3&2&5&1\\
+0&2&1&3\\
+6&1&4&2
+\end{bmatrix},
+\]</div>
+<p>nonoverlapping \(2\times2\) max pooling produces \(\begin{bmatrix}4&5\\6&4\end{bmatrix}\). Average pooling produces \(\begin{bmatrix}2.5&2\\2.25&2.5\end{bmatrix}\). Max pooling asks whether a strong response occurs somewhere in a window; averaging measures its mean strength. Neither output tells us every input value or the exact location of each response.</p>
+<p>Max pooling is nonlinear: the identity of the largest entry depends on the input. When there is a unique maximum, the backward pass sends the upstream derivative to that entry and zero to the others. Ties require an implementation convention. Average pooling is linear for a fixed window and divisor, so its derivative divides the upstream signal equally among the contributing values.</p>
+<p>Some local movements leave a pooled value unchanged because the same maximum remains inside the same window. That limited observation is not a theorem of invariance to every small translation. A response that crosses a window boundary can change the output. Padding is also not universally absent: <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html">PyTorch’s max-pool documentation</a> supports padding and specifies negative infinity so padded values cannot defeat finite real maxima. Replacing it with zero would change results for all-negative windows.</p>
+<p>Convolution and pooling naturally generalize to one-dimensional signals and three-dimensional volumes by changing the number of spatial axes. A video model can treat time as an additional axis; a volumetric scan has three spatial axes. Channels remain separate from these sliding axes. A \(1\times1\) convolution is also meaningful: it mixes the channel vector independently at each position without expanding the spatial receptive field.</p>
+<p>Dense batches require compatible shapes. Resizing every image is simple but can distort geometry; padding retains aspect ratio but introduces artificial regions; grouping similar sizes or aspect ratios reduces waste. Convolution itself can operate on different image sizes in different calls. A later fixed-size dense layer or the batching strategy may impose additional restrictions.</p>
+</section>
+
+<section aria-labelledby="equivariance">
+<h2 id="equivariance">7. Equivariance is a precise claim with precise limits <a class="timestamp" href="https://www.youtube.com/watch?v=f3g1zGdxptI&amp;t=3897" aria-label="Lecture at 64:57">64:57</a></h2>
+<p>We now formalize the intuition that the same local pattern should be processed similarly wherever it appears. For a one-dimensional signal on an infinite integer grid, define translation by \((T_\delta x)[i]=x[i-\delta]\), where \(\delta\) is an integer shift. Let a finite-support kernel \(a[k]\) define stride-one cross-correlation \((Cx)[i]=\sum_k a[k]x[i+k]\). Then</p>
+<div class="equation">\[
+(C T_\delta x)[i]
+=\sum_k a[k]x[i+k-\delta]
+=(T_\delta Cx)[i].
+\]</div>
+<p>The same identity applies independently in the two spatial directions. It also holds on a finite circular grid with indices interpreted modulo its length. This is <strong>translation equivariance</strong>: moving the input moves the output correspondingly. It differs from invariance, which would require the output to stay unchanged. A detector that reports a scratch’s location should generally be equivariant, while an image-level “scratch present” decision might aim for invariance.</p>
+<p>Shared bias values and pointwise nonlinearities preserve this stride-one relation under compatible boundary conditions. A finite zero-padded image does not provide the same translation group as an infinite or circular signal. Effects near its boundary require separate treatment. A proof that ignores boundaries should not be turned into an unconditional claim about an entire software pipeline.</p>
+<p>Downsampling introduces a second limitation. Define \((D_s z)[i]=z[si]\). A translation of the input by \(sq\), for integer \(q\), corresponds to a translation of the output by \(q\): \(D_sT_{sq}=T_qD_s\). A one-pixel input shift when \(s=2\) would require a half-pixel shift on the coarse grid. No ordinary integer-index translation can supply that correspondence.</p>
+<p>An exact counterexample uses the length-eight circular signal \(x=(0,1,4,9,16,25,36,49)\) and kernel \(a=(1,-2,1)\). Stride-one correlation is \((2,2,2,2,2,2,-62,50)\). Keeping even positions yields \((2,2,2,-62)\). Shift the input right by one first, then correlate and keep even positions: the result is \((50,2,2,2)\). These outputs are not circular translations of one another; even their sets of values differ.</p>
+<p>Low-pass filtering before downsampling can reduce aliasing, the confusion of different fine-grid signals after coarse sampling. <a href="https://arxiv.org/abs/1904.11486">Zhang’s study of shift consistency</a> examines this issue in convolutional networks. Anti-aliasing can improve behavior, but it does not make every classification pipeline exactly invariant to arbitrary transformations. The appropriate claim must specify the operator, boundary rule, sampling grid, and transformation.</p>
+<p>For our inspection system, this distinction suggests a concrete evaluation: shift a crop by small controlled amounts while keeping its defect label fixed, and measure prediction changes. For localization, compare the shifted predicted coordinates as well. Such tests evaluate the implemented model rather than relying on an architectural slogan.</p>
+<p><a href="https://www.youtube.com/watch?v=f3g1zGdxptI&amp;t=3897">Lecture anchor: translation equivariance and its informal boundary caveat</a>.</p>
+</section>
+
+<section aria-labelledby="implementation">
+<h2 id="implementation">8. A numerical microscope for spatial operations</h2>
+<p>The following code checks the original local arithmetic, shared-filter gradient, resource counts, receptive-field recurrence, and exact translation counterexample. The small loop is a transparent teaching implementation, not a replacement for optimized convolution software. The imported circular operator explicitly uses periodic boundaries so the equivariance test has a well-defined domain.</p>
+<pre><code class="language-python">import numpy as np
+from numerical_lab import central_gradient, circular_correlation
+
+X = np.array([[1., 2., 0.], [0., 3., 1.], [2., 1., 4.]])
+A = np.array([[1., 0.], [0., -1.]])
+def correlate_valid(image, kernel):
+    kh, kw = kernel.shape
+    return np.array([
+        [np.sum(image[i:i+kh, j:j+kw] * kernel)
+         for j in range(image.shape[1] - kw + 1)]
+        for i in range(image.shape[0] - kh + 1)])
+assert np.array_equal(correlate_valid(X, A), [[-2., 1.], [-1., -1.]])
+grad = central_gradient(lambda kernel: correlate_valid(X, kernel).sum(), A)
+assert np.allclose(grad, [[6., 6.], [6., 9.]], atol=1e-8)
+
+assert 8 * (3 * 3 * 3 + 1) == 224
+assert 3072 * 8192 + 8192 == 25174016
+assert 8 * 32 * 32 * 27 == 221184
+field, jump = 1, 1
+history = []
+for size, stride in [(3, 1), (3, 1), (2, 2), (3, 1)]:
+    field += (size - 1) * jump
+    jump *= stride
+    history.append((field, jump))
+assert history == [(3, 1), (5, 1), (6, 2), (10, 2)]
+
+x = np.arange(8.)**2
+kernel = np.array([1., -2., 1.])
+full = circular_correlation(x, kernel)
+assert np.array_equal(full, [2, 2, 2, 2, 2, 2, -62, 50])
+assert np.array_equal(circular_correlation(np.roll(x, 1), kernel),
+                      np.roll(full, 1))
+coarse = circular_correlation(x, kernel, 2)
+shifted = circular_correlation(np.roll(x, 1), kernel, 2)
+assert np.array_equal(coarse, [2, 2, 2, -62])
+assert np.array_equal(shifted, [50, 2, 2, 2])
+assert not any(np.array_equal(shifted, np.roll(coarse, q))
+               for q in range(len(coarse)))</code></pre>
+<p>These checks establish identities for specified arrays and operators. They do not train a defect classifier or establish accuracy on real images. Their purpose is to expose the assumptions behind a spatial model before expensive training makes those assumptions difficult to inspect.</p>
+</section>
+
+<section aria-labelledby="exercises">
+<h2 id="exercises">9. Exercises with complete solutions</h2>
+<details class="exercise"><summary>Exercise 1 · A layer’s dimensions and cost</summary>
+<p>A batch has shape \(4\times3\times16\times16\). Apply twelve \(3\times3\) filters with stride two, padding one, and one bias per filter. Find the output shape, parameter count, and direct MAC count for the batch.</p>
+<div class="solution"><p>The output side is \(\lfloor(16+2-3)/2\rfloor+1=8\), so the shape is \(4\times12\times8\times8\). Parameters total \(12(27+1)=336\). The batch has \(4\cdot12\cdot8\cdot8=3{,}072\) output values, each requiring a 27-term dot product, hence 82,944 MACs excluding bias. Batch size affects this compute count but not the number of shared coefficients.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 2 · Why one-by-one is not a no-op</summary>
+<p>At one location, channels are \((2,-1,3)\). A \(1\times1\) layer has filter vectors \((1,2,0)\) and \((0,-1,1)\), with zero biases. What does it produce? Does it expand spatial support?</p>
+<div class="solution"><p>The outputs are \(2+2(-1)=0\) and \(-(-1)+3=4\). It maps a three-dimensional channel vector to a two-dimensional vector at every location, sharing this map across locations. Its kernel has no neighboring spatial offsets, so it does not expand the receptive field. A following nonlinearity can nevertheless make its role in a larger network substantial.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 3 · Shared parameters accumulate evidence</summary>
+<p>For \(y_0=ax_0+bx_1\), \(y_1=ax_1+bx_2\), and \(L=y_0+2y_1\), calculate derivatives with respect to \(a\) and \(b\) when \(x=(1,3,2)\).</p>
+<div class="solution"><p>The upstream derivatives are one and two. The coefficient \(a\) receives \(x_0+2x_1=7\); \(b\) receives \(x_1+2x_2=7\). These are sums over uses of each coefficient. Forgetting the second window gives derivatives one and three, corresponding to a different computation. Parameter sharing reduces the parameter count but increases the number of paths contributing to a parameter’s derivative.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 4 · The support of a mixed-stride stack</summary>
+<p>Starting from individual pixels, apply a \(5\times5\) stride-one convolution, then \(2\times2\) stride-two pooling, then a \(3\times3\) stride-two convolution. Find the final theoretical receptive-field width and output jump.</p>
+<div class="solution"><p>The successive \((r,j)\) pairs are \((5,1)\), \((6,2)\), and \((10,4)\). The last kernel adds two preceding-grid steps, each worth two input pixels, giving width ten. Its stride doubles the jump to four but does not retroactively enlarge the current kernel’s support. Interior output centers are four original pixels apart. The span is ten pixels along each spatial axis under these square-kernel assumptions.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 5 · Max pooling is neither fully invariant nor information preserving</summary>
+<p>Pool adjacent pairs of a circular length-four signal with width two and stride two. Compare \(x=(0,5,4,0)\) to its one-position right shift. Can a shift change the collection of pooled values?</p>
+<div class="solution"><p>The original result is \((5,4)\). The shifted signal is \((0,0,5,4)\), whose pooled result is \((0,5)\). These are not translations of one another because one includes four and the other zero. A response moved across a pooling-window boundary. Max pooling can be unchanged by some within-window rearrangements, but that limited invariance does not extend to every one-pixel translation.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 6 · A boundary condition changes the question</summary>
+<p>A max-pooling window contains real values \(-4,-2\) and two padded entries. Compare zero padding with negative-infinity padding. Which represents ignoring the missing entries when taking a maximum?</p>
+<div class="solution"><p>Zero padding gives maximum zero, a value absent from the real data. Negative-infinity padding gives \(-2\), the maximum of the real entries. Thus negative infinity is the neutral choice for ignoring missing positions in a maximum. An average requires its own decision about whether padded entries contribute to the divisor. A boundary convention is part of the operator’s mathematical definition, not merely an implementation detail.</p></div>
+</details>
+</section>
+
+<section aria-labelledby="boundaries">
+<h2 id="boundaries">10. Architecture is an explicit bet about the data</h2>
+<p>Convolution trades unrestricted connectivity for local, repeated computation. Pooling and stride trade spatial detail for cheaper maps and faster growth of input support. These trades explain their usefulness more precisely than saying that a network “understands images.”</p>
+<p>The lecture supplies the operators and their architectural motivation. Our derivations add exact shape floors, gradient accumulation, resource accounting, and conditions for equivariance. The next chapter asks how to combine these operators into architectures that remain trainable and economical as depth and width grow.</p>
+</section><!-- BOOK-CONTENT-END --></article><nav class="page-turn" aria-label="Chapter navigation"><a rel="prev" href="lecture-04-networks-and-backpropagation.html">Previous available chapter</a><a href="index.html">Lecture index</a><a rel="next" href="lecture-06-training-and-residual-networks.html">Next available chapter</a></nav></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

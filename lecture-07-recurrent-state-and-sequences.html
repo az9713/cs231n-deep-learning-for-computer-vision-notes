@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="620cdcaa636c83a0b556695ed2bee07fba6579357d14582da7d85924ebea1213"><title>Recurrent state, sequence learning, and credit across time · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc" aria-label="On this page"><h2>On this page</h2></aside><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><header class="chapter-header">
+<p class="eyebrow">Chapter 7 · CS231N, Spring 2025</p>
+<h1>Recurrent state, sequence learning, and credit across time</h1>
+<p class="lead">A recurrent network reuses one update rule to summarize a sequence. Its central challenge is not merely storing a state, but learning which earlier events should influence later decisions.</p>
+<p class="source-note">Based on the complete Lecture 7 transcript and official slide text. The rising-event detector, gradient calculations, truncation counterexample, and exercises are original. Formal distinctions clarify the lecture’s informal discussion of memory and gradient propagation.</p>
+</header>
+
+<section aria-labelledby="tasks">
+<h2 id="tasks">1. An image becomes a stream of evidence <a class="timestamp" href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=295" aria-label="Lecture at 4:55">4:55</a></h2>
+<p>Our inspection camera can record a part while it rotates. A single frame may hide a scratch through glare or occlusion. The problem is now to combine observations over time: perhaps classify the whole clip, label each frame, or generate a short description of the defect. These tasks have different output structures even when they use the same image encoder.</p>
+<p>The lecture distinguishes one-to-many tasks such as image captioning, many-to-one tasks such as clip classification, and many-to-many tasks such as per-frame labeling or video captioning. “Many-to-many” need not mean equal input and output lengths. A ten-second video may produce a six-word caption, while frame labeling associates an output with each input time step.</p>
+<p>A <strong>recurrent neural network</strong>, or RNN, maintains an internal state that changes when a new input arrives. It is “hidden” because it is an intermediate representation, not because it is inaccessible to inspection. A model can use its final state for one prediction, expose a prediction at every step, or initialize a sequence generator from a fixed visual input.</p>
+<p>The state is a summary chosen by training. It is not automatically a complete record of the past, and it need not have a human interpretation. A fixed-size finite-precision state can support arbitrarily many update steps while still losing information. The ability to keep running is different from the ability to recall any arbitrary earlier observation exactly.</p>
+<p>The lecture opens by correcting the previous session’s dropout notation: test-time scaling in the original convention uses the keep probability. It also emphasizes that normalization may help poor initialization without universally replacing a good initialization. Chapter 6 has incorporated these clarifications directly; we now apply the same care about signal flow to repeated computation across time.</p>
+<p><a href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=295">Lecture anchor: sequence tasks and recurrent state</a>.</p>
+</section>
+
+<section aria-labelledby="recurrence">
+<h2 id="recurrence">2. Specify the update and output maps separately <a class="timestamp" href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=474" aria-label="Lecture at 7:54">7:54</a></h2>
+<p>Let \(x_t\in\mathbb R^D\) be the input vector at time \(t\), and \(h_t\in\mathbb R^H\) the hidden state. A vanilla recurrent model uses</p>
+<div class="equation">\[
+a_t=W_hh_{t-1}+W_xx_t+b_h,\qquad
+h_t=\tanh(a_t),\qquad
+s_t=W_yh_t+b_y.
+\]</div>
+<p>The dimensions are \(W_h\in\mathbb R^{H\times H}\), \(W_x\in\mathbb R^{H\times D}\), \(b_h\in\mathbb R^H\), \(W_y\in\mathbb R^{C\times H}\), and \(b_y\in\mathbb R^C\). The score vector \(s_t\) has \(C\) entries; it is not necessarily the same size as the hidden state. A classification head may turn it into probabilities using softmax.</p>
+<p>The same matrices are reused at every time step. This parameter sharing makes the parameter count independent of sequence length. It does not make the hidden states identical: each state depends on its current input and preceding state. The initial state \(h_0\) may be fixed, learned, or derived from another input such as an image. Its definition belongs to the model.</p>
+<p>An unrolled diagram replaces the visual loop with a chain of update operations. This is a finite acyclic computation graph for a particular sequence, so the backpropagation rules already developed still apply. The loop notation describes reuse; the unrolled notation exposes dependencies and the order of calculation.</p>
+<p>The two input contributions can also be written as one matrix multiplication:</p>
+<div class="equation">\[
+a_t=
+\begin{bmatrix}W_h&W_x\end{bmatrix}
+\begin{bmatrix}h_{t-1}\\x_t\end{bmatrix}+b_h.
+\]</div>
+<p>This is horizontal concatenation of matrices acting on a stacked vector. It is not a block-diagonal matrix, and it requires no artificial blocks of zeros. The shape is \(H\times(H+D)\), making the two equivalent forms easy to check.</p>
+<p>For a multilayer RNN, layer \(\ell\) has a state \(h_t^{(\ell)}\). It receives its own preceding state \(h_{t-1}^{(\ell)}\) and the current output of layer \(\ell-1\). Parameters are shared along time within a layer, but normally differ between layers. The computation therefore has both a time axis and a depth axis, with different meanings.</p>
+</section>
+
+<section aria-labelledby="construction">
+<h2 id="construction">3. Build a small state machine before learning one <a class="timestamp" href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=1168" aria-label="Lecture at 19:28">19:28</a></h2>
+<p>The lecture constructs a recurrent detector for consecutive ones to make state semantics tangible. We will use an original variant for the inspection stream: a binary sensor \(x_t\) reports whether a defect is currently visible, and the desired output is one only when visibility changes from zero to one. This detects a new event rather than repeatedly counting every visible frame.</p>
+<p>Define a three-coordinate state \(h_t=(x_t,x_{t-1},1)^\mathsf T\), with \(x_0=0\). The constant coordinate lets us represent offsets if needed. Use ReLU instead of tanh in this hand-built example, and set</p>
+<div class="equation">\[
+W_h=\begin{bmatrix}0&0&0\\1&0&0\\0&0&1\end{bmatrix},
+\quad W_x=\begin{bmatrix}1\\0\\0\end{bmatrix},
+\quad h_0=\begin{bmatrix}0\\0\\1\end{bmatrix}.
+\]</div>
+<p>Then \(h_t=\operatorname{ReLU}(W_hh_{t-1}+W_xx_t)\). The first row inserts the current bit, the second copies the preceding current bit into the previous-bit slot, and the last preserves the constant. All these entries are nonnegative, so ReLU leaves them unchanged. The output is \(y_t=\operatorname{ReLU}(h_{t,1}-h_{t,2})\), with state coordinates here numbered from one.</p>
+<p>For input \((0,1,1,0,1)\), the outputs are \((0,1,0,0,1)\). At the second step the state is \((1,0,1)\), so the difference is one. At the third it is \((1,1,1)\), so the difference is zero. A classifier receiving only the current bit could not distinguish those two steps; the state supplies the missing temporal context.</p>
+<p>This construction proves that the chosen recurrent family can implement the desired finite-state behavior on binary inputs. It does not demonstrate that gradient descent will find these weights, that this state is minimal, or that thresholded image predictions are noise-free. Its role is to connect each matrix entry to a specific operation before discussing learned state representations.</p>
+<p>A learned inspection RNN would usually receive a richer vector of image features instead of a binary observation. It might need to distinguish a scratch emerging from glare, a camera motion, and a genuinely new damaged region. Those distinctions require suitable examples and targets, not merely a larger hidden-state dimension.</p>
+</section>
+
+<section aria-labelledby="bptt">
+<h2 id="bptt">4. Backpropagation through time sums all uses of shared weights <a class="timestamp" href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=1436" aria-label="Lecture at 23:56">23:56</a></h2>
+<p>Suppose a sequence has length \(T\) and total loss \(L=\sum_{t=1}^{T}\ell_t\). Each \(\ell_t\) depends on a prediction made from \(h_t\). Let \(g_t\in\mathbb R^H\) be the derivative arriving directly from the output head at step \(t\), excluding future recurrent uses. Let \(\delta_t=\partial L/\partial a_t\) be the derivative with respect to the preactivation. Working backward gives</p>
+<div class="equation">\[
+\delta_t=
+\left(g_t+W_h^\mathsf T\delta_{t+1}\right)
+\odot(1-h_t\odot h_t),
+\qquad \delta_{T+1}=0.
+\]</div>
+<p>The symbol \(\odot\) means elementwise multiplication. The bracket contains two sources of influence: the current output loss and all later losses arriving through the next recurrent step. Multiplying by the tanh derivative converts a state derivative to a preactivation derivative. Omitting the future term would treat the sequence as independent examples and lose temporal credit assignment.</p>
+<p>Once these derivatives are known, shared parameter gradients accumulate over time:</p>
+<div class="equation">\[
+\nabla_{W_h}L=\sum_t\delta_t h_{t-1}^\mathsf T,\qquad
+\nabla_{W_x}L=\sum_t\delta_t x_t^\mathsf T,\qquad
+\nabla_{b_h}L=\sum_t\delta_t.
+\]</div>
+<p>Each term has the shape of its parameter. The formula resembles a dense-layer gradient because an RNN is a repeated dense computation with shared coefficients. There is one parameter matrix and many uses of it, not independent parameter matrices that happen to have equal values.</p>
+<p>For a many-to-one task with a terminal loss, set the direct contributions \(g_t\) to zero before the final output. Earlier states can still receive nonzero derivatives through the recurrence. Conversely, if the final prediction pools several states, each pooled state receives a direct contribution according to that pooling rule.</p>
+<p>A small scalar example makes sharing visible. Let \(h_0=1\), \(h_1=ah_0\), \(h_2=ah_1=a^2\), and \(L=\tfrac12h_2^2=\tfrac12a^4\). Differentiating gives \(dL/da=2a^3\). At \(a=0.5\), this is 0.25. There are two contributions: changing \(a\) in the first step changes the state passed to the second; changing \(a\) in the second step changes the final output directly.</p>
+<p>Backpropagation through time, or BPTT, is ordinary reverse differentiation on this unrolled graph. The distinctive practical issue is that storing the forward intermediates grows with sequence length. A recurrent inference step can keep only the current state, but exact reverse-mode training ordinarily needs more information about earlier steps.</p>
+<p><a href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=1436">Lecture anchor: unrolled losses and shared-gradient accumulation</a>.</p>
+</section>
+
+<section aria-labelledby="truncation">
+<h2 id="truncation">5. Forward memory and gradient memory are different <a class="timestamp" href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=1882" aria-label="Lecture at 31:22">31:22</a></h2>
+<p><strong>Truncated BPTT</strong> divides a long sequence into shorter training segments and treats the incoming state at a segment boundary as constant for that segment’s derivative. The state value can be carried forward, so later predictions still use information summarized from earlier inputs. The computational dependency through that boundary is deliberately detached.</p>
+<p>In the scalar example, detach \(h_1\) before computing \(h_2=ah_1\). At the current \(a=0.5\), the carried value remains \(h_1=0.5\), and the forward result remains \(h_2=0.25\). The truncated derivative is now \(dL/da=h_2h_1=0.125\), half the full derivative. Identical forward values do not imply identical gradients.</p>
+<p>This difference is not merely caused by performing several optimizer updates instead of one. Even at fixed parameter values, detaching removes derivative paths. If the only supervision is a loss at the final sequence step, ordinary truncation prevents that loss from directly teaching parameters through uses before the retained backward window. Earlier chunks need another source of training signal or a different strategy if those dependencies matter.</p>
+<p>It is possible to compute exact gradients using recomputation or checkpointing, trading extra computation for less stored memory. One can also design specialized recurrent-gradient estimators. These are different methods from simply carrying a detached state through chunks. An explanation that says “save only one boundary gradient and discard everything else” must also explain how the required earlier forward information will be recovered.</p>
+<p>For inspection clips, choose a truncation horizon with the temporal phenomenon in mind. A short window may be sufficient for brief glare, yet inadequate for associating two views separated by a full rotation. Evaluating longer sequences than those used in training is useful, but recurrent parameter sharing alone does not establish that the learned state will remain reliable at those lengths.</p>
+</section>
+
+<section aria-labelledby="language">
+<h2 id="language">6. Next-token learning turns sequences into conditional classification <a class="timestamp" href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=2100" aria-label="Lecture at 35:00">35:00</a></h2>
+<p>Let a vocabulary contain \(V\) symbols. A token index can be represented by a one-hot vector \(e_t\in\mathbb R^V\), whose single nonzero coordinate identifies the token. An embedding matrix \(E\in\mathbb R^{D\times V}\) produces \(x_t=Ee_t\), which simply selects a column. Implementations often store the transpose and select a row. Vocabulary size \(V\) and embedding width \(D\) need not be equal.</p>
+<p>At each step, the RNN predicts probabilities for the next token. For a token sequence \(w_1,\ldots,w_T\), including an explicitly defined start context, the autoregressive factorization is</p>
+<div class="equation">\[
+p(w_1,\ldots,w_T)=\prod_{t=1}^{T}p(w_t\mid w_{&lt;t}),
+\qquad
+L=-\sum_{t=1}^{T}\log p(w_t\mid w_{&lt;t}).
+\]</div>
+<p>The notation \(w_{&lt;t}\) denotes the preceding tokens. During ordinary teacher-forced training, the model receives the actual preceding tokens from the training sequence. The next token supplies a target directly from the sequence, so this training signal does not require a separate person to label every token. It still depends on the quality, selection, and interpretation of the underlying text.</p>
+<p>At generation time, the model receives its own selected outputs. Greedy decoding chooses the highest-probability next token at each step. Sampling draws from the model’s distribution, and beam search retains several candidate prefixes under a specified scoring rule. Greedy decoding is deterministic given the same model state and inputs, but need not find the highest-probability complete sequence.</p>
+<p>An original two-step example shows why. The first token has probabilities \(p(A)=0.6\), \(p(B)=0.4\). Suppose the best continuation after \(A\) has probability 0.5, while the best continuation after \(B\) has probability 0.9. Greedy first chooses \(A\), yielding a best two-token probability of 0.3. The alternative through \(B\) reaches 0.36. Sequence scores multiply conditional probabilities, or equivalently add their logarithms; local maxima need not compose into a global maximum.</p>
+<p>A start symbol establishes the initial input convention, and an end symbol can signal completion. Practical generators also need a maximum output length. Otherwise, a model that fails to choose the end symbol can continue indefinitely. Sampling changes diversity, not the truth of generated statements.</p>
+<p>The lecture shows recurrent text generation and individual cells correlated with quotes, line length, or code nesting. <a href="https://arxiv.org/abs/1506.02078">Karpathy, Johnson, and Fei-Fei’s recurrent-network analysis</a> studies such behavior. An activation pattern can suggest a useful hypothesis about a unit, but correlation in a visualization does not prove that the unit is necessary or sufficient for that behavior. Plausible-looking generated code also does not establish compilation or correctness.</p>
+</section>
+
+<section aria-labelledby="vision">
+<h2 id="vision">7. Visual sequence tasks need grounding as well as fluency <a class="timestamp" href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=3040" aria-label="Lecture at 50:40">50:40</a></h2>
+<p>For image captioning, an image encoder produces a vector \(v\). A recurrent decoder can use \(v\) to initialize \(h_0\), treat it as an initial input, or add a projected visual term to recurrent updates. These are different architectures with the same broad purpose: condition a sequence distribution on image evidence.</p>
+<p>The conditional objective is \(-\sum_t\log p(w_t\mid w_{&lt;t},v)\). The <a href="https://arxiv.org/abs/1411.4555">Show and Tell paper</a> and <a href="https://arxiv.org/abs/1412.2306">Deep Visual-Semantic Alignments paper</a> are primary examples of the image-to-language direction discussed in the lecture. We do not reproduce their benchmark results here.</p>
+<p>In the inspection case, a caption such as “a scratch near the upper edge” must be evaluated for both linguistic quality and visual correctness. A language model may favor common combinations of scene and object even when the object is absent. The lecture’s failure examples illustrate this danger: a familiar setting can encourage a plausible but unsupported description. The error is not resolved by generating a more fluent sentence.</p>
+<p>Visual question answering adds a question to the conditioning information. One model may classify among a fixed answer set; another may generate an answer token by token. Those formulations impose different vocabularies, losses, and evaluation rules. Visual dialogue additionally conditions on interaction history, while navigation uses a changing stream of observations to choose actions.</p>
+<p>These applications all benefit from temporal or linguistic state, but their targets differ. Predicting a likely caption is not the same as estimating the physical state needed for a control decision. For a robot inspecting a part, an action that reveals an uncertain region can be more valuable than a confident description of the current frame. Later chapters revisit this connection between perception and action.</p>
+</section>
+
+<section aria-labelledby="gradients">
+<h2 id="gradients">8. Products of Jacobians govern long-range credit <a class="timestamp" href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=3503" aria-label="Lecture at 58:23">58:23</a></h2>
+<p>For the vanilla tanh recurrence, the local state Jacobian is \(J_t=\partial h_t/\partial h_{t-1}=\operatorname{diag}(1-h_t^2)W_h\), where the square acts elementwise. The influence of an earlier state \(h_k\) on \(h_T\) contains the product \(J_TJ_{T-1}\cdots J_{k+1}\).</p>
+<div class="equation">\[
+\left\|\frac{\partial h_T}{\partial h_k}\right\|_2
+\leq \prod_{t=k+1}^{T}\|J_t\|_2.
+\]</div>
+<p>The matrix norm here is the largest singular value, measuring maximal Euclidean stretching. If every factor is bounded by a constant \(\rho&lt;1\), this upper bound decays as \(\rho^{T-k}\). Saturated tanh units have small derivatives, which can make long-range signals difficult to learn.</p>
+<p>A norm above one means amplification is possible, not inevitable across repeated steps. For example, \(A=\begin{bmatrix}0&2\\0&0\end{bmatrix}\) has largest singular value two, yet \(A^2=0\). It stretches one direction, then maps the resulting direction to zero. Directional alignment, changing Jacobians, and the actual propagated gradient matter. In the scalar linear case \(h_t=ah_{t-1}\), the derivative is exactly \(a^{T-k}\), making the shrinking or growing behavior transparent.</p>
+<p>Gradient norm clipping limits an update’s scale. For a gradient vector \(g\) and threshold \(\tau&gt;0\), use \(g_{\mathrm{clip}}=g\min(1,\tau/\|g\|_2)\), with zero gradient left unchanged. The direction is preserved when scaling is applied, but the magnitude is reduced. Clipping cannot recover a derivative that has already vanished or repair non-finite arithmetic produced earlier in the computation.</p>
+<p><a href="https://arxiv.org/abs/1211.5063">Pascanu, Mikolov, and Bengio</a> analyze recurrent optimization and gradient clipping. The key lesson for our stream is that long sequences create long derivative chains even if the model has only one recurrent layer. Depth in time can create the same kind of signal-propagation difficulty as depth through many spatial layers.</p>
+</section>
+
+<section aria-labelledby="gates">
+<h2 id="gates">9. Gated memory provides a more controllable path <a class="timestamp" href="https://www.youtube.com/watch?v=kG2lAPBF7zA&amp;t=3895" aria-label="Lecture at 64:55">64:55</a></h2>
+<p>A commonly used modern long short-term memory unit, or LSTM, maintains both a hidden state \(h_t\) and a cell state \(c_t\), each of width \(H\). Let \(z_t=[h_{t-1};x_t]\in\mathbb R^{H+D}\). Four learned affine transformations produce input, forget, and output gates \(i_t,f_t,o_t\in(0,1)^H\) through sigmoid, and candidate content \(g_t\in(-1,1)^H\) through tanh. Each transformation has weight shape \(H\times(H+D)\) and a length-\(H\) bias.</p>
+<div class="equation">\[
+c_t=f_t\odot c_{t-1}+i_t\odot g_t,
+\qquad
+h_t=o_t\odot\tanh(c_t).
+\]</div>
+<p>The forget gate controls retention, the input gate controls writing, and the output gate controls exposure. The candidate \(g_t\) is proposed content; calling it a fourth computed component is clearer than treating all four components as identical gates. This standard forget-gate formulation represents an evolved LSTM design, not every detail of the original 1997 architecture. The adaptive retention mechanism is developed in <a href="https://doi.org/10.1162/089976600300015015">Gers, Schmidhuber, and Cummins, Learning to Forget (2000)</a>.</p>
+<p>Along the direct cell-state path, holding the gates fixed for that partial derivative gives \(\partial c_t/\partial c_{t-1}=\operatorname{diag}(f_t)\). There is no repeated dense matrix multiplication on that direct path. In the ideal limiting case \(f_t=1\) and \(i_t=0\), the cell value is preserved. Finite sigmoid logits do not produce exact one or zero, but can approximate those settings.</p>
+<p>For a scalar cell with fixed forget value 0.99 and no writes, 100 steps retain \(0.99^{100}\approx0.366\) of the original value. With 0.9, retention is only about \(2.66\times10^{-5}\). Gating makes a long-lived path easier to parameterize; it does not make forgetting disappear. The full derivative also includes dependencies through gates and hidden states, so the direct-path product is not the entire Jacobian.</p>
+<p>The lecture connects this additive memory path to residual connections: both provide a route around repeated transformations. Their details differ. Residual connections typically operate across depth, while an LSTM cell operates across time and learns multiplicative gates. Neither architecture guarantees unlimited memory or perfect gradients.</p>
+<p>The final discussion points toward <a href="https://arxiv.org/abs/2305.13048">RWKV</a> and <a href="https://arxiv.org/abs/2312.00752">Mamba</a>. These explore efficient sequence modeling with recurrent or state-space structure. Mamba’s input-dependent selection and specialized computation should not be reduced to “a vanilla RNN with a new name.” For fixed model width, a recurrent update can have total compute linear in sequence length and constant-size carried inference state. Dense all-pairs attention has a different sequence-length cost. This comparison concerns computation, not a universal ranking of accuracy or recall.</p>
+</section>
+
+<section aria-labelledby="implementation">
+<h2 id="implementation">10. Verify a shared recurrent gradient</h2>
+<p>The code first checks the original event detector, then implements a smooth scalar recurrence \(h_t=\tanh(ah_{t-1}+bx_t+c)\). It minimizes half the sum of squared errors against fixed teaching targets. The explicit backward loop includes both direct loss and future-state contributions, and is checked against central differences for all three shared parameters.</p>
+<pre><code class="language-python">import numpy as np
+from numerical_lab import central_gradient
+
+Wh = np.array([[0., 0., 0.], [1., 0., 0.], [0., 0., 1.]])
+Wx = np.array([1., 0., 0.])
+state = np.array([0., 0., 1.])
+events = []
+for bit in [0, 1, 1, 0, 1]:
+    state = np.maximum(0, Wh @ state + Wx * bit)
+    events.append(max(0, state[0] - state[1]))
+assert events == [0, 1, 0, 0, 1]
+
+inputs = np.array([0.2, -0.4, 0.7, 0.1])
+targets = np.array([0.1, -0.2, 0.3, 0.2])
+def recurrent_loss_grad(parameters):
+    a, b, c = parameters
+    states = [0.]
+    for value in inputs:
+        states.append(np.tanh(a * states[-1] + b * value + c))
+    states = np.array(states)
+    loss = 0.5 * np.sum((states[1:] - targets)**2)
+    gradient = np.zeros(3)
+    future = 0.
+    for t in range(len(inputs) - 1, -1, -1):
+        delta = (states[t+1] - targets[t] + future) * (1 - states[t+1]**2)
+        gradient += delta * np.array([states[t], inputs[t], 1.])
+        future = a * delta
+    return loss, gradient
+parameters = np.array([0.6, -0.3, 0.1])
+_, exact = recurrent_loss_grad(parameters)
+numerical = central_gradient(lambda p: recurrent_loss_grad(p)[0], parameters)
+assert np.max(np.abs(exact - numerical)) &lt; 1e-8
+
+a = 0.5
+assert 2 * a**3 == 0.25
+assert (a * a) * a == 0.125  # h1 held constant at the boundary
+A = np.array([[0., 2.], [0., 0.]])
+assert np.linalg.norm(A, 2) == 2
+assert np.array_equal(A @ A, np.zeros((2, 2)))
+g = np.array([6., 8.])
+clipped = g * min(1., 5. / np.linalg.norm(g))
+assert np.array_equal(clipped, [3., 4.])</code></pre>
+<p>The loss fixture is a gradient test, not a trained recurrent classifier. Its small size makes it possible to isolate a missing shared-weight contribution or an incorrect derivative chain without relying on whether a long training run appears to improve.</p>
+</section>
+
+<section aria-labelledby="exercises">
+<h2 id="exercises">11. Exercises with complete solutions</h2>
+<details class="exercise"><summary>Exercise 1 · Count parameters, not unrolled copies</summary>
+<p>A vanilla RNN has input width 4, hidden width 6, and three output scores, with both biases included. How many learned scalars does it contain? Does a sequence of length 100 multiply that count?</p>
+<div class="solution"><p>The recurrent matrix has 36 entries, the input matrix 24, hidden bias six, output matrix 18, and output bias three: total 87. Sequence length 100 reuses these parameters 100 times; it does not create 8,700 independent learned scalars. Activations and compute nevertheless grow with the number of steps during ordinary unrolled training.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 2 · Change the event semantics</summary>
+<p>Using the constructed state \((x_t,x_{t-1},1)\), write a ReLU output for a falling edge, where visibility changes from one to zero. Evaluate it on \((0,1,1,0,1)\).</p>
+<div class="solution"><p>Use \(y_t=\max(0,x_{t-1}-x_t)\). The outputs are \((0,0,0,1,0)\) with \(x_0=0\). The recurrent state need not change; a different output rule extracts a different temporal property from the same stored information. Rising and falling edges can be combined to detect any binary change, but that would be another target.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 3 · Quantify truncation</summary>
+<p>For \(h_0=1\), \(h_1=ah_0\), \(h_2=ah_1\), and \(L=\tfrac12h_2^2\), compare the full and one-step-truncated gradients at \(a=2\).</p>
+<div class="solution"><p>The full derivative is \(2a^3=16\). Detaching \(h_1\) gives carried value two, \(h_2=4\), and derivative \(h_2h_1=8\). The forward loss remains eight in both calculations. Truncation removes the parameter’s influence through the first update, rather than changing the currently carried state value.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 4 · Embedding dimensions</summary>
+<p>A vocabulary has 1,000 tokens and embedding width 64. Give a matrix shape that maps a one-hot column vector to an embedding. What is the corresponding lookup-table shape if rows index tokens?</p>
+<div class="solution"><p>The multiplication matrix is \(64\times1000\); multiplying by a length-1,000 one-hot vector selects a column of length 64. The row-indexed lookup table is its transpose, of shape \(1000\times64\). Both store 64,000 learned entries and describe the same mapping. A square matrix is unnecessary.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 5 · Clip a gradient without changing its direction</summary>
+<p>A gradient is \(g=(9,12)\), and the norm threshold is six. Compute the clipped gradient. Does clipping restore information lost through a vanishing derivative?</p>
+<div class="solution"><p>The norm is 15, so scale by \(6/15=0.4\), obtaining \((3.6,4.8)\), whose norm is six. The direction is unchanged. Clipping limits a large update; it does not amplify a tiny derivative or reconstruct a dependency that truncation removed.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 6 · Carrying state is not unlimited recall</summary>
+<p>A fixed-width recurrent model processes a million observations without exhausting inference memory. What does this establish, and what additional experiment would assess useful memory for inspection?</p>
+<div class="solution"><p>It establishes that its update procedure can run with bounded carried state, assuming other outputs are not retained. It does not establish that early details remain recoverable. A targeted experiment could place a controlled defect cue near the beginning, vary the delay and intervening distractors, and evaluate a later decision that depends on that cue. Compare delays beyond the training horizon, and distinguish failure to retain information from failure to learn the appropriate credit assignment.</p></div>
+</details>
+</section>
+
+<section aria-labelledby="boundaries">
+<h2 id="boundaries">12. Memory is both a representation and a learning problem</h2>
+<p>Recurrent models separate an update rule, a carried state, and an output rule. Sharing parameters enables variable-length processing, while BPTT determines how later objectives assign credit to earlier uses of those parameters. Truncation, saturation, and compression each limit this process in a different way.</p>
+<p>Gated memory offers more flexible retention, and newer recurrent architectures explore better computational tradeoffs. The next chapter introduces attention, which lets a model consult a collection of representations directly rather than forcing every useful detail through one continuously updated state.</p>
+</section><!-- BOOK-CONTENT-END --></article><nav class="page-turn" aria-label="Chapter navigation"><a rel="prev" href="lecture-06-training-and-residual-networks.html">Previous available chapter</a><a href="index.html">Lecture index</a><a rel="next" href="lecture-08-attention-and-transformers.html">Next available chapter</a></nav></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

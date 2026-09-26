@@ -1,0 +1,141 @@
+{
+  "title": "From remembered examples to learned class scores",
+  "number": 2,
+  "video_id": "pdqofxJeBN8",
+  "source_type": "locally generated automatic speech recognition with official slide text",
+  "sections": [
+    {
+      "section": "task",
+      "start": 5.23,
+      "end": 886.32,
+      "lecture_material": "Classification vocabulary,semantic gap,visualvariations,data-driven setup",
+      "research_extension": "Official CIFAR encoding definition",
+      "teaching_construction": "Three-label inspection task; explicit d,C,N and mutuallyexclusive labels",
+      "evidence_class": "lecture synthesis and original mathematical teaching"
+    },
+    {
+      "section": "neighbors",
+      "start": 1033.87,
+      "end": 2142.22,
+      "lecture_material": "L1/L2distance,geometry,rawpixel failure",
+      "research_extension": "No empirical extension",
+      "teaching_construction": "Metric flips nearest label; orthogonal rotation proof and feature-scaling caution",
+      "evidence_class": "lecture synthesis and original mathematical teaching"
+    },
+    {
+      "section": "voting",
+      "start": 1547.34,
+      "end": 2142.22,
+      "lecture_material": "kNN,outliers,ties,complexity,acceleratedsearch pointer",
+      "research_extension": "FAISS primary abstract research scope",
+      "teaching_construction": "Oddk multiclasstie; dimension/copy/selection complexity assumptions",
+      "evidence_class": "lecture synthesis and original mathematical teaching"
+    },
+    {
+      "section": "validation",
+      "start": 2142.48,
+      "end": 2785.17,
+      "lecture_material": "Hyperparameters,validation,testleakage,crossvalidation,CIFAR10",
+      "research_extension": "Official dataset identity/counts",
+      "teaching_construction": "Selection-noise explanation and grouped part split",
+      "evidence_class": "lecture synthesis and original mathematical teaching"
+    },
+    {
+      "section": "linear",
+      "start": 2786,
+      "end": 3320.1,
+      "lecture_material": "Linearweights,bias,algebra/template/geometricviews,nonseparablecases",
+      "research_extension": "No empirical extension",
+      "teaching_construction": "Four-pixel scores,activepairwiseboundary,convexclassregion,compositionidentity",
+      "evidence_class": "lecture synthesis and original mathematical teaching"
+    },
+    {
+      "section": "softmax",
+      "start": 3320.1,
+      "end": 3766.58,
+      "lecture_material": "Scores,softmax,categoricalNLL,likelihood",
+      "research_extension": "Calibration paper abstract-supported distinction",
+      "teaching_construction": "Exact toyprobabilities; likelihoodproduct derivation; finite-logit lossinfimum",
+      "evidence_class": "lecture synthesis and original mathematical teaching"
+    },
+    {
+      "section": "information",
+      "start": 3767.12,
+      "end": 3915.34,
+      "lecture_material": "Onehot,entropy,KL,crossentropy",
+      "research_extension": "Categoricalversusbinary distinction",
+      "teaching_construction": "p-q gradient and parameterderivatives; commonshift gauge",
+      "evidence_class": "lecture synthesis and original mathematical teaching"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Uniforminitializationbaseline;slidesoptionalSVMreading",
+      "research_extension": "Logsumexp primary numericalanalysis",
+      "teaching_construction": "Stableloss and finite differences; optionalslidehingeloss explicitlyunspoken",
+      "evidence_class": "lecture synthesis and original mathematical teaching"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidationofspokenmaterial",
+      "research_extension": "No empirical extension",
+      "teaching_construction": "Six original workedexercises",
+      "evidence_class": "lecture synthesis and original mathematical teaching"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Completelecture conceptualboundary",
+      "research_extension": "No additionalperformanceclaims",
+      "teaching_construction": "Distinguishmodel,objective,andexperiment",
+      "evidence_class": "lecture synthesis and original mathematical teaching"
+    }
+  ],
+  "references": [
+    {
+      "title": "Lecture 2 official slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_2.pdf",
+      "supports": "Spokenconcepts and separatelylabeled optionalSVMreading"
+    },
+    {
+      "title": "CS231N classification notes",
+      "url": "https://cs231n.github.io/classification/",
+      "supports": "Terminology cross-check;chapter narrative grounded inrecording"
+    },
+    {
+      "title": "CS231N linear classification notes",
+      "url": "https://cs231n.github.io/linear-classify/",
+      "supports": "Categorical loss and shift-stability cross-check"
+    },
+    {
+      "title": "CIFAR-10 dataset",
+      "url": "https://cave.cs.toronto.edu/kriz/cifar.html",
+      "supports": "32x32RGB,60000images,50000train10000test,10classes"
+    },
+    {
+      "title": "Billion-scale similarity search with GPUs",
+      "url": "https://arxiv.org/abs/1702.08734",
+      "supports": "Bruteforce,approximate,andcompresseddomainsearch researchscope;no contemporaryspeedclaims"
+    },
+    {
+      "title": "On Calibration of Modern Neural Networks",
+      "url": "https://arxiv.org/abs/1706.04599",
+      "supports": "Probabilitynormalizationdoesnotestablishcalibration;abstract-levelscope"
+    },
+    {
+      "title": "Accurate Computation of Log-Sum-Exp and Softmax",
+      "url": "https://arxiv.org/abs/1909.03469",
+      "supports": "Shiftedformula floating-pointanalysis;originalderivation independentlychecked"
+    }
+  ],
+  "limitations": [
+    "ASR normalized 'over samples' softmax wording corrected to classes within each example.",
+    "Optional SVM slides are not attributed to spoken coverage.",
+    "Originaltoyexamples are notStanfordassignmentsolutions or measuredmodelresults.",
+    "Chapter2 is notacoursecompletionclaim."
+  ]
+}

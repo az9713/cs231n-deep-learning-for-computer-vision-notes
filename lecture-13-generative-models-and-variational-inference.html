@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="322eaf909fb3af68e4ad0ac69ba9ecea68b2aa0624b51e8f35ee9fcb4bc1f8c5"><title>From recognizing a part to modeling possible parts · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc" aria-label="On this page"><h2>On this page</h2></aside><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><header><p class="eyebrow">Lecture 13 · Generative models</p><h1>From recognizing a part to modeling possible parts</h1><p class="lead">A classifier selects a label for an observation. A generative model describes how observations can vary. Moving between these tasks requires a probability model, an inference procedure, and a careful distinction between reconstruction and sampling.</p></header>
+<section id="bridge"><h2>What self-supervision has—and has not—given us <a class="timestamp" href="https://www.youtube.com/watch?v=zbHXQRUNlH0&amp;t=5">0:05</a></h2>
+<p>Our factory inspection system has learned features without asking an engineer to label every frame. Contrastive learning made augmented views agree; masked reconstruction required contextual prediction. Neither success automatically supplies a distribution from which we can sample a plausible new part. A representation is a useful coordinate system. A generator additionally specifies how observations are produced, including how uncertainty enters the process.</p>
+<p>The lecture first completes the previous discussion. SimCLR obtains negatives from a batch, whereas MoCo maintains a queue of keys computed by a slowly changing encoder. A momentum update uses a moving average of <em>parameters</em>; it is not an average of the images. DINO replaces an explicit negative queue with a teacher–student distribution-matching objective and measures against collapse. When a fixed teacher distribution is the target, minimizing cross-entropy and minimizing its KL divergence to the student differ only by the teacher's entropy. Thus “KL rather than softmax” is not the right distinction: softmax can construct both distributions, and KL describes their mismatch.</p>
+<p>The primary <a href="https://arxiv.org/abs/2304.07193">DINOv2 paper</a> extends this representation-learning story through curated large-scale data and distillation. This is useful context for the lecture's comparison of training scales, not evidence that an embedding becomes a calibrated density over factory images. A good feature extractor may intentionally discard lighting or surface texture that an image generator must model. We therefore keep two questions separate: what information should a representation preserve, and what distribution should a generative model approximate?</p></section>
+<section id="distributions"><h2>Specify the random variables before naming the model <a class="timestamp" href="https://www.youtube.com/watch?v=zbHXQRUNlH0&amp;t=632">10:32</a></h2>
+<p>Let \(x\) denote an image and \(y\) a defect label. A discriminative model can estimate \(p_\theta(y\mid x)\), where \(\theta\) contains its learned parameters. An unconditional generative model estimates \(p_\theta(x)\), and a conditional generator estimates \(p_\theta(x\mid y)\). The direction of conditioning matters: producing an image with a specified scratch is a different problem from identifying whether a photographed part has a scratch. “Supervised versus unsupervised” describes the available training signal, whereas “generative versus discriminative” describes the modeling task. These axes are not interchangeable.</p>
+<p>For a finite label set, the probabilities satisfy \(\sum_y p_\theta(y\mid x)=1\). A softmax classifier must distribute its probability mass over the labels provided to it even when the input is unfamiliar. That does not prohibit a separate rejection rule, an unknown class, or a calibrated abstention mechanism. It means that a large winning softmax value by itself does not certify that an image belongs to the training population.</p>
+<p>When \(x\) is continuous, \(p_\theta(x)\) denotes a density. A point has probability zero under a continuous distribution; probabilities concern regions, \(\Pr(X\in A)=\int_A p_\theta(x)\,dx\). Densities may exceed one and change under a change of units. With 8-bit pixels, a model may instead use a discrete probability mass function. These conventions affect likelihood comparisons and must not be silently mixed.</p>
+<p>A tempting inspection system would reject every image with low generative likelihood. The lecture introduces the intuition, but it is not a general guarantee. The primary study <a href="https://arxiv.org/abs/1810.09136">Do Deep Generative Models Know What They Don't Know?</a> reports important failures of likelihood-based out-of-distribution detection. This research extension changes the engineering conclusion: evaluate an anomaly detector against the actual abnormal populations and nuisance shifts, rather than treating density as a universal measure of semantic normality.</p></section>
+<section id="conditional"><h2>Conditioning connects generation and diagnosis <a class="timestamp" href="https://www.youtube.com/watch?v=zbHXQRUNlH0&amp;t=1239">20:39</a></h2>
+<p>Bayes' rule connects the two directions through the class prior \(p(y)\) and marginal \(p(x)\):
+\[
+p(y\mid x)=\frac{p(x\mid y)p(y)}{p(x)},\qquad
+p(x)=\sum_y p(x\mid y)p(y).
+\]
+For our binary defect variable, suppose the prior defect rate is \(0.01\), and a particular observation is twenty times as likely under the defective distribution as under the normal distribution. Its posterior defect probability is \(20(0.01)/(20(0.01)+0.99)\approx0.1681\). A substantial likelihood ratio need not overcome a rare prior. This is an original diagnostic example, not a measured rate from the course.</p>
+<p>A conditional generator could produce possible appearances under a supplied defect category, lighting description, or partial image. Its output should reflect ambiguity: the condition “small scratch” does not determine a unique scratch location, width, or background. A deterministic map that always returns the same average image can erase precisely the variation of interest. Conversely, random diversity that ignores the condition is not successful conditional generation.</p>
+<p>Generation has several purposes: studying distributions, synthesizing candidate designs, completing missing observations, and exploring plausible futures. Synthetic training data is one possible use, but usefulness must be measured on an independent real test set. Generating many attractive examples cannot establish coverage of rare defects, physical validity, or improved inspection accuracy. We will use exact small models to understand these issues before relying on visually convincing samples.</p></section>
+<section id="likelihood"><h2>Likelihood makes the fitting problem explicit <a class="timestamp" href="https://www.youtube.com/watch?v=zbHXQRUNlH0&amp;t=1788">29:48</a></h2>
+<p>The lecture organizes models by whether a likelihood is directly tractable, approximately optimized, or bypassed in the training objective. Autoregressive models expose a product of tractable factors. Variational autoencoders introduce latent variables and optimize a bound. Adversarial models train through a discriminator. Diffusion models use iterative corruption and denoising, developed next lecture. This is a helpful introductory map, not a theorem that every member of a family has only one possible likelihood or sampling procedure.</p>
+<p>For independent observations \(x^{(1)},\ldots,x^{(N)}\), maximum likelihood selects parameters maximizing
+\[
+\log p_\theta(x^{(1)},\ldots,x^{(N)})
+=\sum_{n=1}^N\log p_\theta(x^{(n)}).
+\]
+The observations are fixed while \(\theta\) varies. We usually minimize the mean negative log-likelihood, \(\mathcal L(\theta)=-N^{-1}\sum_n\log p_\theta(x^{(n)})\), so ordinary gradient descent moves in the correct direction. A probability model must normalize; otherwise it could increase every training score without allocating finite probability mass.</p>
+<p>On a discrete population with true distribution \(p_*\), expected negative log-likelihood equals \(H(p_*)+D_{\mathrm{KL}}(p_*\Vert p_\theta)\), provided the relevant support and sums are well defined. The first term does not depend on \(\theta\). This connects likelihood training to distribution approximation while preserving a crucial qualification: finite data, limited model capacity, and imperfect optimization can prevent recovery of the population. Train likelihood alone also cannot establish generalization.</p></section>
+<section id="autoregression"><h2>The chain rule converts a joint distribution into predictions <a class="timestamp" href="https://www.youtube.com/watch?v=zbHXQRUNlH0&amp;t=2332">38:52</a></h2>
+<p>Write an image as a sequence \(x_1,\ldots,x_T\), with an explicitly chosen order over pixels and channels. The probability chain rule gives
+\[
+p_\theta(x_1,\ldots,x_T)=\prod_{t=1}^T p_\theta(x_t\mid x_1,\ldots,x_{t-1}).
+\]
+This factorization assumes no independence between positions. An architecture may impose additional restrictions, but the chain rule itself is exact. During training, the observed prefix supplies context. During sampling, each newly drawn value becomes part of the next prefix.</p>
+<p>For two binary pixels, choose \(p(x_1=1)=0.3\), \(p(x_2=1\mid x_1=0)=0.2\), and \(p(x_2=1\mid x_1=1)=0.8\). The four joint probabilities are \(p(00)=0.56\), \(p(01)=0.14\), \(p(10)=0.06\), and \(p(11)=0.24\). They sum to one. The second pixel is not independent of the first: its conditional success probability changes fourfold. The negative log-likelihood of the image \(11\) is \(-\log0.24\approx1.4271\) nats.</p>
+<p>A recurrent network can summarize the prefix. A masked convolution or a causally masked Transformer can enforce that a prediction does not inspect its target or future pixels. The primary <a href="https://arxiv.org/abs/1601.06759">PixelRNN paper</a> develops autoregressive image modeling, while <a href="https://arxiv.org/abs/1606.05328">Conditional Image Generation with PixelCNN Decoders</a> describes conditioning such predictions on additional information. The mask is not cosmetic: allowing the target to leak into its own prediction makes a low training loss meaningless for generation.</p>
+<p>Teacher-forced training can evaluate many factors in parallel with suitable architectures because the full training image is known. Exact ancestral generation still follows the dependency order. At one 8-bit channel value per step, a \(1024\times1024\) RGB image requires \(3{,}145{,}728\) steps. Grouping channels or using latent tokens changes that count, so always specify the unit being generated. Parameter sharing avoids storing a separate table for every possible image, but it does not make the combinatorial space disappear or guarantee all dependencies are learned.</p></section>
+<section id="latent"><h2>A reconstruction code needs a probability model to become a generator <a class="timestamp" href="https://www.youtube.com/watch?v=zbHXQRUNlH0&amp;t=2902">48:22</a></h2>
+<p>An ordinary autoencoder computes a code \(z=f_\phi(x)\) and reconstruction \(\hat x=g_\theta(z)\). A bottleneck or other constraint can encourage useful compression. Without a constraint, copying the input can solve reconstruction without discovering useful structure. Even with a good bottleneck, reconstruction training does not tell us how to sample a new \(z\). Random points in the code space may fall far from the codes on which the decoder was trained.</p>
+<p>A latent-variable generative model supplies the missing distribution. Choose a prior \(p(z)\), often a standard normal in \(d\) dimensions, and a conditional observation model \(p_\theta(x\mid z)\). Then
+\[
+p_\theta(x,z)=p(z)p_\theta(x\mid z),\qquad
+p_\theta(x)=\int p(z)p_\theta(x\mid z)\,dz.
+\]
+Sampling is conceptually simple: draw \(z\) from the prior, then draw \(x\) from the decoder distribution. Computing the marginal likelihood requires integrating over every possible latent explanation of the observation. For a nonlinear neural decoder this integral is generally difficult.</p>
+<p>Our factory interpretation is deliberately modest. A low-dimensional code may capture combinations of pose, material, illumination, and damage, but the model does not automatically label coordinates with those meanings. “Latent” means unobserved, not necessarily causal or interpretable. A successful reconstruction also does not prove the latent represents the physical mechanism that generated a defect.</p>
+<p>The posterior \(p_\theta(z\mid x)=p(z)p_\theta(x\mid z)/p_\theta(x)\) answers which latent values plausibly explain a given image. It is a distribution, not an inverse function of the decoder. Several latent values can explain similar observations, and observation noise can make an exact inverse impossible. The intractable marginal in its denominator is why approximate inference enters the VAE.</p></section>
+<section id="variational"><h2>Learn an approximate posterior with locally defined uncertainty <a class="timestamp" href="https://www.youtube.com/watch?v=zbHXQRUNlH0&amp;t=3492">58:12</a></h2>
+<p>The encoder now produces a distribution \(q_\phi(z\mid x)\), not just a code. For a diagonal Gaussian, its outputs are a mean vector \(\mu_\phi(x)\) and log-variance vector \(r_\phi(x)\). Coordinate \(j\) has variance \(\exp(r_j)\) and standard deviation \(\exp(r_j/2)\). A sample is
+\[
+\epsilon\sim\mathcal N(0,I),\qquad
+z=\mu_\phi(x)+\exp(r_\phi(x)/2)\odot\epsilon,
+\]
+where \(\odot\) denotes elementwise multiplication. Multiplying the noise by the variance rather than the standard deviation would square the intended variance. Explicit notation prevents that common implementation error.</p>
+<p>The decoder may use \(p_\theta(x\mid z)=\mathcal N(g_\theta(z),\sigma_x^2I)\), with fixed observation variance \(\sigma_x^2\). If the image contains \(D\) scalar components, its log-likelihood is
+\[
+\log p_\theta(x\mid z)
+=-\frac D2\log(2\pi\sigma_x^2)
+-\frac{\|x-g_\theta(z)\|_2^2}{2\sigma_x^2}.
+\]
+Squared reconstruction error follows from this observation model; it is not a distribution-free definition of a VAE. A Bernoulli decoder instead produces a different likelihood appropriate to binary observations. Learned observation variance introduces further terms and requires controls against degenerate behavior.</p>
+<p>Returning the decoder mean \(g_\theta(z)\) produces a representative image, but is not exactly a draw from a Gaussian decoder with nonzero variance. The distinction matters when evaluating sample variability. Likewise, a single sampled reconstruction error estimates an expectation but is not the expectation itself. The <a href="https://arxiv.org/abs/1312.6114">Auto-Encoding Variational Bayes paper</a> supplies the underlying variational and reparameterized learning framework. The scalar model below is our own fully checkable specialization.</p></section>
+<section id="bound"><h2>Derive the evidence lower bound rather than memorizing two losses <a class="timestamp" href="https://www.youtube.com/watch?v=zbHXQRUNlH0&amp;t=3769">1:02:49</a></h2>
+<p>Fix one observation \(x\), and abbreviate its approximate posterior by \(q(z)\). Assume the densities and expectations below are defined. Start with the nonnegative discrepancy between approximate and true posterior:
+\[
+D_{\mathrm{KL}}(q(z)\Vert p_\theta(z\mid x))
+=\mathbb E_q[\log q(z)-\log p(z)-\log p_\theta(x\mid z)]
++\log p_\theta(x).
+\]
+Rearranging yields
+\[
+\log p_\theta(x)
+=\underbrace{\mathbb E_q[\log p_\theta(x\mid z)]
+-D_{\mathrm{KL}}(q(z)\Vert p(z))}_{\mathcal E(\theta,\phi;x)}
++D_{\mathrm{KL}}(q(z)\Vert p_\theta(z\mid x)).
+\]
+The quantity \(\mathcal E\) is the evidence lower bound, or ELBO. Its gap to log evidence is the posterior KL, not the prior KL appearing inside the objective. Equality holds when the approximate posterior matches the true posterior almost everywhere.</p>
+<p>Maximizing the ELBO rewards explaining the observation while penalizing a posterior far from the chosen prior. It does not force every individual posterior to equal the prior. Doing that would remove information about \(x\). The two terms therefore express a tradeoff, not independent goals to drive simultaneously to their separate optima. When the approximate posterior carries little information and the decoder ignores the latent, one encounters posterior collapse; a low reconstruction error alone cannot exclude it.</p>
+<p>For the diagonal Gaussian and a standard-normal prior, the analytic regularizer is
+\[
+D_{\mathrm{KL}}(q_\phi(z\mid x)\Vert\mathcal N(0,I))
+=\frac12\sum_{j=1}^{d}\left(\mu_j^2+\exp(r_j)-1-r_j\right).
+\]
+Every term uses a log <em>variance</em>. If software emits a log standard deviation instead, both the exponential and linear term must change consistently. Averaging one term over pixels while summing another over latent dimensions also changes their relative weight. Reduction conventions belong in the mathematical specification.</p></section>
+<section id="exact"><h2>A solvable VAE exposes the bound's gap <a class="timestamp" href="https://www.youtube.com/watch?v=zbHXQRUNlH0&amp;t=4136">1:08:56</a></h2>
+<p>Consider our original scalar model \(z\sim\mathcal N(0,1)\), \(x\mid z\sim\mathcal N(az,1)\), with \(a=2\) and observed \(x=1\). Marginalizing a linear Gaussian gives \(x\sim\mathcal N(0,5)\). Completing the square in \(z^2+(x-az)^2\) gives posterior variance \(v_*=1/(1+a^2)=0.2\) and mean \(\mu_*=ax/(1+a^2)=0.4\). We can therefore check the VAE objective against exact evidence.</p>
+<p>Take \(q=\mathcal N(0.3,0.4)\). Since \(\mathbb E_q[(x-az)^2]=(x-a\mu)^2+a^2v\), the expected log-likelihood is approximately \(-1.79894\), the prior KL is \(0.20315\), and the ELBO is \(-2.00208\). Exact log evidence is approximately \(-1.82366\). Their difference, \(0.17843\), equals the KL from \(q\) to \(\mathcal N(0.4,0.2)\). Substituting that exact posterior makes the gap zero.</p>
+<p>Reparameterization makes the sampled \(z\) a differentiable function of \(\mu\), \(r\), and external noise. At fixed \(\epsilon\), \(\partial z/\partial\mu=1\) and \(\partial z/\partial r=\tfrac12\exp(r/2)\epsilon\). Gradients pass through the deterministic transform; the random draw does not need a conventional derivative. An individual Monte Carlo estimate can exceed the exact log evidence. The lower-bound guarantee applies to the expected ELBO, not every noisy estimate.</p>
+<p>The lecture ends with latent traversals. Smoothly changing one coordinate can reveal structure, but independent coordinates under an isotropic Gaussian prior do not guarantee independently meaningful factors. Any orthogonal rotation preserves that prior. The primary analysis <a href="https://arxiv.org/abs/1811.12359">Challenging Common Assumptions in the Unsupervised Learning of Disentangled Representations</a> establishes why additional inductive biases or supervision matter. Our inspection system should validate a proposed “scratch severity” coordinate against controlled changes, rather than name it from a few appealing interpolations.</p></section>
+<section id="implementation"><h2>Check normalization, evidence, and gradients independently</h2>
+<p>This original NumPy experiment evaluates the analytic expectation, avoiding Monte Carlo noise in the derivative check. Its scope is the scalar Gaussian mathematics and a two-pixel distribution; it does not train a neural image generator.</p>
+<pre><code class="language-python">import numpy as np
+from numerical_lab import central_gradient
+
+joint = np.array([0.7*0.8, 0.7*0.2, 0.3*0.2, 0.3*0.8])
+assert np.allclose(joint, [0.56, 0.14, 0.06, 0.24])
+assert np.isclose(joint.sum(), 1.0)
+
+a, x = 2.0, 1.0
+def elbo(mu, r):
+    v = np.exp(r)
+    reconstruction = -0.5*np.log(2*np.pi) - 0.5*((x-a*mu)**2 + a*a*v)
+    prior_kl = 0.5*(mu*mu + v - 1-r)
+    return reconstruction-prior_kl
+
+mu, v = 0.3, 0.4
+posterior_v = 1/(1+a*a)
+posterior_mu = a*x/(1+a*a)
+log_evidence = -0.5*np.log(2*np.pi*(1+a*a)) - x*x/(2*(1+a*a))
+posterior_kl = 0.5*(np.log(posterior_v/v)
+                   + (v+(mu-posterior_mu)**2)/posterior_v-1)
+assert np.isclose(log_evidence-elbo(mu, np.log(v)), posterior_kl)
+assert np.isclose(elbo(posterior_mu, np.log(posterior_v)), log_evidence)
+point = np.array([mu, np.log(v)])
+numeric = central_gradient(lambda q: -elbo(q[0], q[1]), point)
+analytic = np.array([a*(a*mu-x)+mu, 0.5*((a*a+1)*v-1)])
+assert np.allclose(numeric, analytic, atol=1e-8)
+assert np.allclose(analytic, [-0.5, 0.5])
+print("ELBO, exact evidence, posterior gap:", elbo(*point), log_evidence, posterior_kl)
+</code></pre></section>
+<section id="exercises"><h2>Six exercises with complete solutions</h2>
+<details><summary>1. Why does a normalized conditional model normalize the autoregressive joint?</summary><p>Sum the joint over its last variable first. For every fixed prefix, \(\sum_{x_T}p(x_T\mid x_{1:T-1})=1\). This removes the last factor. Repeating for \(x_{T-1}\) through \(x_1\) leaves one. For continuous variables replace sums by integrals under appropriate integrability conditions. No independence argument is required.</p></details>
+<details><summary>2. What changes if defects become ten times as common?</summary><p>Keep the likelihood ratio twenty but change the prior to \(0.1\). Bayes' rule gives \(20(0.1)/(20(0.1)+0.9)=2/2.9\approx0.6897\). The original posterior was about0.1681. The same evidence yields a different diagnosis because base rates changed. This calculation assumes the class-conditional image distributions remain fixed.</p></details>
+<details><summary>3. Diagnose a variance-versus-standard-deviation mistake.</summary><p>The desired posterior variance is \(v=0.25\). Correct sampling uses \(z=\mu+0.5\epsilon\), whose variance is \(0.5^2=0.25\). Using \(z=\mu+0.25\epsilon\) instead gives variance \(0.0625\). With log variance \(r=\log0.25\), the multiplier is \(\exp(r/2)\), not \(\exp(r)\).</p></details>
+<details><summary>4. Derive the scalar posterior by completing the square.</summary><p>The joint exponent is \(-[z^2+(x-az)^2]/2\). Its quadratic in \(z\) is \((1+a^2)z^2-2axz+x^2\). Rewrite it as \((1+a^2)(z-ax/(1+a^2))^2+x^2/(1+a^2)\). The first term identifies mean \(ax/(1+a^2)\) and variance \(1/(1+a^2)\); the remaining term supplies the marginal exponent. At \(a=2,x=1\), these are0.4 and0.2.</p></details>
+<details><summary>5. Derive the negative-ELBO gradient used in the code.</summary><p>Ignoring constants, the cost is \(\tfrac12[(x-a\mu)^2+a^2e^r]+\tfrac12[\mu^2+e^r-1-r]\). Differentiating with respect to \(\mu\) gives \(a(a\mu-x)+\mu\). Differentiating with respect to \(r\) gives \(\tfrac12[(a^2+1)e^r-1]\). At \(\mu=.3,e^r=.4,a=2,x=1\), the two derivatives are \(-.5\) and \(.5\), agreeing with the independent central differences.</p></details>
+<details><summary>6. Does an isotropic prior identify physical latent coordinates?</summary><p>No. If \(z\sim\mathcal N(0,I)\) and \(R\) is orthogonal, then \(Rz\) has the same distribution because its covariance is \(RIR^\top=I\). A decoder can absorb the inverse rotation without changing the generated image distribution. Coordinates can therefore mix physical factors while preserving the model's observable behavior. Additional assumptions or supervision are needed to favor a particular interpretation.</p></details></section>
+<section id="boundaries"><h2>What this chapter establishes</h2><p>The lecture supplies the progression from self-supervised features to generative distributions, likelihood, autoregression, latent variables, and variational inference. This chapter adds exact Bayes and Gaussian calculations, gradient checks, and explicit distinctions between density, posterior, and sampling. Research links support named mechanisms and the stated limits of anomaly detection and disentanglement. The factory examples and exercises are original teaching constructions. Machine transcription and all116 extracted official slide-text pages were read; this is not a claim of human captions or complete visual inspection. GAN and diffusion training belong to the next chapter.</p></section><!-- BOOK-CONTENT-END --></article><nav class="page-turn" aria-label="Chapter navigation"><a rel="prev" href="lecture-12-self-supervised-representations.html">Previous available chapter</a><a href="index.html">Lecture index</a><a rel="next" href="lecture-14-adversarial-generation-and-diffusion.html">Next available chapter</a></nav></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

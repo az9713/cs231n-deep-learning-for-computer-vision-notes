@@ -1,0 +1,196 @@
+{
+  "title": "Distributed training: make the whole machine useful",
+  "number": 11,
+  "video_id": "9MvD-XsowsE",
+  "source_type": "locally generated machine transcription and official extracted slide text",
+  "sections": [
+    {
+      "section": "hardware",
+      "start": 189,
+      "end": 909,
+      "lecture_material": "GPU hierarchy, tensor cores and precision",
+      "research_extension": "Arithmetic intensity and format caveats",
+      "teaching_construction": "Compute/memory lower bound",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "topology",
+      "start": 909,
+      "end": 1723,
+      "lecture_material": "Cluster hierarchy and other accelerators",
+      "research_extension": "Performance boundaries",
+      "teaching_construction": "Factory video pipeline",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "data",
+      "start": 1723,
+      "end": 1981,
+      "lecture_material": "Synchronous data-parallel gradient",
+      "research_extension": "Unequal batches and coupled operations",
+      "teaching_construction": "Weighted gradient derivation",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "communication",
+      "start": 1981,
+      "end": 2386,
+      "lecture_material": "Overlap and asynchronous alternatives",
+      "research_extension": "Ring latency/bandwidth model",
+      "teaching_construction": "Collective timing",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "state",
+      "start": 2386,
+      "end": 2936,
+      "lecture_material": "FSDP model-state sharding",
+      "research_extension": "Adam-state correction and transient peaks",
+      "teaching_construction": "16-byte budget",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "hybrid",
+      "start": 2936,
+      "end": 3161,
+      "lecture_material": "HSDP and topology",
+      "research_extension": "Communication categories versus exact bytes",
+      "teaching_construction": "Two-server placement",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "checkpoint",
+      "start": 3161,
+      "end": 3493,
+      "lecture_material": "Activation recomputation",
+      "research_extension": "Distinguishes repeated-prefix schedule from block caching",
+      "teaching_construction": "Storage minimization",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "utilization",
+      "start": 3493,
+      "end": 3797,
+      "lecture_material": "HFU and MFU",
+      "research_extension": "Timing/precision/statistical boundaries",
+      "teaching_construction": "MFU arithmetic",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "context",
+      "start": 3797,
+      "end": 3965,
+      "lecture_material": "Ring and Ulysses attention",
+      "research_extension": "Affine normalization parameter caveat",
+      "teaching_construction": "Global coordinate contract",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "pipeline",
+      "start": 3965,
+      "end": 4150,
+      "lecture_material": "Pipelined microbatches",
+      "research_extension": "Parameter version and ideal occupancy limits",
+      "teaching_construction": "Fill-and-drain derivation",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "tensor",
+      "start": 4150,
+      "end": 4368,
+      "lecture_material": "Tensor and ND parallelism",
+      "research_extension": "Elementwise nonlinearity requirement",
+      "teaching_construction": "Block-product identity",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original code or worked problems",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original code or worked problems",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original code or worked problems",
+      "evidence_class": "original teaching construction"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_11.pdf",
+      "supports": "148 extracted pages"
+    },
+    {
+      "title": "Llama3",
+      "url": "https://arxiv.org/abs/2407.21783",
+      "supports": "Documented model and systems case"
+    },
+    {
+      "title": "NVIDIA Hopper tuning",
+      "url": "https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html",
+      "supports": "Architecture-specific memory and arithmetic"
+    },
+    {
+      "title": "ZeRO",
+      "url": "https://arxiv.org/abs/1910.02054",
+      "supports": "State redundancy reduction"
+    },
+    {
+      "title": "FSDP",
+      "url": "https://docs.pytorch.org/docs/2.14/fsdp.html",
+      "supports": "Implementation boundaries"
+    },
+    {
+      "title": "Sublinear-memory training",
+      "url": "https://arxiv.org/abs/1604.06174",
+      "supports": "Block recomputation extension"
+    },
+    {
+      "title": "PaLM",
+      "url": "https://arxiv.org/abs/2204.02311",
+      "supports": "Model-utilization context"
+    },
+    {
+      "title": "Ring Attention",
+      "url": "https://arxiv.org/abs/2310.01889",
+      "supports": "Distributed block attention"
+    },
+    {
+      "title": "Ulysses",
+      "url": "https://arxiv.org/abs/2309.14509",
+      "supports": "All-to-all sequence/head redistribution"
+    },
+    {
+      "title": "GPipe",
+      "url": "https://arxiv.org/abs/1811.06965",
+      "supports": "Pipeline microbatches"
+    },
+    {
+      "title": "Megatron-LM",
+      "url": "https://arxiv.org/abs/1909.08053",
+      "supports": "Tensor-parallel feedforward layers"
+    }
+  ],
+  "limitations": [
+    "Complete transcript read:5.17\u20134367.44seconds.",
+    "All148 extracted slide-text pages read; no complete visual review claimed.",
+    "CPU tests validate algebra, not hardware benchmarks."
+  ]
+}

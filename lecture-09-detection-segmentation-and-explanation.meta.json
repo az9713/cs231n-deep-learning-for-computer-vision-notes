@@ -1,0 +1,212 @@
+{
+  "title": "Dense prediction, object sets, and visual explanations",
+  "number": 9,
+  "video_id": "PTypu6GqEd4",
+  "source_type": "locally generated machine transcription and official extracted slide text",
+  "sections": [
+    {
+      "section": "outputs",
+      "start": 5,
+      "end": 1067,
+      "lecture_material": "Transformer recap and classification/segmentation/detection output tasks",
+      "research_extension": "Architecture-dependent claims bounded",
+      "teaching_construction": "Inspection output contract",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "dense",
+      "start": 1067,
+      "end": 1505,
+      "lecture_material": "Shared fully convolutional segmentation and per-pixel loss",
+      "research_extension": "Parameter count versus activation memory; annotation limits",
+      "teaching_construction": "Masked mean-loss derivative and imbalance case",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "upsampling",
+      "start": 1505,
+      "end": 1737,
+      "lecture_material": "Unpooling, learned upsampling, overlapping contributions; questions through 1968",
+      "research_extension": "Transpose as adjoint, not inverse; shape convention",
+      "teaching_construction": "Explicit 2x5 convolution matrix",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "unet",
+      "start": 1737,
+      "end": 1968,
+      "lecture_material": "U-Net encoder-decoder high-resolution skips",
+      "research_extension": "Overlap metric definition",
+      "teaching_construction": "Channel concatenation and rare-defect example",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "boxes",
+      "start": 1968,
+      "end": 2190,
+      "lecture_material": "Single-object classification/localization and multiple-object difficulty",
+      "research_extension": "Coordinate and IoU conventions",
+      "teaching_construction": "Two-box exact overlap",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "regions",
+      "start": 2190,
+      "end": 2637,
+      "lecture_material": "Region proposals, R-CNN, Fast R-CNN and RPN",
+      "research_extension": "Predefined anchors; shared backbone; offset formalization",
+      "teaching_construction": "Decoded anchor fixture",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "single",
+      "start": 2637,
+      "end": 2940,
+      "lecture_material": "Single-stage detection and YOLO; thresholding and NMS",
+      "research_extension": "Original YOLO confidence and fully connected head correction",
+      "teaching_construction": "NMS threshold counterexample",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "set",
+      "start": 2940,
+      "end": 3467,
+      "lecture_material": "DETR learned queries, image features, output labels/boxes and questions",
+      "research_extension": "Bipartite matching; primary L1/GIoU correction",
+      "teaching_construction": "2x2 global assignment",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "instances",
+      "start": 3467,
+      "end": 3712,
+      "lecture_material": "Mask R-CNN and practical object-level output",
+      "research_extension": "RoIAlign from slides153\u2013164 and primary paper",
+      "teaching_construction": "Bilinear interpolation fixture",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "saliency",
+      "start": 3712,
+      "end": 4051,
+      "lecture_material": "Filters and input-gradient saliency",
+      "research_extension": "Local sensitivity versus causal/global relevance",
+      "teaching_construction": "Zero-gradient counterexample",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "cam",
+      "start": 4051,
+      "end": 4418,
+      "lecture_material": "CAM, Grad-CAM and transformer attention visualization",
+      "research_extension": "Sanity checks and guided-backprop limitations",
+      "teaching_construction": "Exact CAM and gradient relation",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "None",
+      "research_extension": "None",
+      "teaching_construction": "Independent geometry and explanation identity checks",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidates lecture concepts",
+      "research_extension": "None",
+      "teaching_construction": "Six original fully solved exercises",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Task synthesis",
+      "research_extension": "None",
+      "teaching_construction": "Prediction versus explanation contract",
+      "evidence_class": "original teaching construction"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official lecture slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_9.pdf",
+      "supports": "178 extracted pages; appendix delineated"
+    },
+    {
+      "title": "Fully Convolutional Networks",
+      "url": "https://arxiv.org/abs/1411.4038",
+      "supports": "Dense prediction"
+    },
+    {
+      "title": "U-Net",
+      "url": "https://arxiv.org/abs/1505.04597",
+      "supports": "Contracting/expanding architecture"
+    },
+    {
+      "title": "R-CNN",
+      "url": "https://arxiv.org/abs/1311.2524",
+      "supports": "Region CNN features"
+    },
+    {
+      "title": "Fast R-CNN",
+      "url": "https://arxiv.org/abs/1504.08083",
+      "supports": "Shared image features"
+    },
+    {
+      "title": "Faster R-CNN",
+      "url": "https://arxiv.org/abs/1506.01497",
+      "supports": "Learned proposals and shared backbone"
+    },
+    {
+      "title": "YOLO",
+      "url": "https://arxiv.org/abs/1506.02640",
+      "supports": "Original output/score conventions"
+    },
+    {
+      "title": "DETR",
+      "url": "https://arxiv.org/abs/2005.12872",
+      "supports": "Matching and L1 plus generalized IoU"
+    },
+    {
+      "title": "Mask R-CNN",
+      "url": "https://arxiv.org/abs/1703.06870",
+      "supports": "Mask loss and RoIAlign"
+    },
+    {
+      "title": "Saliency maps",
+      "url": "https://arxiv.org/abs/1312.6034",
+      "supports": "Input score sensitivity"
+    },
+    {
+      "title": "CAM",
+      "url": "https://arxiv.org/abs/1512.04150",
+      "supports": "Class activation maps"
+    },
+    {
+      "title": "Grad-CAM",
+      "url": "https://arxiv.org/abs/1610.02391",
+      "supports": "Gradient weighted map"
+    },
+    {
+      "title": "Sanity Checks for Saliency Maps",
+      "url": "https://arxiv.org/abs/1810.03292",
+      "supports": "Diagnostic limitations"
+    },
+    {
+      "title": "ConvTranspose2d documentation",
+      "url": "https://docs.pytorch.org/docs/2.14/generated/torch.nn.ConvTranspose2d.html",
+      "supports": "Transpose shape boundary conventions"
+    }
+  ],
+  "limitations": [
+    "Complete transcript read: 5.20\u20134417.84 seconds.",
+    "All178 slide-text pages read; no claim of complete visual review.",
+    "Research distinguishes historical detector mechanisms from unsupported current popularity claims.",
+    "Original tests check identities and conventions, not detection benchmarks."
+  ]
+}

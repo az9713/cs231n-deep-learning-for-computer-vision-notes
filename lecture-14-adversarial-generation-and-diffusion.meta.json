@@ -1,0 +1,178 @@
+{
+  "title": "Adversarial generation and diffusion",
+  "number": 14,
+  "video_id": "Edr4uZFh4EE",
+  "source_type": "locally generated machine transcription and official extracted slide text",
+  "sections": [
+    {
+      "section": "game",
+      "start": 184,
+      "end": 960,
+      "lecture_material": "GAN sampling and alternating minimax",
+      "research_extension": "Original GAN objective",
+      "teaching_construction": "Factory synthetic-image case",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "gradients",
+      "start": 960,
+      "end": 1318,
+      "lecture_material": "Saturating and alternative generator losses",
+      "research_extension": "Logit derivatives and mode-collapse clarification",
+      "teaching_construction": "0.01 derivative fixture",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "equilibrium",
+      "start": 1318,
+      "end": 1832,
+      "lecture_material": "Optimal discriminator,architectures,interpolation,inversion",
+      "research_extension": "Jensen\u2013Shannon identity and support caveat",
+      "teaching_construction": "Distribution/parameter uniqueness distinction",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "flow",
+      "start": 1832,
+      "end": 2405,
+      "lecture_material": "Noising and rectified-flow training",
+      "research_extension": "Conditional mean velocity",
+      "teaching_construction": "Explicit time convention",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "sampling",
+      "start": 2405,
+      "end": 2711,
+      "lecture_material": "Iterative reverse-time updates",
+      "research_extension": "ODE versus gradient descent",
+      "teaching_construction": "Exact Gaussian transport",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "guidance",
+      "start": 2711,
+      "end": 2992,
+      "lecture_material": "Conditioning and CFG",
+      "research_extension": "Guidance conventions and dropout qualification",
+      "teaching_construction": "Vector arithmetic",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "schedule",
+      "start": 2992,
+      "end": 3151,
+      "lecture_material": "Noise schedules and endpoint intuition",
+      "research_extension": "Endpoint velocity correction",
+      "teaching_construction": "Gaussian check",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "latent",
+      "start": 3151,
+      "end": 3352,
+      "lecture_material": "Latent diffusion and hybrid autoencoder training",
+      "research_extension": "Representation bottleneck",
+      "teaching_construction": "Scalar-count calculation",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "transformers",
+      "start": 3352,
+      "end": 3750,
+      "lecture_material": "DiT,text/image/video pipelines",
+      "research_extension": "Historical claims bounded",
+      "teaching_construction": "4096 and76032 token corrections",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "perspectives",
+      "start": 3750,
+      "end": 4323,
+      "lecture_material": "Distillation,generalized diffusion,score/SDE,discrete autoregression",
+      "research_extension": "ODE distinction and variance convention",
+      "teaching_construction": "Gaussian score example",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original experiments and solved exercises",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original experiments and solved exercises",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original experiments and solved exercises",
+      "evidence_class": "original teaching construction"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_14.pdf",
+      "supports": "Official slides mechanism and historical attribution"
+    },
+    {
+      "title": "GAN",
+      "url": "https://arxiv.org/abs/1406.2661",
+      "supports": "GAN mechanism and historical attribution"
+    },
+    {
+      "title": "Rectified Flow",
+      "url": "https://arxiv.org/abs/2209.03003",
+      "supports": "Rectified Flow mechanism and historical attribution"
+    },
+    {
+      "title": "Classifier-Free Guidance",
+      "url": "https://arxiv.org/abs/2207.12598",
+      "supports": "Classifier-Free Guidance mechanism and historical attribution"
+    },
+    {
+      "title": "Scaling Rectified Flow Transformers",
+      "url": "https://arxiv.org/abs/2403.03206",
+      "supports": "Scaling Rectified Flow Transformers mechanism and historical attribution"
+    },
+    {
+      "title": "Latent Diffusion",
+      "url": "https://arxiv.org/abs/2112.10752",
+      "supports": "Latent Diffusion mechanism and historical attribution"
+    },
+    {
+      "title": "DiT",
+      "url": "https://arxiv.org/abs/2212.09748",
+      "supports": "DiT mechanism and historical attribution"
+    },
+    {
+      "title": "Score SDE",
+      "url": "https://arxiv.org/abs/2011.13456",
+      "supports": "Score SDE mechanism and historical attribution"
+    },
+    {
+      "title": "VQ-VAE",
+      "url": "https://arxiv.org/abs/1711.00937",
+      "supports": "VQ-VAE mechanism and historical attribution"
+    }
+  ],
+  "limitations": [
+    "Full transcript read5.26\u20134322.93seconds.",
+    "All123 extracted slide-text pages read; no complete visual-review claim.",
+    "Exact Gaussian experiment checks numerical integration,not image synthesis.",
+    "GAN gradients,flow endpoint signs,and latent token arithmetic independently corrected."
+  ]
+}

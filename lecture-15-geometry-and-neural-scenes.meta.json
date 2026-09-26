@@ -1,0 +1,201 @@
+{
+  "title": "Geometry and neural scenes",
+  "number": 15,
+  "video_id": "7lxrKDKtykM",
+  "source_type": "locally generated machine transcription and official extracted slide text",
+  "sections": [
+    {
+      "section": "geometry",
+      "start": 61,
+      "end": 305,
+      "lecture_material": "Representations and operations",
+      "research_extension": "Geometry/radiance distinction",
+      "teaching_construction": "Factory dimensional inspection",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "explicit",
+      "start": 305,
+      "end": 681,
+      "lecture_material": "Points,normals,meshes",
+      "research_extension": "Topology/registration qualifications",
+      "teaching_construction": "Square ambiguity",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "parametric",
+      "start": 681,
+      "end": 1052,
+      "lecture_material": "Parametric curves/surfaces",
+      "research_extension": "Area measure and uniform sampling",
+      "teaching_construction": "Sphere and Bezier derivations",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "implicit",
+      "start": 1052,
+      "end": 1438,
+      "lecture_material": "Implicit fields,CSG,distance",
+      "research_extension": "Field versus signed-distance correction",
+      "teaching_construction": "Spherical shell",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "grids",
+      "start": 1438,
+      "end": 1765,
+      "lecture_material": "Level sets,voxels",
+      "research_extension": "Cubic storage and missing thin features",
+      "teaching_construction": "Memory calculation",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "data",
+      "start": 1765,
+      "end": 2311,
+      "lecture_material": "Datasets and tasks",
+      "research_extension": "Supervision and evaluation boundaries",
+      "teaching_construction": "Object-disjoint inspection",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "networks",
+      "start": 2311,
+      "end": 2972,
+      "lecture_material": "Multi-view,voxel,generative,octree,PointNet",
+      "research_extension": "Permutation versus sampling invariance",
+      "teaching_construction": "Symmetric descriptor",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "distances",
+      "start": 2972,
+      "end": 3082,
+      "lecture_material": "Chamfer and matching",
+      "research_extension": "Normalization and piecewise differentiability",
+      "teaching_construction": "Two-point exact loss",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "fields",
+      "start": 3082,
+      "end": 3527,
+      "lecture_material": "AtlasNet and implicit networks",
+      "research_extension": "Occupancy versus SDF supervision",
+      "teaching_construction": "Query coverage for small defects",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "rendering",
+      "start": 3527,
+      "end": 3817,
+      "lecture_material": "NeRF and generative radiance fields",
+      "research_extension": "Density units and transmittance",
+      "teaching_construction": "Two-layer compositing and gradient",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "splats",
+      "start": 3817,
+      "end": 4045,
+      "lecture_material": "Gaussian splatting",
+      "research_extension": "Explicit optimized primitives and rasterization correction",
+      "teaching_construction": "Scope of geometric accuracy",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "structure",
+      "start": 4045,
+      "end": 4305,
+      "lecture_material": "Parts,graphs,hierarchies,programs",
+      "research_extension": "StructureNet primary source",
+      "teaching_construction": "Housing and mounting bosses",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original experiment and solved exercises",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original experiment and solved exercises",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original experiment and solved exercises",
+      "evidence_class": "original teaching construction"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_15.pdf",
+      "supports": "Official slides mechanism and historical attribution"
+    },
+    {
+      "title": "Multi-view CNN",
+      "url": "https://arxiv.org/abs/1505.00880",
+      "supports": "Multi-view CNN mechanism and historical attribution"
+    },
+    {
+      "title": "PointNet",
+      "url": "https://arxiv.org/abs/1612.00593",
+      "supports": "PointNet mechanism and historical attribution"
+    },
+    {
+      "title": "AtlasNet",
+      "url": "https://arxiv.org/abs/1802.05384",
+      "supports": "AtlasNet mechanism and historical attribution"
+    },
+    {
+      "title": "Occupancy Networks",
+      "url": "https://arxiv.org/abs/1812.03828",
+      "supports": "Occupancy Networks mechanism and historical attribution"
+    },
+    {
+      "title": "DeepSDF",
+      "url": "https://arxiv.org/abs/1901.05103",
+      "supports": "DeepSDF mechanism and historical attribution"
+    },
+    {
+      "title": "NeRF",
+      "url": "https://arxiv.org/abs/2003.08934",
+      "supports": "NeRF mechanism and historical attribution"
+    },
+    {
+      "title": "pi-GAN",
+      "url": "https://arxiv.org/abs/2012.00926",
+      "supports": "pi-GAN mechanism and historical attribution"
+    },
+    {
+      "title": "3D Gaussian Splatting",
+      "url": "https://arxiv.org/abs/2308.04079",
+      "supports": "3D Gaussian Splatting mechanism and historical attribution"
+    },
+    {
+      "title": "StructureNet",
+      "url": "https://arxiv.org/abs/1908.00575",
+      "supports": "StructureNet mechanism and historical attribution"
+    }
+  ],
+  "limitations": [
+    "Full transcript read5.20\u20134304.56seconds.",
+    "All105 extracted slide-text pages read; some figure-only pages provide little extracted content.",
+    "Original scalar/point/compositing checks,not real reconstruction benchmarks.",
+    "Corrected ASR names and Gaussian splatting mechanics using primary papers."
+  ]
+}

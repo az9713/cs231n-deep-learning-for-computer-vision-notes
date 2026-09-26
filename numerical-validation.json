@@ -1,0 +1,334 @@
+{
+  "status": "passed",
+  "chapters": 18,
+  "chapter_checks": [
+    {
+      "chapter": "lecture-01-visual-intelligence.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 79,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 6,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "7. A small executable audit",
+        "8. Exercises with complete solutions",
+        "9. What this foundation establishes"
+      ],
+      "body_sha256": "9b345785357d187177ab0c66c9fb13b02d0debe05265a21ee695ef41557d1dfa"
+    },
+    {
+      "chapter": "lecture-02-classification-and-linear-models.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 162,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 7,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "8. Numerical stability is part of mathematical correctness",
+        "9. Exercises with complete solutions",
+        "10. The model, the objective, and the experiment are separate choices"
+      ],
+      "body_sha256": "75e5c0c4ef03d6b493b978152378a240269d9e71aa35e7d433dc7b97842a8f39"
+    },
+    {
+      "chapter": "lecture-03-regularization-and-optimization.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 208,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 9,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "10. Three small checks that diagnose different mistakes",
+        "11. Exercises with complete solutions",
+        "12. What the experiments do and do not establish"
+      ],
+      "body_sha256": "93889c72e3a7650b6e73b00fd0aa08083b49e2fa4e9e63dcb5f9d589f3207155"
+    },
+    {
+      "chapter": "lecture-04-networks-and-backpropagation.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 179,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 7,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "8. Check derivatives before trusting a training curve",
+        "9. Exercises with complete solutions",
+        "10. The backward pass is a reusable calculation"
+      ],
+      "body_sha256": "9dce639a20db69156ff729bc478ec53856bbb33f467231fd32933500430e3d2a"
+    },
+    {
+      "chapter": "lecture-05-convolution-and-spatial-structure.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 118,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 7,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "8. A numerical microscope for spatial operations",
+        "9. Exercises with complete solutions",
+        "10. Architecture is an explicit bet about the data"
+      ],
+      "body_sha256": "c65d776960b6b50da770f69ebd93709a64f15225fc3a813c9d550155096cc502"
+    },
+    {
+      "chapter": "lecture-06-training-and-residual-networks.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 136,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 8,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "9. Check the mechanisms without a large training run",
+        "10. Exercises with complete solutions",
+        "11. A trainable system has explicit statistical contracts"
+      ],
+      "body_sha256": "4c6e63018f013b59ded64ca4086527fb584d5c0c81f943a706efa941bdb05272"
+    },
+    {
+      "chapter": "lecture-07-recurrent-state-and-sequences.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 121,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 9,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "10. Verify a shared recurrent gradient",
+        "11. Exercises with complete solutions",
+        "12. Memory is both a representation and a learning problem"
+      ],
+      "body_sha256": "620cdcaa636c83a0b556695ed2bee07fba6579357d14582da7d85924ebea1213"
+    },
+    {
+      "chapter": "lecture-08-attention-and-transformers.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 146,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 10,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "11. Slide-only extensions: change a component, retain the accounting",
+        "12. Check retrieval, masking, gradients, and symmetry",
+        "13. Exercises with complete solutions",
+        "14. What attention changes, and what it leaves to learning"
+      ],
+      "body_sha256": "0f67446df98a23eea2deea9e2e96e7c6356aa79674a5b3f4c3b6999949cf7f50"
+    },
+    {
+      "chapter": "lecture-09-detection-segmentation-and-explanation.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 103,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 11,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "12. Verify geometry and explanation identities",
+        "13. Exercises with complete solutions",
+        "14. Keep prediction and explanation as separate contracts"
+      ],
+      "body_sha256": "fc3f299f455a5618c17d2ce628ef6d4e9416d70f53ce17d22158f63fac6ca156"
+    },
+    {
+      "chapter": "lecture-10-video-motion-and-memory.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 112,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 10,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "11. Test the temporal assumptions directly",
+        "12. Exercises with complete solutions",
+        "13. A video model includes its observation policy"
+      ],
+      "body_sha256": "a313e20c5c2e07ef8d0db1bceba1fcafc8220a5316408d242d27793c26d5e246"
+    },
+    {
+      "chapter": "lecture-11-distributed-training.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        "Weighted gradients, tensor partition, and system arithmetic passed."
+      ],
+      "math_segments": 98,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 11,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "An executable check of the algebra",
+        "Six problems with worked solutions",
+        "From one correct update to a useful experiment"
+      ],
+      "body_sha256": "325e2009e56ecca3b33a24ceabdea3ea19184dcf86eac2ce05991a9dde09e264"
+    },
+    {
+      "chapter": "lecture-12-self-supervised-representations.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        "Masked reconstruction, InfoNCE gradient, and view indexing passed."
+      ],
+      "math_segments": 121,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 11,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "Check a masked loss and a contrastive derivative",
+        "Six problems with worked solutions",
+        "The target determines what can be learned"
+      ],
+      "body_sha256": "b3be37487c973a14e805cd4c887003f8d9e612e4e7e0c66a78143660db844783"
+    },
+    {
+      "chapter": "lecture-13-generative-models-and-variational-inference.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        "ELBO, exact evidence, posterior gap: -2.0020838991417502 -1.823657489421723 0.1784264097200272"
+      ],
+      "math_segments": 120,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 9,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "Check normalization, evidence, and gradients independently",
+        "Six exercises with complete solutions",
+        "What this chapter establishes"
+      ],
+      "body_sha256": "322eaf909fb3af68e4ad0ac69ba9ecea68b2aa0624b51e8f35ee9fcb4bc1f8c5"
+    },
+    {
+      "chapter": "lecture-14-adversarial-generation-and-diffusion.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        "Euler endpoint errors at20,200,2000steps: [0.04469062408292057, 0.004613414586941644, 0.00046287473463024753]"
+      ],
+      "math_segments": 131,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 10,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "An exact velocity field makes sampler error measurable",
+        "Six exercises with complete solutions",
+        "Scope and evidence"
+      ],
+      "body_sha256": "8bf657085be260e46bb9f3f3bd3560109800ed84d812cba71694c635cb342278"
+    },
+    {
+      "chapter": "lecture-15-geometry-and-neural-scenes.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        "Chamfer, assignment, rendering gradient: 1.0 0.5 [0.875 0.2  ]"
+      ],
+      "math_segments": 86,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 12,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "Check set symmetry, geometry losses, and rendering gradients",
+        "Six exercises with complete solutions",
+        "Scope and evidence"
+      ],
+      "body_sha256": "6298427b81b57bec41b474c896773ba2a4df179e81877d8b0175152227ee93d2"
+    },
+    {
+      "chapter": "lecture-16-vision-and-language.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        "[0.4721, 0.2298, 0.2981]"
+      ],
+      "math_segments": 47,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 8,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "Evaluation must follow the interface through to the task",
+        "Exercises with worked solutions",
+        "What this chapter establishes"
+      ],
+      "body_sha256": "d1eaad07bb8c5a75aa774c931c26edac2e95825b3b2bd77cf974620660b8822f"
+    },
+    {
+      "chapter": "lecture-17-robot-learning.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 77,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 7,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "7. A small replanning experiment exposes model mismatch",
+        "8. Exercises with fully worked solutions"
+      ],
+      "body_sha256": "cfe47e6bf5960eeaa446e7e36fb333fb9de153ff15bcd3c23436599519e69a84"
+    },
+    {
+      "chapter": "lecture-18-human-centered-vision.html",
+      "embedded_python_blocks_executed": 1,
+      "python_output": [
+        ""
+      ],
+      "math_segments": 62,
+      "math_delimiters_and_braces": "passed",
+      "source_intervals": "passed",
+      "timestamped_major_sections": 7,
+      "unstamped_teaching_sections_for_editorial_review": [
+        "7. An executable audit keeps prevalence and workflow visible",
+        "8. Exercises with fully worked solutions"
+      ],
+      "body_sha256": "7ec1978ca24930e9374b89815b6fb2eb836bd577d18f464452554649a81882ce"
+    }
+  ],
+  "cumulative_lab": {
+    "softmax_gradient_max_absolute_error": 5.2394547034317895e-11,
+    "two_layer_backprop_max_absolute_error": 9.626371921811483e-11,
+    "contrastive_temperature_chain_rule_error": 4.5261294712162226e-11,
+    "temporal_mean_loses_motion_direction_counterexample": "passed",
+    "gradient_descent_final_stable_unstable": [
+      3.656158440062987e-05,
+      836.682554252847
+    ],
+    "convolution_equivariance_and_stride_counterexample": "passed",
+    "attention_key_value_permutation_max_error": 1.1102230246251565e-16,
+    "box_iou_partial_disjoint_identity": "passed",
+    "unequal_shard_mean_unweighted_error": 1.666666666666666,
+    "diagonal_gaussian_kl_boundary_cases": "passed",
+    "diffusion_empirical_mean_variance": [
+      1.2002974479867698,
+      0.6371179268409612
+    ],
+    "pinhole_projection_scale_ambiguity": "passed",
+    "invalid_inputs_rejected": 7
+  },
+  "cumulative_lab_stdout": "",
+  "boundary": "Small deterministic fixtures and finite differences; not paper benchmark reproduction."
+}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><title>Numerical laboratory · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout no-toc"><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><h1>Numerical laboratory</h1><p>These original experiments isolate mechanisms used throughout the book. Their values are hypothetical, not measured model performance. Change a parameter, predict the result, then inspect the calculation.</p>
+<section><h2>Temperature changes confidence without changing the winning score</h2><p>Three fixed class scores are 0.78, 0.42, and 0.55. For temperature \(\tau\gt0\), \(p_i=\exp(s_i/\tau)/\sum_j\exp(s_j/\tau)\). Stable computation subtracts the largest scaled score before exponentiation.</p><label for="lab-temp">Temperature: <output id="temp-value"></output></label><input id="lab-temp" type="range" min="0.05" max="2" step="0.05" value="0.5"><div id="prob-bars" aria-label="Class probabilities"></div><p id="temp-result" aria-live="polite"></p><p>A sharper distribution is not evidence of better calibration. The score ordering and predicted class are unchanged. Compare this experiment with chapters 2 and 16.</p></section>
+<section><h2>Prevalence determines the workload of a detector</h2><p>Fix sensitivity at 90% and specificity at 95%. If prevalence is \(\pi\), expected precision is \(0.9\pi/[0.9\pi+0.05(1-\pi)]\). Counts below are expected values per 10,000 opportunities.</p><label for="lab-prevalence">Event prevalence: <output id="prevalence-value"></output></label><input id="lab-prevalence" type="range" min="0.1" max="20" step="0.1" value="1"><p id="prevalence-result" aria-live="polite"></p><p>At 1% prevalence, most alerts are false even with these apparently strong conditional rates. Chapter 18 connects this arithmetic to the human response process.</p></section>
+<section><h2>Separate exact dynamics from numerical integration error</h2><p>Chapter 14 derives a known Gaussian transport from noise \(\mathcal N(0,1)\) to data \(\mathcal N(2,0.25)\). Starting at noise value 1.25, the exact endpoint is 2.625. The slider changes only the number of Euler intervals; the velocity field remains exact.</p><label for="lab-steps">Euler steps: <output id="steps-value"></output></label><input id="lab-steps" type="range" min="10" max="500" step="10" value="50"><p id="steps-result" aria-live="polite"></p><p>The remaining discrepancy is integration error. A real generative model also has field-estimation error; more solver steps do not necessarily fix that source of error.</p></section>
+<section><h2>Reproduce the checks</h2><p><a href="numerical_lab.py">numerical_lab.py</a> contains deterministic NumPy checks for gradients, convolution, attention, overlap, distributed means, variational regularization, noising, and projection. Each chapter also contains an independently executed original Python example. <a href="verify_examples.py">verify_examples.py</a> extracts and executes those actual examples and records mathematical delimiter, timestamp-heading, and provenance structure checks. Install the dependency listed in <a href="requirements.txt">requirements.txt</a>, then run:</p><pre><code>python numerical_lab.py
+python verify_examples.py</code></pre><p>The interactive calculations run entirely in the browser with no network requests, persistent storage, uploaded data, or model downloads. <a href="numerical-validation.json">Recorded numerical results</a> and <a href="reader-validation.json">reader validation</a> state exactly what was tested.</p></section>
+<script>
+(function(){
+'use strict';
+function probabilities(t){const a=[.78,.42,.55].map(s=>s/t);const m=Math.max(...a);const e=a.map(s=>Math.exp(s-m));const z=e.reduce((u,v)=>u+v,0);return e.map(v=>v/z);}
+function alertMetrics(prevalence){const tp=10000*prevalence*.9,fp=10000*(1-prevalence)*.05;return {tp,fp,precision:tp/(tp+fp)};}
+function integrate(steps){let u=1.25;for(let k=steps;k>0;k--){const t=k/steps,q=(1-t)**2*.25+t*t;const v=-2+(t-(1-t)*.25)*(u-(1-t)*2)/q;u-=v/steps;}return u;}
+function refresh(){
+const t=Number(document.getElementById('lab-temp').value),p=probabilities(t);
+document.getElementById('temp-value').textContent=t.toFixed(2);
+document.getElementById('prob-bars').replaceChildren(...p.map((v,i)=>{const row=document.createElement('p'),meter=document.createElement('meter');meter.min=0;meter.max=1;meter.value=v;meter.style.width='min(60%, 26rem)';row.append('Class '+(i+1)+' ',meter,' '+(100*v).toFixed(2)+'%');return row;}));
+document.getElementById('temp-result').textContent='Probability sum: '+p.reduce((a,b)=>a+b,0).toFixed(12)+'. Winning class:1.';
+const pi=Number(document.getElementById('lab-prevalence').value)/100,r=alertMetrics(pi);
+document.getElementById('prevalence-value').textContent=(100*pi).toFixed(1)+'%';
+document.getElementById('prevalence-result').textContent='Expected true alerts: '+r.tp.toFixed(1)+'; false alerts: '+r.fp.toFixed(1)+'; precision: '+(100*r.precision).toFixed(2)+'%.';
+const n=Number(document.getElementById('lab-steps').value),u=integrate(n);
+document.getElementById('steps-value').textContent=String(n);
+document.getElementById('steps-result').textContent='Euler endpoint: '+u.toFixed(6)+'; exact endpoint:2.625000; absolute error: '+Math.abs(u-2.625).toFixed(6)+'.';
+}
+window.visionLab={probabilities,alertMetrics,integrate};
+document.querySelectorAll('input[type=range]').forEach(el=>el.addEventListener('input',refresh));refresh();
+})();
+</script></article></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

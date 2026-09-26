@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="0f67446df98a23eea2deea9e2e96e7c6356aa79674a5b3f4c3b6999949cf7f50"><title>Attention, transformers, and the geometry of information exchange · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc" aria-label="On this page"><h2>On this page</h2></aside><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><header class="chapter-header">
+<p class="eyebrow">Chapter 8 · CS231N, Spring 2025</p>
+<h1>Attention, transformers, and the geometry of information exchange</h1>
+<p class="lead">Attention replaces a fixed summary with a query-dependent read from a collection of representations. The transformer combines that communication rule with local computation, normalization, and residual paths.</p>
+<p class="source-note">Based on the complete Lecture 8 transcript and official slide text. Derivations, inspection examples, implementation checks, and exercises are original enhancements. The final slide-only architecture variants are explicitly separated from the material developed aloud.</p>
+</header>
+
+<section aria-labelledby="bottleneck"><h2 id="bottleneck">1. Ask for the evidence you need <a class="timestamp" href="https://www.youtube.com/watch?v=RQowiOF_FvQ&amp;t=188">3:08</a></h2>
+<p>Our inspection system now needs to answer questions about a rotating part: where is the scratch, which frame reveals it most clearly, and whether a dark region is damage or shadow. A recurrent encoder can compress the video into its last hidden state. A decoder can then generate a report from that state. But every later question must rely on the same summary, even though different questions require different evidence.</p>
+<p>In the lecture’s translation example, an input sentence and an output sentence can have different lengths and word orders. Let input states be \(h_1,\ldots,h_T\), with each \(h_j\in\mathbb R^d\). A fixed-context decoder receives \(c=h_T\) at every output step. Its recurrent state \(s_t\) changes, but the source information available through \(c\) does not. This is a communication bottleneck imposed by the architecture, not a theorem that a finite vector cannot encode any long sequence. Finite precision, limited dimension, learnability, and the need to preserve many details make the bottleneck practically consequential.</p>
+<p>The alternative retains the collection of encoder states and computes a new context \(c_t\) for each decoder step. The decoder asks a different question as its state changes. Attention is the mechanism that turns that question into a weighted read from the stored states. The lecture follows the historical route from recurrent translation to a more general operator; the encoder and decoder initially remain recurrent.</p>
+<p><a href="https://arxiv.org/abs/1409.0473">Bahdanau, Cho, and Bengio’s alignment model</a> introduced this approach to neural translation with a learned soft alignment. Its importance here is architectural: access to a sequence of representations replaces dependence on one fixed summary. This does not eliminate every capacity limit. Each context remains a finite vector, and the source representations may already have lost information. It changes which information can be retrieved at each step.</p></section>
+
+<section aria-labelledby="alignment"><h2 id="alignment">2. A differentiable read operation <a class="timestamp" href="https://www.youtube.com/watch?v=RQowiOF_FvQ&amp;t=572">9:32</a></h2>
+<p>Let \(e_{tj}=f(s_{t-1},h_j)\) be a scalar compatibility score for source position \(j\) at output step \(t\). Normalize over source positions, then average their representations:</p>
+\[
+a_{tj}=\frac{\exp(e_{tj})}{\sum_{\ell=1}^{T}\exp(e_{t\ell})},
+\qquad c_t=\sum_{j=1}^{T}a_{tj}h_j.
+\]
+<p>For finite scores, every weight is positive and the weights sum to one. Thus \(c_t\) lies in the convex hull of the available state vectors. A later nonlinear layer can leave that hull; the weighted read alone cannot. The decoder update is \(s_t=g(s_{t-1},y_{t-1},c_t)\), where \(y_{t-1}\) denotes an embedding of the previous output token. Parameters are learned through the output loss; explicit word-to-word alignment labels are unnecessary.</p>
+<p>There is a subtle correction to the lecture’s shorthand description of a “linear layer” on concatenated states. Suppose literally \(f(s,h_j)=u^\top s+v^\top h_j+b\). The query-dependent term \(u^\top s+b\) is identical for every source position. Softmax cancels it:</p>
+\[
+a_j=\frac{\exp(u^\top s+b)\exp(v^\top h_j)}
+{\exp(u^\top s+b)\sum_\ell\exp(v^\top h_\ell)}
+=\frac{\exp(v^\top h_j)}{\sum_\ell\exp(v^\top h_\ell)}.
+\]
+<p>The weights then do not depend on the query at all. That implementation cannot perform the adaptive read just motivated. The primary paper’s appendix instead uses a nonlinear score \(v_a^\top\tanh(W_as+U_ah_j)\). The nonlinearity mixes the contributions before the final scalar projection. Dot-product attention, introduced below, creates an interaction directly through multiplication. This correction follows from the equations and matters when implementing the lecture.</p>
+<p>Initialization also has two meanings. Parameter initialization chooses model weights before training. Decoder-state initialization chooses \(s_0\) for a particular input. The latter might use an encoder state, a learned projection of it, or a fixed zero vector. Training must use the same state convention expected at inference. Changing that convention after training changes the computation even when the weights are unchanged.</p></section>
+
+<section aria-labelledby="operator"><h2 id="operator">3. Queries, keys, and values have different jobs <a class="timestamp" href="https://www.youtube.com/watch?v=RQowiOF_FvQ&amp;t=1626">27:06</a></h2>
+<p>Remove the recurrent network from the picture. Attention needs queries describing what to retrieve, keys describing how each stored item should match, and values containing what to return. A key and a value come from the same item but need not contain the same features. For a part-inspection record, a key might encode viewpoint and visibility, while a value carries defect evidence. These are learned representations, not fields that an engineer must label manually.</p>
+<p>Use rows for items throughout this chapter. Let \(N_q\) be the number of queries, \(N_k\) the number of stored items, \(d_k\) the query/key dimension, and \(d_v\) the value dimension. Then</p>
+\[
+Q\in\mathbb R^{N_q\times d_k},\quad
+K\in\mathbb R^{N_k\times d_k},\quad
+V\in\mathbb R^{N_k\times d_v},
+\]
+\[
+E=\frac{QK^\top}{\sqrt{d_k}}\in\mathbb R^{N_q\times N_k},
+\quad A=\operatorname{softmax}_{\mathrm{keys}}(E),
+\quad Y=AV\in\mathbb R^{N_q\times d_v}.
+\]
+<p>Row \(i\) of \(A\) is a distribution over keys for query \(i\). Therefore softmax acts across columns, independently within each row; in a two-dimensional NumPy array this is axis 1. A drawing can place queries along a different visual direction, so “normalize columns” is unsafe without the tensor convention. The invariant instruction is: normalize over the key index while holding the query fixed.</p>
+<p>If stored data are \(X\in\mathbb R^{N_k\times d_x}\), learn \(W_K\in\mathbb R^{d_x\times d_k}\) and \(W_V\in\mathbb R^{d_x\times d_v}\), then set \(K=XW_K\), \(V=XW_V\). Query vectors can also be projected from their own source. Query and key dimensions must match for a dot product; value dimensions need not. The number of output rows always equals the number of queries.</p>
+<p>For an exact scalar example, take one query \(q=1\), keys \(0,\log 2,\log 3\), and values \(10,20,40\). Since \(d_k=1\), no additional scale appears. Exponentiating gives \(1,2,3\); the attention weights are \(1/6,2/6,3/6\). The returned value is \(170/6=28\frac13\). With query zero, every score is zero and the result is the ordinary mean \(70/3\). A learned query changes the mixture, not the stored values themselves.</p></section>
+
+<section aria-labelledby="scaling"><h2 id="scaling">4. Scale the score distribution, then understand its gradient <a class="timestamp" href="https://www.youtube.com/watch?v=RQowiOF_FvQ&amp;t=1953">32:33</a></h2>
+<p>Why divide by \(\sqrt{d_k}\)? Under the illustrative assumptions that query and key coordinates are independent, zero mean, and unit variance, the dot product \(q^\top k=\sum_{r=1}^{d_k}q_rk_r\) has mean zero and variance \(d_k\). Cross terms vanish under independence, and each product has variance one. Dividing by \(\sqrt{d_k}\) restores variance one. Learned coordinates need not satisfy those assumptions exactly; this is an initialization-scale argument, not a guarantee about every trained vector.</p>
+<p>Large differences between scores can make softmax nearly one-hot. Its Jacobian is \(J=\operatorname{diag}(a)-aa^\top\), so when one probability approaches one and the others approach zero, many derivatives become small. Identical large scores do not cause this effect: \(\operatorname{softmax}(1000,1000)\) is exactly \((1/2,1/2)\) in exact arithmetic. Subtracting the maximum before exponentiation avoids numerical overflow while preserving those probabilities. Score spread and numerical magnitude are distinct issues.</p>
+<p>The derivative of a weighted read makes the learning signal concrete. For one query, \(y=\sum_j a_jv_j\). If the downstream loss has gradient \(g=\partial L/\partial y\), then</p>
+\[
+\frac{\partial L}{\partial e_j}
+=a_j\,g^\top(v_j-y).
+\]
+<p>A key’s score increases under gradient descent when its value points in a direction that reduces the downstream loss relative to the current mixture. The attention mechanism learns useful retrieval through the task objective. It does not need a separate instruction saying which item deserves a high weight.</p>
+<p>To derive the score gradient, first differentiate the output with respect to a probability: \(\partial L/\partial a_j=g^\top v_j\). Next apply \(\partial a_\ell/\partial e_j=a_\ell(\delta_{\ell j}-a_j)\), where \(\delta_{\ell j}\) is one when the indices match and zero otherwise. Summing over \(\ell\) gives \(a_jg^\top v_j-a_j\sum_\ell a_\ell g^\top v_\ell\), yielding the stated expression. This explicitly identifies the softmax coupling: changing one score redistributes probability among all values, rather than simply adding more of its own value.</p><p>For the scalar fixture above and loss \(L=y\), the three score derivatives are \(-55/18,-25/9,35/6\). Their sum is zero, as required because adding the same constant to all scores leaves the output unchanged. This zero-sum property is a useful implementation check. The query gradient further multiplies these derivatives by the keys and the scale factor; score gradients and query gradients are different quantities.</p></section>
+
+<section aria-labelledby="symmetry"><h2 id="symmetry">5. Self-attention is equivariant to reordering <a class="timestamp" href="https://www.youtube.com/watch?v=RQowiOF_FvQ&amp;t=2750">45:50</a></h2>
+<p>Cross-attention uses queries from one collection and keys/values from another. A report token can query image patches. Self-attention instead derives all three from the same \(X\): \(Q=XW_Q\), \(K=XW_K\), \(V=XW_V\). Self-attention is not intrinsically “decoder-only.” An encoder can use unrestricted self-attention; an autoregressive decoder uses a causal restriction. Data sources and visibility masks are separate design choices.</p>
+<p>Without positional information or a position-dependent mask, self-attention treats its input as a collection rather than an ordered sequence. Let \(P\) be a permutation matrix that reorders rows, and \(F(X)\) denote the attention output. Then \(Q'=PQ\), \(K'=PK\), \(V'=PV\), so \(E'=PEP^\top\). Rowwise softmax commutes with matching row and column permutations, giving \(A'=PAP^\top\). Consequently</p>
+\[
+F(PX)=A'V'=PAP^\top PV=PAV=PF(X).
+\]
+<p>This is permutation equivariance: outputs move with their corresponding inputs. It is not invariance, which would require the output array to remain unchanged. Mean pooling afterward makes the pooled representation invariant to input permutation. That is useful for unordered observations but insufficient for distinguishing “scratch above hole” from “hole above scratch” when spatial relationships have otherwise been discarded.</p>
+<p>Positional information remedies that ambiguity. One option adds a position vector \(p_i\) to token content \(x_i\). Reordering content while leaving positions fixed changes the input meaning. Reordering both content and its attached coordinates merely changes storage order, and the equivariance argument still applies to that enriched collection. This distinction prevents the misleading claim that positions somehow destroy all useful symmetry.</p>
+<p>Absolute positions may be learned or generated by a fixed function. Concatenating coordinates instead of adding an embedding is also possible if projection dimensions are adjusted. Neither choice automatically gives extrapolation to longer sequences or larger images. Those behaviors depend on the positional scheme and training distribution, and should be evaluated directly.</p></section>
+
+<section aria-labelledby="masking"><h2 id="masking">6. Masks express allowed information flow <a class="timestamp" href="https://www.youtube.com/watch?v=RQowiOF_FvQ&amp;t=3225">53:45</a></h2>
+<p>A mask replaces forbidden scores by \(-\infty\) before softmax. Their exponential becomes zero, so they receive zero weight. For next-token prediction at input position \(i\), permit keys \(j\le i\): the current input token is known, but future input tokens would reveal the answer. The target at position \(i\) is the next token. A lower-triangular mask is therefore appropriate under the row-query convention.</p>
+<p>Causal masking lets training evaluate all observed input positions in parallel while preserving the conditional dependency structure. Generation remains sequential because the next input token has not yet been sampled. Parallel training and parallel generation are different claims. Cached keys and values reduce repeated work during generation but do not make unknown future tokens available.</p>
+<p>Padding masks solve a different problem: variable-length examples are packed into a common shape, and padded entries must not affect useful outputs. Combining padding with causal masks requires care. Every row being normalized must have at least one allowed key. An all-masked row asks softmax to normalize a vector of all negative infinities and is undefined under the usual formula. Reject it or define a deliberate separate convention; do not silently accept NaNs.</p>
+<p>In the scalar example, permitting only the first two keys changes weights from \((1/6,2/6,3/6)\) to \((1/3,2/3,0)\), and the output becomes \(50/3\). Zeroing the third weight after softmax without renormalizing would instead give \(50/6\). Those operations are different. A mask should describe the probability distribution before its normalization.</p></section>
+
+<section aria-labelledby="heads"><h2 id="heads">7. Multiple heads separate simultaneous reads <a class="timestamp" href="https://www.youtube.com/watch?v=RQowiOF_FvQ&amp;t=3330">55:30</a></h2>
+<p>One attention head produces one mixture per query. Multiple heads give the model several separately parameterized mixtures. An inspection token might combine one read focused on nearby texture with another focused on a distant reference surface. This is a possible learned behavior, not a semantic label assigned to a particular head in advance.</p>
+<p>With model width \(D\), \(H\) heads, and head width \(d_h=D/H\), the usual construction projects to \(Q,K,V\) of shape \(H\times N\times d_h\), computes an \(N\times N\) attention matrix per head, concatenates the \(H\) outputs, and applies \(W_O\in\mathbb R^{D\times D}\). The score scale uses \(\sqrt{d_h}\), the width of each dot product. Batch size introduces an additional leading axis.</p>
+<p>Ignoring biases, the combined query/key/value projections contain \(3D^2\) parameters and the output projection another \(D^2\). Changing head count while keeping total width fixed does not multiply these parameter counts by \(H\). Increasing head count at fixed per-head width does increase total width and cost. The phrase “more heads means more parameters” requires specifying what remains fixed.</p>
+<p>The lecture emphasizes four matrix-multiplication stages: fused QKV projection, batched query-key products, attention-weighted values, and output projection. Softmax, masking, reshaping, and memory movement remain necessary, so this is a description of the main dense arithmetic rather than a complete instruction count. Concatenating projection matrices allows one large multiply to replace three smaller ones without changing the mathematical result.</p></section>
+
+<section aria-labelledby="cost"><h2 id="cost">8. Global access has an explicit cost <a class="timestamp" href="https://www.youtube.com/watch?v=RQowiOF_FvQ&amp;t=3501">58:21</a></h2>
+<p>A recurrent layer processes steps sequentially; a local convolution processes grid neighborhoods in parallel; unrestricted attention lets every token read every other token in one layer. Each structure encodes a different assumption about communication. Attention’s short path between distant positions can help long-range interactions, but it does not prove that the model uses distant evidence correctly.</p>
+<p>For standard multihead attention at fixed \(D\), projection arithmetic scales as \(O(ND^2)\), and the two pairwise stages as \(O(N^2D)\). Materializing all head attention matrices uses \(HN^2\) numbers. With \(N=4096\), \(H=8\), and two bytes per number, that one tensor occupies \(268{,}435{,}456\) bytes, or 256 MiB. Gradients, other activations, parameters, and temporary storage are additional.</p>
+<p><a href="https://arxiv.org/abs/2205.14135">FlashAttention</a>, referenced in the slide text, changes how exact attention is computed and stored. Tiling and online normalization avoid writing the full quadratic matrix to high-bandwidth memory. This reduces memory traffic and auxiliary storage; it does not turn dense all-pairs attention into linear arithmetic. Exactness means the same mathematical operator, allowing floating-point differences from operation order.</p>
+<p>For a single query, online softmax can maintain a running maximum \(m\), exponential sum \(\ell\), and weighted value sum \(o\). When combining a new block with maximum \(m_b\), sum \(\ell_b\), and weighted sum \(o_b\), choose \(m'=\max(m,m_b)\), rescale both old and new quantities by their respective exponentials, and add. The final answer is \(o/\ell\). This algebra explains why the full probability vector need not be stored to compute its weighted sum.</p>
+<p>More pairwise computation is not automatically more useful reasoning. It offers capacity at a resource cost. For our inspection system, patch size, image resolution, and video sampling determine token count before the transformer runs. Those choices can dominate affordability. A model that loses the tiny scratch during tokenization cannot recover that missing evidence merely by adding attention layers.</p></section>
+
+<section aria-labelledby="block"><h2 id="block">9. A transformer alternates communication and local computation <a class="timestamp" href="https://www.youtube.com/watch?v=RQowiOF_FvQ&amp;t=3755">62:35</a></h2>
+<p>The lecture’s block first applies multihead attention, adds a residual connection, and normalizes. It then applies a shared two-layer feed-forward network independently to every token, adds another residual connection, and normalizes again. In a post-normalization convention:</p>
+\[
+U=\operatorname{LN}(X+\operatorname{MHA}(X)),\qquad
+Y=\operatorname{LN}(U+\operatorname{FFN}(U)).
+\]
+<p>Here \(\operatorname{FFN}(u)=\phi(uW_1+b_1)W_2+b_2\), commonly expanding from \(D\) to \(4D\) before returning to \(D\). The same weights are applied to every row. Attention communicates across tokens; the feed-forward network computes within each token. Layer normalization also operates independently within each token across its feature coordinates. Calling the FFN “fully connected” does not mean it connects every token to every other token.</p>
+<p>Stacking blocks creates repeated rounds of communication and processing. The block structure is repeated, but different depths normally have different learned weights. Residual addition requires matching feature shapes. Normalization placement affects the path through which both activations and gradients travel, so it is not a purely cosmetic rearrangement.</p>
+<p>The primary <a href="https://arxiv.org/abs/1706.03762">transformer paper</a> uses attention in encoder self-attention, masked decoder self-attention, and encoder-decoder cross-attention. Its name does not mean a working model consists only of attention. Embeddings, feed-forward transformations, normalization, residual paths, and output prediction remain part of the architecture.</p></section>
+
+<section aria-labelledby="vision"><h2 id="vision">10. Turn image patches into tokens <a class="timestamp" href="https://www.youtube.com/watch?v=RQowiOF_FvQ&amp;t=3865">64:25</a></h2>
+<p>For a \(224\times224\) RGB image and nonoverlapping \(16\times16\) patches, there are \(14^2=196\) patches. Each contains \(16\cdot16\cdot3=768\) scalar values. Flatten each patch and apply the same learned \(768\times D\) projection. This equals a convolution with kernel size 16, stride 16, three input channels, and \(D\) output channels, provided ordering and bias conventions match.</p>
+<p>Add spatial information, process the patch tokens, then form an image-level representation. The lecture presents mean pooling followed by a classifier. The original <a href="https://arxiv.org/abs/2010.11929">Vision Transformer</a> also provides the important precedent of a learned classification token. These are alternative readout designs; a classification token is not required by the definition of a transformer.</p>
+<p>Halving patch width to eight at fixed image size quadruples token count from 196 to 784. The pairwise attention matrix then has sixteen times as many entries. Finer patches can preserve small-defect detail but have a steep communication cost. A practical design comparison should measure defect-size-specific recall as well as total accuracy and latency.</p>
+<p>Attention maps can reveal how this computation distributes its weighted reads. They are useful diagnostics, but a high weight alone does not establish causal importance: values, residual routes, other heads, and downstream transformations also matter. <a href="https://arxiv.org/abs/1902.10186">Jain and Wallace’s study</a> provides a research warning against equating weights with explanations. For inspection, perturbing a region and measuring prediction changes provides complementary evidence, though perturbations themselves can create distribution shift.</p></section>
+
+<section aria-labelledby="extensions"><h2 id="extensions">11. Slide-only extensions: change a component, retain the accounting</h2>
+<p>The lecture leaves its final architecture refinements as extra reading. They are included here as a bounded extension from slides 110–120, not as material developed in the spoken lecture. A pre-normalization block uses \(U=X+\operatorname{MHA}(\operatorname{LN}(X))\), followed by \(Y=U+\operatorname{FFN}(\operatorname{LN}(U))\). Setting residual branches to zero preserves an identity path through these blocks. A separate final normalization, if present, still changes the overall network map.</p>
+<p><a href="https://arxiv.org/abs/1910.07467">RMSNorm</a> rescales a feature vector using \(\sqrt{\epsilon+D^{-1}\sum_i x_i^2}\) without subtracting its mean. <a href="https://arxiv.org/abs/2002.05202">SwiGLU</a> replaces an ordinary FFN with \([\operatorname{SiLU}(XW_a)\odot XW_b]W_c\), where \(\operatorname{SiLU}(z)=z\sigma(z)\). With hidden width \(M\), its three bias-free projections have \(3DM\) parameters. Matching an ordinary \(D\to4D\to D\) FFN’s \(8D^2\) requires \(M=8D/3\), rounded appropriately in actual implementations.</p>
+<p>A <a href="https://arxiv.org/abs/1701.06538">sparsely gated mixture of experts</a> stores multiple FFNs and routes each token through a subset. Total parameter count and active per-token arithmetic consequently diverge. Routing, load balance, communication, and capacity constraints add costs beyond the selected matrix multiplies. These architectural principles do not justify guessing undisclosed parameter counts or internal designs of proprietary models.</p></section>
+
+<section aria-labelledby="implementation"><h2 id="implementation">12. Check retrieval, masking, gradients, and symmetry</h2>
+<p>This independent NumPy fixture tests the operator, not a trained transformer. The repository laboratory supplies stable attention and central finite differences. The checks deliberately include an implementation that is mathematically wrong for query-dependent retrieval, so passing examples alone cannot hide the affine-score cancellation.</p>
+<pre><code class="language-python">import numpy as np
+from numerical_lab import attention, central_gradient
+
+q = np.array([[1.0]])
+k = np.log(np.array([[1.0], [2.0], [3.0]]))
+v = np.array([[10.0], [20.0], [40.0]])
+weights, y = attention(q, k, v)
+assert np.allclose(y, [[170.0 / 6.0]])
+assert np.allclose(attention(q, k, v, np.array([[True, True, False]]))[1],
+                   [[50.0 / 3.0]])
+
+def read_scores(scores):
+    p = np.exp(scores - scores.max())
+    p /= p.sum()
+    return float(p @ v[:, 0])
+
+scores = k[:, 0].copy()
+numeric = central_gradient(read_scores, scores)
+assert np.allclose(numeric, [-55/18, -25/9, 35/6], atol=1e-7)
+assert abs(numeric.sum()) &lt; 1e-7
+
+def affine_weights(query):
+    e = 7.0 * query + np.array([0.0, 1.0, -1.0])
+    z = np.exp(e - e.max())
+    return z / z.sum()
+assert np.allclose(affine_weights(-2), affine_weights(9))
+
+rng = np.random.default_rng(8)
+x = rng.normal(size=(5, 4))
+wq, wk, wv = [rng.normal(size=(4, 3)) for _ in range(3)]
+def self_attention(z):
+    return attention(z @ wq, z @ wk, z @ wv)[1]
+perm = np.array([3, 0, 4, 1, 2])
+assert np.allclose(self_attention(x[perm]), self_attention(x)[perm])
+
+causal = np.tril(np.ones((5, 5), dtype=bool))
+before = attention(x, x, x, causal)[1]
+changed = x.copy()
+changed[-1] += 100
+after = attention(changed, changed, changed, causal)[1]
+assert np.allclose(before[:-1], after[:-1])
+assert 8 * 4096**2 * 2 == 256 * 2**20
+</code></pre>
+<p>The last causality check changes a future input and confirms earlier outputs stay fixed. This is stronger than merely inspecting a triangular mask. The permutation check similarly tests the entire projection-and-attention computation. Numerical agreement does not certify training quality, generalization, or the interpretation of a learned head.</p></section>
+
+<section aria-labelledby="exercises"><h2 id="exercises">13. Exercises with complete solutions</h2>
+<details><summary>1. Derive a score function that appears query-dependent but is not.</summary><p>Let \(e_j=2q+3k_j-5\). Softmax cancels the shared term \(2q-5\), leaving probabilities proportional to \(\exp(3k_j)\). Its derivative with respect to \(q\) is zero. Replacing the score by \(qk_j\) makes score differences equal \(q(k_j-k_\ell)\), which can depend on the query. A nonlinear function of concatenated inputs can also create that interaction.</p></details>
+<details><summary>2. Check a rectangular cross-attention layer.</summary><p>For seven queries of width 12 and 20 keys of width 12, \(QK^\top\) has shape \(7\times20\). If values have width five, the output is \(7\times5\). There are seven probability distributions, each over 20 keys. Normalizing over the seven queries instead would describe a different operator and generally fail to make each output a convex combination of values.</p></details>
+<details><summary>3. Show why large equal scores do not imply saturation.</summary><p>For \((c,c)\), softmax gives \((1/2,1/2)\) for every finite \(c\). Its Jacobian is \(\begin{bmatrix}1/4&amp;-1/4\\-1/4&amp;1/4\end{bmatrix}\). By contrast, scores \((c,0)\) with \(c\to\infty\) give probabilities approaching \((1,0)\) and a Jacobian approaching zero. Stable evaluation subtracts the maximum in both cases, separating arithmetic overflow from mathematical saturation.</p></details>
+<details><summary>4. Compare head counts at fixed model width.</summary><p>With \(D=64\), four heads have width 16 and eight heads have width eight. Both have \(4D^2=16{,}384\) attention-projection parameters when biases are omitted. The stored attention matrices double in number when moving from four heads to eight. Pairwise multiply work remains proportional to \(HN^2d_h=N^2D\), while softmax work and implementation overhead can change.</p></details>
+<details><summary>5. Explain an image-order failure and a precise repair.</summary><p>Without spatial information, permuting patch tokens permutes self-attention outputs. Mean pooling removes that permutation, so two images made from the same patch multiset can have the same pooled representation even if arrangement changes their meaning. Attach coordinates or positional embeddings to patch locations. Rearranging content while keeping location encodings fixed then changes the enriched token collection and can change the prediction.</p></details>
+<details><summary>6. Account for resolution and inspect a masking bug.</summary><p>Doubling both image dimensions at fixed patch size multiplies patch count by four and pairwise entries by sixteen. It does not multiply projection parameters, because projections are shared across tokens. Separately, taking a softmax then setting forbidden weights to zero loses probability mass. Renormalizing the remaining weights recovers the intended masked distribution in exact arithmetic when at least one key remains, but masking scores before stable softmax is the clearer implementation.</p></details>
+</section>
+<section aria-labelledby="boundaries"><h2 id="boundaries">14. What attention changes, and what it leaves to learning</h2>
+<p>Attention provides content-dependent communication with explicit tensor shapes, symmetry, and resource costs. A transformer makes that communication reusable across language and image tokens. It does not choose the right target, preserve detail lost in preprocessing, guarantee faithful explanations, or make unlimited context cheap. For the inspection case, the next questions are about outputs: locating defects, outlining their pixels, and understanding which visual evidence drives decisions.</p></section><!-- BOOK-CONTENT-END --></article><nav class="page-turn" aria-label="Chapter navigation"><a rel="prev" href="lecture-07-recurrent-state-and-sequences.html">Previous available chapter</a><a href="index.html">Lecture index</a><a rel="next" href="lecture-09-detection-segmentation-and-explanation.html">Next available chapter</a></nav></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

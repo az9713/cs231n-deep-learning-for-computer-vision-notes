@@ -1,0 +1,207 @@
+{
+  "title": "Self-supervision: choose what a representation must preserve",
+  "number": 12,
+  "video_id": "4howBU7THbM",
+  "source_type": "locally generated machine transcription and official extracted slide text",
+  "sections": [
+    {
+      "section": "representation",
+      "start": 5,
+      "end": 630,
+      "lecture_material": "Representations and pretext targets",
+      "research_extension": "Formal target construction",
+      "teaching_construction": "Factory-label scarcity",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "evaluation",
+      "start": 630,
+      "end": 943,
+      "lecture_material": "Transfer protocols",
+      "research_extension": "Leakage and shortcut boundaries",
+      "teaching_construction": "Watermark counterexample",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "transformations",
+      "start": 943,
+      "end": 1593,
+      "lecture_material": "Rotation,context,jigsaw",
+      "research_extension": "Symmetry and permutation count",
+      "teaching_construction": "Orientation-sensitive defects",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "reconstruction",
+      "start": 1593,
+      "end": 1852,
+      "lecture_material": "Masked inpainting",
+      "research_extension": "Conditional-mean derivation",
+      "teaching_construction": "Masked loss fixture",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "color",
+      "start": 1852,
+      "end": 2249,
+      "lecture_material": "Colorization and split-brain prediction",
+      "research_extension": "Ambiguity and channel conventions",
+      "teaching_construction": "Material/lighting distinction",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "tracking",
+      "start": 2249,
+      "end": 2752,
+      "lecture_material": "Video color propagation",
+      "research_extension": "Attention and ambiguous correspondence",
+      "teaching_construction": "Two-color mixture",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "mae",
+      "start": 2752,
+      "end": 3521,
+      "lecture_material": "MAE architecture and probing",
+      "research_extension": "Compute components and mask-token interpretation",
+      "teaching_construction": "196-patch arithmetic",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "contrast",
+      "start": 3521,
+      "end": 3964,
+      "lecture_material": "InfoNCE formulation and information",
+      "research_extension": "Correct logK bound and assumptions",
+      "teaching_construction": "Exact loss derivative",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "simclr",
+      "start": 3964,
+      "end": 4278,
+      "lecture_material": "SimCLR views/projection/batches",
+      "research_extension": "Nonlinear head correction and false negatives",
+      "teaching_construction": "Candidate indexing",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "momentum",
+      "start": 4278,
+      "end": 4425,
+      "lecture_material": "MoCo queue and momentum",
+      "research_extension": "Positive-key interpretation and time scales",
+      "teaching_construction": "EMA arithmetic",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "extensions",
+      "start": 4425,
+      "end": 4477,
+      "lecture_material": "Brief CPC/DINO mention",
+      "research_extension": "Slide and primary-source extension",
+      "teaching_construction": "Causal context and collapse",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original code and solved exercises",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original code and solved exercises",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original code and solved exercises",
+      "evidence_class": "original teaching construction"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_12.pdf",
+      "supports": "Official slides mechanism and historical source"
+    },
+    {
+      "title": "Rotation prediction",
+      "url": "https://arxiv.org/abs/1803.07728",
+      "supports": "Rotation prediction mechanism and historical source"
+    },
+    {
+      "title": "Context prediction",
+      "url": "https://arxiv.org/abs/1505.05192",
+      "supports": "Context prediction mechanism and historical source"
+    },
+    {
+      "title": "Jigsaw learning",
+      "url": "https://arxiv.org/abs/1603.09246",
+      "supports": "Jigsaw learning mechanism and historical source"
+    },
+    {
+      "title": "Context Encoders",
+      "url": "https://arxiv.org/abs/1604.07379",
+      "supports": "Context Encoders mechanism and historical source"
+    },
+    {
+      "title": "Colorization",
+      "url": "https://arxiv.org/abs/1603.08511",
+      "supports": "Colorization mechanism and historical source"
+    },
+    {
+      "title": "Split-Brain Autoencoders",
+      "url": "https://arxiv.org/abs/1611.09842",
+      "supports": "Split-Brain Autoencoders mechanism and historical source"
+    },
+    {
+      "title": "Tracking by colorization",
+      "url": "https://arxiv.org/abs/1806.09594",
+      "supports": "Tracking by colorization mechanism and historical source"
+    },
+    {
+      "title": "MAE",
+      "url": "https://arxiv.org/abs/2111.06377",
+      "supports": "MAE mechanism and historical source"
+    },
+    {
+      "title": "CPC",
+      "url": "https://arxiv.org/abs/1807.03748",
+      "supports": "CPC mechanism and historical source"
+    },
+    {
+      "title": "SimCLR",
+      "url": "https://arxiv.org/abs/2002.05709",
+      "supports": "SimCLR mechanism and historical source"
+    },
+    {
+      "title": "MoCo",
+      "url": "https://arxiv.org/abs/1911.05722",
+      "supports": "MoCo mechanism and historical source"
+    },
+    {
+      "title": "DINO",
+      "url": "https://arxiv.org/abs/2104.14294",
+      "supports": "DINO mechanism and historical source"
+    }
+  ],
+  "limitations": [
+    "Complete transcript read:5.20\u20134476.02 seconds.",
+    "All115 extracted slide-text pages read; no claim of complete visual review.",
+    "CPC and DINO detail identified as extensions beyond brief spoken closing.",
+    "Numerical checks do not reproduce representation benchmarks."
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "numpy_version": "2.2.6",
+  "checks": {
+    "softmax_gradient_max_absolute_error": 5.2394547034317895e-11,
+    "two_layer_backprop_max_absolute_error": 9.626371921811483e-11,
+    "contrastive_temperature_chain_rule_error": 4.5261294712162226e-11,
+    "temporal_mean_loses_motion_direction_counterexample": "passed",
+    "gradient_descent_final_stable_unstable": [
+      3.656158440062987e-05,
+      836.682554252847
+    ],
+    "convolution_equivariance_and_stride_counterexample": "passed",
+    "attention_key_value_permutation_max_error": 1.1102230246251565e-16,
+    "box_iou_partial_disjoint_identity": "passed",
+    "unequal_shard_mean_unweighted_error": 1.666666666666666,
+    "diagonal_gaussian_kl_boundary_cases": "passed",
+    "diffusion_empirical_mean_variance": [
+      1.2002974479867698,
+      0.6371179268409612
+    ],
+    "pinhole_projection_scale_ambiguity": "passed",
+    "invalid_inputs_rejected": 7
+  }
+}

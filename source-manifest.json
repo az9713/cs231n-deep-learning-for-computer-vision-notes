@@ -1,0 +1,443 @@
+{
+  "course": "CS231N",
+  "term": "Spring 2025",
+  "slug": "cs231n-deep-learning-for-computer-vision-notes",
+  "playlist": "PLoROMvodv4rOmsNzYBMe0gJY2XS8AQg16",
+  "format": "HTML",
+  "publication": "local only",
+  "status": "complete local reading edition",
+  "lectures": [
+    {
+      "id": "2fq9wYslV0A",
+      "title": "Stanford CS231N Deep Learning for Computer Vision | Spring 2025 | Lecture 1: Introduction",
+      "duration": 3773,
+      "url": "https://www.youtube.com/watch?v=2fq9wYslV0A",
+      "chapter_order": 1,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-04-01",
+      "lecturer": "Fei-Fei Li, Ehsan Adeli",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_1_part_1.pdf",
+        "https://cs231n.stanford.edu/slides/2025/lecture_1_part_2.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "b97b116ffdc8fe521da4578c7841c615ddaa6d09a9aa2307f797adff75f91989"
+      ],
+      "audio_duration_seconds": [
+        3772.261
+      ],
+      "chapter_file": "lecture-01-visual-intelligence.html",
+      "transcript_sha256": "1f110e676df22b98d81d356f29b2afa5caed00f84b8e8c9a89e42fa8ef63d2f1",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "pdqofxJeBN8",
+      "title": "Stanford CS231N | Spring 2025 | Lecture 2: Image Classification with Linear Classifiers",
+      "duration": 4022,
+      "url": "https://www.youtube.com/watch?v=pdqofxJeBN8",
+      "chapter_order": 2,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-04-03",
+      "lecturer": "Ehsan Adeli",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_2.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "6ad14274e489a76fb7973aac98b09a9f3633faffb503223b0eadfb73aef95ae4"
+      ],
+      "audio_duration_seconds": [
+        4021.441
+      ],
+      "chapter_file": "lecture-02-classification-and-linear-models.html",
+      "transcript_sha256": "6de65fb3293677a3189c5c72d180fea35a93f48d1b2eabec746ccf52f7f4272c",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "dyNGd06MWn4",
+      "title": "Stanford CS231N | Spring 2025 | Lecture 3: Regularization and Optimization",
+      "duration": 4119,
+      "url": "https://www.youtube.com/watch?v=dyNGd06MWn4",
+      "chapter_order": 3,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-04-08",
+      "lecturer": "Zane Durante",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_3.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "2682d5683e48e8b96b079e3a774f81814d87a351322694bd18464f8be174b58e"
+      ],
+      "audio_duration_seconds": [
+        4118.901
+      ],
+      "chapter_file": "lecture-03-regularization-and-optimization.html",
+      "transcript_sha256": "b6dc58f4b1c083ddf1dfded1dbacf8f8cdc91982d1a0d9eec5ba7ceda63943ae",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "25zD5qJHYsk",
+      "title": "Stanford CS231N | Spring 2025 | Lecture 4: Neural Networks and Backpropagation",
+      "duration": 4607,
+      "url": "https://www.youtube.com/watch?v=25zD5qJHYsk",
+      "chapter_order": 4,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-04-10",
+      "lecturer": "Ehsan Adeli",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_4.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "294a6155d133efbc96235d2673d80566b430b16999bba689eee028f901542f1c"
+      ],
+      "audio_duration_seconds": [
+        4606.101
+      ],
+      "chapter_file": "lecture-04-networks-and-backpropagation.html",
+      "transcript_sha256": "01b40f05f69aab71af47506df5f20193521189fcc3e1111bc77f6c73418c3c9a",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "f3g1zGdxptI",
+      "title": "Stanford CS231N | Spring 2025 | Lecture 5: Image Classification with CNNs",
+      "duration": 4084,
+      "url": "https://www.youtube.com/watch?v=f3g1zGdxptI",
+      "chapter_order": 5,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-04-15",
+      "lecturer": "Justin Johnson",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_5.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "6e4f9819851dfac72dea066fd87ee283c5dd4260c3717989a79a22d33d8928cf"
+      ],
+      "audio_duration_seconds": [
+        4083.541
+      ],
+      "chapter_file": "lecture-05-convolution-and-spatial-structure.html",
+      "transcript_sha256": "142698acdafee7b4edc207f3427c0aba6d7ae13dbfad6e42c329c7ed9b0ee567",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "aVJy4O5TOk8",
+      "title": "Stanford CS231N Deep Learning for Computer Vision | Spring 2025 | Lecture 6: CNN Architectures",
+      "duration": 4267,
+      "url": "https://www.youtube.com/watch?v=aVJy4O5TOk8",
+      "chapter_order": 6,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-04-17",
+      "lecturer": "Zane Durante",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_6.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "1514e8c3cf482f3b63b09a3858b91efdae98022c1dae39c7d98aa59f6eb730ad"
+      ],
+      "audio_duration_seconds": [
+        4266.861
+      ],
+      "chapter_file": "lecture-06-training-and-residual-networks.html",
+      "transcript_sha256": "260419beb412f02959241fa8c71d567f1c0760cff84bdda87613be659172a348",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "kG2lAPBF7zA",
+      "title": "Stanford CS231N | Spring 2025 | Lecture 7: Recurrent Neural Networks",
+      "duration": 4308,
+      "url": "https://www.youtube.com/watch?v=kG2lAPBF7zA",
+      "chapter_order": 7,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-04-22",
+      "lecturer": "Zane Durante",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_7.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "afa32f27f93b8169198db13a637e2b0c47d59c9e16f540cb1b32922eb6100b1a"
+      ],
+      "audio_duration_seconds": [
+        4307.401
+      ],
+      "chapter_file": "lecture-07-recurrent-state-and-sequences.html",
+      "transcript_sha256": "23d3f5a58f1a1f8fafc8c05d91867457838a867fca347027cf5227ae028686fd",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "RQowiOF_FvQ",
+      "title": "Stanford CS231N | Spring 2025 | Lecture 8: Attention and Transformers",
+      "duration": 3991,
+      "url": "https://www.youtube.com/watch?v=RQowiOF_FvQ",
+      "chapter_order": 8,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-04-24",
+      "lecturer": "Justin Johnson",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_8.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "6f057e80ef60dd4d0cd01e41c9142f822e413c3f4792cdd4ccd677e583e10690"
+      ],
+      "audio_duration_seconds": [
+        3990.881
+      ],
+      "chapter_file": "lecture-08-attention-and-transformers.html",
+      "transcript_sha256": "44fa7b8d09b86f4378c377fd22bdaba707caefbf507d814d76935c1f6666f8b6",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "PTypu6GqEd4",
+      "title": "Stanford CS231N | Spring 2025 | Lecture 9: Object Detection, Image Segmentation, Visualizing",
+      "duration": 4424,
+      "url": "https://www.youtube.com/watch?v=PTypu6GqEd4",
+      "chapter_order": 9,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-04-29",
+      "lecturer": "Ehsan Adeli",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_9.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "9bbe124ba360976200cf944228cdc2ae848fa0dc9391d37a309cd5abf350f621"
+      ],
+      "audio_duration_seconds": [
+        4422.981
+      ],
+      "chapter_file": "lecture-09-detection-segmentation-and-explanation.html",
+      "transcript_sha256": "955024ec42f8869560337ad3103acbb3ddbfea505a484448a9065dec750e6dfb",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "wElqklprhPE",
+      "title": "Stanford CS231N Deep Learning for Computer Vision | Spring 2025 | Lecture 10: Video Understanding",
+      "duration": 4125,
+      "url": "https://www.youtube.com/watch?v=wElqklprhPE",
+      "chapter_order": 10,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-05-01",
+      "lecturer": "Ruohan Gao",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_10.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "92d0367ed0d8048644cd6a85c4123964d3f6662c06c32a29920d02ca556f683d"
+      ],
+      "audio_duration_seconds": [
+        4124.281
+      ],
+      "chapter_file": "lecture-10-video-motion-and-memory.html",
+      "transcript_sha256": "1f30b9c6fa4cc05eb7db53957a6b993575884e435a680dddfaa2c801be3dc382",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "9MvD-XsowsE",
+      "title": "Stanford CS231N | Spring 2025 | Lecture 11: Large Scale Distributed Training",
+      "duration": 4373,
+      "url": "https://www.youtube.com/watch?v=9MvD-XsowsE",
+      "chapter_order": 11,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-05-06",
+      "lecturer": "Justin Johnson",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_11.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "46357a36c00ac855c9f17c81c4ce09b6fb3e1e10d9aa25ba612a2abadec6681b"
+      ],
+      "audio_duration_seconds": [
+        4372.601
+      ],
+      "chapter_file": "lecture-11-distributed-training.html",
+      "transcript_sha256": "27e870da4614af18c5fc7254a216d09e9c965e2397a2c48c7e8630eb8e38f21f",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "4howBU7THbM",
+      "title": "Stanford CS231N | Spring 2025 | Lecture 12: Self-Supervised Learning",
+      "duration": 4482,
+      "url": "https://www.youtube.com/watch?v=4howBU7THbM",
+      "chapter_order": 12,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-05-08",
+      "lecturer": "Ehsan Adeli",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_12.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "2cf08a1ed68c5b2f15e25db203ce3e2a4d3dbcfffe5d4d2b059da97c6b101bcd"
+      ],
+      "audio_duration_seconds": [
+        4481.221
+      ],
+      "chapter_file": "lecture-12-self-supervised-representations.html",
+      "transcript_sha256": "a5006e51402b5db43391e01e2851f8797cce0367baed3f5be6848e973b95de15",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "zbHXQRUNlH0",
+      "title": "Stanford CS231N Deep Learning for Computer Vision | Spring 2025 | Lecture 13: Generative Models 1",
+      "duration": 4351,
+      "url": "https://www.youtube.com/watch?v=zbHXQRUNlH0",
+      "chapter_order": 13,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-05-15",
+      "lecturer": "Justin Johnson",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_13.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "3708411fd321215cf8e4059c7da89d6d69a19050a1e571c2bda3dae6fdcdb8df"
+      ],
+      "audio_duration_seconds": [
+        4350.141
+      ],
+      "chapter_file": "lecture-13-generative-models-and-variational-inference.html",
+      "transcript_sha256": "9cfca6c469a36766a9b125ca50ca1886a17d2b0c81d707bdc5033ab71673985e",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "Edr4uZFh4EE",
+      "title": "Stanford CS231N Deep Learning for Computer Vision | Spring 2025 | Lecture 14: Generative Models 2",
+      "duration": 4329,
+      "url": "https://www.youtube.com/watch?v=Edr4uZFh4EE",
+      "chapter_order": 14,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-05-20",
+      "lecturer": "Justin Johnson",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_14.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "fd54e00a4d5a87a38663db041cb5e3605ea4777202fccb474e0333a3f7c03df9"
+      ],
+      "audio_duration_seconds": [
+        4328.061
+      ],
+      "chapter_file": "lecture-14-adversarial-generation-and-diffusion.html",
+      "transcript_sha256": "ce1983bc651a27ba098aee911ffc7f5b5367c32f59be43849df8e8a5de0ea874",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "7lxrKDKtykM",
+      "title": "Stanford CS231N Deep Learning for Computer Vision | Spring 2025 | Lecture 15: 3D Vision",
+      "duration": 4310,
+      "url": "https://www.youtube.com/watch?v=7lxrKDKtykM",
+      "chapter_order": 15,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-05-22",
+      "lecturer": "Jiajun Wu",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_15.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "3ec8ed5c60bee3afd4420a66f0fefbaef9257d7529f6546ef9d60c2e77297245"
+      ],
+      "audio_duration_seconds": [
+        4309.741
+      ],
+      "chapter_file": "lecture-15-geometry-and-neural-scenes.html",
+      "transcript_sha256": "98d6547b67fe258acae4be83175d81f9c96fec39f9957fd1a73e42e4e3b84202",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "mQOK0Mfyrkk",
+      "title": "Stanford CS231N Deep Learning for Computer Vision | Spring 2025 | Lecture 16: Vision and Language",
+      "duration": 4194,
+      "url": "https://www.youtube.com/watch?v=mQOK0Mfyrkk",
+      "chapter_order": 16,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-05-27",
+      "lecturer": "Ranjay Krishna",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_16.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "b5c6eb70500a39465cabb3dabed7297a6dbdca134a88315c05e6278ecb288213"
+      ],
+      "audio_duration_seconds": [
+        4193.121
+      ],
+      "chapter_file": "lecture-16-vision-and-language.html",
+      "transcript_sha256": "fc76fa47fb0a050af4e4a78775c11cf3b3e57b4fc3c71ca95a6b00c0f170bd4e",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "XSfmOH_xVSU",
+      "title": "Stanford CS231N Deep Learning for Computer Vision | Spring 2025 | Lecture 17: Robot Learning",
+      "duration": 4713,
+      "url": "https://www.youtube.com/watch?v=XSfmOH_xVSU",
+      "chapter_order": 17,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-05-29",
+      "lecturer": "Yunzhu Li",
+      "official_slides": [
+        "https://cs231n.stanford.edu/slides/2025/lecture_17.pdf"
+      ],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "1dbed9a1073e476093580f89fb2c9592732797ecdeb63f6f48f2162e6e18cd71"
+      ],
+      "audio_duration_seconds": [
+        4712.101
+      ],
+      "chapter_file": "lecture-17-robot-learning.html",
+      "transcript_sha256": "e1f07c7b173bd1a6e580c328bb2c6c47cf9bd7e1d495755100b3d324a90f08b3",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    },
+    {
+      "id": "g8UaBfj6Sh8",
+      "title": "Stanford CS231N Deep Learning for Computer Vision | Spring 2025 | Lecture 18: Human-Centered AI",
+      "duration": 3916,
+      "url": "https://www.youtube.com/watch?v=g8UaBfj6Sh8",
+      "chapter_order": 18,
+      "chapter_status": "complete",
+      "transcript_status": "locally generated machine transcription; complete source read",
+      "date": "2025-06-03",
+      "lecturer": "Fei-Fei Li",
+      "official_slides": [],
+      "audio_status": "acquired",
+      "audio_sha256": [
+        "a063437cc7cf9e60ffc0edbe6c6e52c5987db86925f53935e32358ff560f8801"
+      ],
+      "audio_duration_seconds": [
+        3914.961
+      ],
+      "chapter_file": "lecture-18-human-centered-vision.html",
+      "transcript_sha256": "1eaf1c817835f6ff397277117985f1398c590ccc601c14a48f54221bbb0520cd",
+      "source_review": "full machine transcript and available official slide text; technical claims cross-checked"
+    }
+  ],
+  "official_schedule": "https://cs231n.stanford.edu/2025/schedule.html"
+}

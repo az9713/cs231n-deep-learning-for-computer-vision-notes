@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="9b345785357d187177ab0c66c9fb13b02d0debe05265a21ee695ef41557d1dfa"><title>From pixels to visual intelligence · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc" aria-label="On this page"><h2>On this page</h2></aside><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><header class="chapter-header">
+<p class="eyebrow">Chapter 1 · CS231N, Spring 2025</p>
+<h1>From pixels to visual intelligence</h1>
+<p class="lead">A camera measures light. A visual system must decide which distinctions in those measurements matter. That gap explains both the history of computer vision and the engineering discipline required to build a useful model.</p>
+<p class="source-note">Grounded in the complete introduction lecture by Fei-Fei Li and Ehsan Adeli. The source was a locally generated speech-recognition transcript, checked against the official lecture slides. The inspection system, equations, numerical examples, and exercises below are original teaching constructions. They are not reported Stanford experiments.</p>
+</header>
+
+<section aria-labelledby="seeing">
+<h2 id="seeing">1. Why taking a picture does not solve vision <a class="timestamp" href="https://www.youtube.com/watch?v=2fq9wYslV0A&amp;t=5" aria-label="Lecture at 0:05">0:05</a></h2>
+<p>A factory camera photographs a small metal part as it passes a conveyor. The immediate question is whether the part has a scratch. Later, the same system may need to locate the scratch, follow the part through several frames, explain the defect to an operator, and guide a robot that removes it. These requests sound like variations on “look at this,” but they require different output objects and different evidence of success.</p>
+<p>The photograph is already available. What is missing is an interpretation. A dark streak might be a scratch, a shadow, an engraving, or a reflection of another object. Two photographs of the same acceptable part can differ more in their pixel values than photographs of an acceptable and defective part under identical lighting. A useful system must preserve distinctions that affect the task while tolerating changes that do not.</p>
+<p>The lecture positions <strong>computer vision</strong>, the computational interpretation of images and video, within the broader project of artificial intelligence. <strong>Machine learning</strong> builds predictive behavior from data rather than specifying every decision rule manually. <strong>Deep learning</strong> learns representations through multiple successive transformations. These are overlapping ideas, not interchangeable names: geometric reconstruction can be vision without a deep network, and a language model can be deep learning without processing images.</p>
+<p>Let \(x\in\mathbb{R}^{H\times W\times D}\) denote one image represented as an array. Here \(H\) is image height, \(W\) is width, and \(D\) is the number of color channels. The entries are measurements, possibly normalized from integer sensor values. Let \(y\in\{0,1\}\) be the desired label, with \(1\) meaning that the part is defective. A predictor \(f_\theta\), parameterized by adjustable numbers \(\theta\), maps the image to an output. It might return a hard class decision or a score that a later rule converts to a decision.</p>
+<p>Notice what this notation leaves unresolved. Who determines whether a faint mark counts as a defect? Is a scratch on a hidden surface visible? Does the target label describe cosmetic appearance or mechanical reliability? A model cannot repair an incoherent target simply by containing more parameters. Defining the output is part of the scientific problem.</p>
+<p><a href="https://www.youtube.com/watch?v=2fq9wYslV0A&amp;t=5">Lecture anchor: the scope of visual intelligence</a>. The historical examples that follow explain how researchers progressively changed the representation, the learning rule, and the available evidence.</p>
+</section>
+
+<section aria-labelledby="inverse">
+<h2 id="inverse">2. Image formation makes interpretation an inverse problem <a class="timestamp" href="https://www.youtube.com/watch?v=2fq9wYslV0A&amp;t=200" aria-label="Lecture at 3:20">3:20</a></h2>
+<p>The lecture moves from biological vision to the camera obscura and modern cameras. Its evolutionary narrative emphasizes the importance of sight, but an evolutionary association is not an experimental demonstration of one cause for the Cambrian diversification. The durable engineering point is simpler: sensing and understanding are different achievements. A camera can form a detailed image while providing no explicit object identity, depth, or purpose.</p>
+<p>An <strong>inverse problem</strong> infers hidden causes from their observable effects. Here the causes include object shape, materials, illumination, camera position, and motion. The observed effect is the image. If several different causes produce the same image, the inverse problem has no unique solution without further assumptions or measurements.</p>
+<p>Consider an ideal pinhole camera with a virtual image plane in front of its center. A scene point has coordinates \((X,Y,Z)\) in the camera’s coordinate system, with positive depth \(Z\). The focal length \(f&gt;0\) is the distance to that plane. Similar triangles give image coordinates</p>
+<div class="equation">\[
+u=f\frac{X}{Z}, \qquad v=f\frac{Y}{Z}.
+\]</div>
+<p>The coordinates \(u,v\) are measured relative to the optical center; we omit lens distortion and pixel-coordinate offsets. If \(f\) is measured in pixels and \(X,Y,Z\) use one consistent length unit, then \(u,v\) are in pixels. These assumptions are the simplified camera model explained in Stanford’s <a href="https://web.stanford.edu/class/cs231a/course_notes/01-camera-models.pdf">camera-model notes</a>.</p>
+<p>Now multiply all three scene coordinates by the same positive factor \(s\). The image does not change:</p>
+<div class="equation">\[
+f\frac{sX}{sZ}=f\frac{X}{Z},\qquad
+f\frac{sY}{sZ}=f\frac{Y}{Z}.
+\]</div>
+<p>For example, with \(f=100\), points \((1,2,5)\) and \((3,6,15)\) both project to \((20,40)\). A single projected point cannot tell us which world point generated it. The same scale ambiguity applies when an entire scene is scaled about the camera center. More computation alone cannot distinguish exactly identical observations.</p>
+<p>This is why vision uses <strong>priors</strong>, assumptions about plausible scenes, and additional information. Known object dimensions can supply scale. Multiple calibrated views can constrain depth. Temporal observations can reveal movement. Learned statistics can favor one interpretation, but a favored interpretation is not a uniquely recovered physical truth. Our inspection camera may recognize a characteristic scratch pattern while remaining unable to estimate its depth from one image.</p>
+<p>The lecture’s discussion of David Marr offers a useful decomposition: specify what the system computes and why; describe representations and algorithms; then ask how they are physically implemented. A representation such as an edge map is already an interpretation of measurements. Marr’s book <a href="https://mitpress.mit.edu/9780262288989/vision/"><em>Vision</em></a> appeared in 1982; several ideas developed during the preceding decade. Historical dates should distinguish an idea’s development from a book’s publication.</p>
+<p>Marr’s representational progression makes the distinction concrete. A <strong>primal sketch</strong> describes image structure such as changes in intensity and local boundaries. A <strong>2.5D sketch</strong> describes visible surfaces from the observer’s viewpoint, including their orientation and depth where available. A more complete <strong>3D representation</strong> describes object structure beyond that particular view. These are different information commitments. Marking a dark boundary on the part does not yet establish which surface lies in front, and describing the visible face does not determine the hidden back face. Contemporary learned representations need not implement these named stages to face the same underlying distinctions.</p>
+<p>For the inspection system, the computational goal is detecting consequential defects. A possible representation is a map of local edge orientations. A possible implementation uses a GPU. Substituting a faster GPU changes the implementation; it does not settle whether edge orientations contain the evidence needed for the goal.</p>
+</section>
+
+<section aria-labelledby="representations">
+<h2 id="representations">3. The recurring question: which representation exposes the task? <a class="timestamp" href="https://www.youtube.com/watch?v=2fq9wYslV0A&amp;t=462" aria-label="Lecture at 7:42">7:42</a></h2>
+<p>Early vision research investigated both biological mechanisms and explicit scene descriptions. Hubel and Wiesel’s experiments demonstrated selective responses of cells in cat visual cortex to structured visual stimuli. A <strong>receptive field</strong> is the region of sensory input that influences a unit’s response. Their <a href="https://pubmed.ncbi.nlm.nih.gov/14403679/">1959 paper</a> is evidence about particular neural responses, not a proof that modern neural networks reproduce the whole visual brain. The conceptual influence is locality and successive transformation of visual signals.</p>
+<p>In the block-world tradition, programs sought descriptions of objects and their relationships from constrained scenes. The <a href="https://dspace.mit.edu/handle/1721.1/6125">1966 MIT Summer Vision Project proposal</a> specified tasks including figure–ground analysis, region description, and object identification. Reading that actual proposal is more informative than treating the familiar summer-project anecdote as evidence that all vision was supposed to be trivial. Decomposition made work possible, but the interactions among shading, boundaries, surfaces, and identity proved difficult.</p>
+<p>Suppose we design a feature map \(\phi\) that converts an image into a vector \(\phi(x)\in\mathbb{R}^K\), where \(K\) is the number of features. In our factory example, its entries might describe the amount of dark elongated structure at different orientations. A classifier \(g\) then predicts from those features:</p>
+<div class="equation">\[
+f(x)=g(\phi(x)).
+\]</div>
+<p>This separates representation from decision. If \(\phi\) discards the only cue that distinguishes a scratch from a harmless engraved line, no later classifier can recover that cue. Conversely, if the representation removes irrelevant lighting variation while retaining defect shape, a simple decision rule may suffice.</p>
+<p>A formal way to state the desired tradeoff uses a nuisance transformation \(T\), such as a small lighting change that preserves defect status. An <strong>invariant</strong> representation obeys \(\phi(Tx)=\phi(x)\). This is desirable only when the task label also remains unchanged. If brightness distinguishes a heated component from a cool one in the actual task, forcing invariance to brightness would destroy useful information. “Ignore variation” is never a complete specification; we must name the variation and the task.</p>
+<p>The lecture traces the development of edges, grouping, local descriptors, face detection, and increasingly demanding datasets. Grouping asks which measurements belong together, rather than treating every pixel independently. Local descriptors summarize a neighborhood around an image location. Lowe’s <a href="https://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf">SIFT paper</a>, for example, constructs distinctive local features intended to support matching across changes in scale, rotation, and viewing conditions. Such claims have specified conditions and empirical limits; “invariant” should not be inflated into immunity to every possible viewpoint or illumination change.</p>
+<p>The lecture also uses findings from human perception to challenge the idea that recognition is merely the accumulation of isolated edges. Context and grouping influence interpretation: the same local patch may support different hypotheses when embedded in different scenes. For our inspection task, the surrounding component can help distinguish a deliberate groove from accidental damage. Context can also become a shortcut. If defective training parts are always photographed on a red tray, a learner may identify the tray rather than the defect. A representation that predicts the label on the collected images can therefore fail to capture the intended causal evidence.</p>
+<p>For our parts, matching local structure can help identify which physical part appears in two frames. It need not determine whether the part is safe to ship. Recognition, correspondence, and quality judgment are related tasks with different targets. Much of the history is a succession of better ways to expose one target without discarding its evidence.</p>
+<p><a href="https://www.youtube.com/watch?v=2fq9wYslV0A&amp;t=462">Lecture anchor: biological inspiration and early representations</a>. The subsequent neural-network story changes who chooses the representation: the designer still chooses a family of computations, but data increasingly determine the features inside it.</p>
+</section>
+
+<section aria-labelledby="learning">
+<h2 id="learning">4. Learned features require objectives, data, and optimization <a class="timestamp" href="https://www.youtube.com/watch?v=2fq9wYslV0A&amp;t=1538" aria-label="Lecture at 25:38">25:38</a></h2>
+<p>A deep network composes parameterized transformations. For a simple two-stage example, let \(\phi_{\theta_1}(x)\) be a learned feature map and \(g_{\theta_2}\) a learned output rule. Then \(f_\theta(x)=g_{\theta_2}(\phi_{\theta_1}(x))\), with \(\theta=(\theta_1,\theta_2)\). <strong>Training</strong> adjusts these parameters using an objective computed from examples. It does not mean that the architecture or objective emerged without human choices.</p>
+<p>Let the training set contain \(N\) image–label pairs \((x_i,y_i)\), indexed by \(i=1,\ldots,N\). A loss \(\ell(f_\theta(x_i),y_i)\) measures the penalty for the prediction on example \(i\). The empirical risk is the average training loss:</p>
+<div class="equation">\[
+\widehat R(\theta)=\frac{1}{N}\sum_{i=1}^{N}\ell(f_\theta(x_i),y_i).
+\]</div>
+<p>The hat marks a quantity estimated from a finite sample. This expression is not yet an optimization algorithm. It tells us what is being minimized; a method such as gradient descent describes how parameters are changed. Backpropagation efficiently computes derivatives through the composition, and an optimizer uses those derivatives. Later chapters derive both steps rather than conflating them.</p>
+<p>The lecture’s history includes perceptrons, the limitations of simple decision boundaries, the neocognitron, backpropagation, and convolutional networks such as LeNet. A single linear decision boundary cannot express every labeling of even a tiny input space. Composing nonlinear transformations expands the functions that can be represented. But expressive power does not guarantee that training will find a useful function, or that the training objective matches deployment needs.</p>
+<p>Historical shorthand also needs correction. Fukushima’s <a href="https://www.cs.princeton.edu/courses/archive/spr08/cos598B/Readings/Fukushima1980.pdf">1980 neocognitron paper</a> describes a self-organizing architecture with learning without a teacher. It should not be summarized as a network in which every parameter was manually chosen. Architecture design, supervised learning, and self-organized feature learning are distinct questions. The later <a href="https://www.cs.toronto.edu/~hinton/absps/naturebp.pdf">1986 backpropagation paper</a> helped establish learning internal representations using propagated error derivatives.</p>
+<p>The ImageNet era illustrates why algorithms, datasets, and computing resources interact. Larger and more varied training data make different learned representations possible; hardware makes optimization at that scale practical; architectural and training choices determine whether that opportunity is used. The <a href="https://arxiv.org/abs/1409.0575">ImageNet Large Scale Visual Recognition Challenge paper</a> documents a benchmark infrastructure, not merely a collection of photographs. A shared protocol allows systems to be compared on the same task.</p>
+<p>AlexNet’s <a href="https://papers.nips.cc/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf">2012 paper</a> reports a competition entry with 15.3% top-five error versus 26.2% for the second-best entry. <strong>Top-five error</strong> counts a case as wrong when the correct class is absent from the five highest-ranked predictions. The improvement was 10.9 percentage points, about 41.6% of the earlier error. It was not a universal 41.6% improvement in visual intelligence, nor does top-five accuracy establish that a factory robot can make a reliable binary decision.</p>
+<p>Holding out evaluation images is necessary, but the split itself deserves scrutiny. If consecutive photographs of the same physical part appear in both training and test sets, a model may exploit part-specific markings instead of learning a rule that transfers to new parts. A split by physical part, production batch, or site answers a different generalization question from a random split by image. None is universally correct; choose the unit of separation to match the future use. A large dataset is valuable only in relation to its variation, labeling quality, and evaluation design.</p>
+<p>The important lesson is experimental structure. Which data, output definition, metric, and evaluation protocol support the result? Our inspection system must answer those questions before a headline accuracy becomes meaningful. A benchmark can measure progress on its specified distribution while omitting rare damage, new factories, or the consequences of a missed defect.</p>
+</section>
+
+<section aria-labelledby="evaluation">
+<h2 id="evaluation">5. A high average accuracy can hide the failure that matters <a class="timestamp" href="https://www.youtube.com/watch?v=2fq9wYslV0A&amp;t=2537" aria-label="Lecture at 42:17">42:17</a></h2>
+<p>The lecture raises bias, social consequences, and the connection between visual technology and human needs. We can make that concern precise without pretending that one equation settles the ethical questions. Let \(P\) be the distribution of examples available during development and \(Q\) the distribution encountered after deployment. A <strong>distribution</strong> specifies how likely different image–label pairs are. The deployment risk is</p>
+<div class="equation">\[
+R_Q(\theta)=\mathbb E_{(x,y)\sim Q}\big[\ell(f_\theta(x),y)\big].
+\]</div>
+<p>The expectation is an average over deployment cases. Minimizing \(\widehat R\) on a training sample does not automatically minimize \(R_Q\). Even excellent estimation under \(P\) may fail when \(Q\) changes. This is <strong>distribution shift</strong>. A new camera, different surface finish, or dimmer shift can change the evidence seen by the system.</p>
+<p>Consider an original evaluation set with 900 brightly lit parts and 100 dimly lit parts. The classifier makes nine errors in the first group and twenty in the second. Its overall error is</p>
+<div class="equation">\[
+\frac{9+20}{900+100}=0.029,
+\]</div>
+<p>so its accuracy is 97.1%. Yet the bright-group error is 1% and the dim-group error is 20%. The aggregate number is correct; the conclusion that the model works equally well across conditions is false. Reporting the denominators makes the distinction visible.</p>
+<p>Let \(q\in[0,1]\) be the fraction of dim images in a hypothetical deployment population. If—and this is a substantive assumption—the two conditional error rates remain 0.01 and 0.20, the expected error becomes</p>
+<div class="equation">\[
+e(q)=(1-q)(0.01)+q(0.20)=0.01+0.19q.
+\]</div>
+<p>At \(q=0.1\), this reproduces 2.9%. At \(q=0.5\), it gives 10.5%. The calculation isolates a change in mixture proportions. It does not model changes in the error rates themselves; new illumination conditions could also change those. Nor do nine observed errors prove that the underlying rate is exactly 1%: sampling uncertainty remains.</p>
+<p>Accuracy also treats all mistakes alike. A <strong>false negative</strong> is a defective part predicted acceptable; a <strong>false positive</strong> is an acceptable part predicted defective. The former may lead to a damaged product reaching a customer, while the latter may require an inexpensive review. Define costs \(c_{\mathrm{FN}}\) and \(c_{\mathrm{FP}}\) for these two events. A cost-sensitive evaluation can weight them differently, but the costs must be justified by the application rather than inferred from class names.</p>
+<p>Suppose \(p\) is a calibrated probability that a particular part is defective. “Calibrated” means that probability statements agree with observed frequencies in the relevant evaluation setting; a neural-network score does not receive this property automatically. If accepting a defective part costs \(c_{\mathrm{FN}}\) and rejecting a good part costs \(c_{\mathrm{FP}}\), while correct decisions cost zero, expected costs are \(p\,c_{\mathrm{FN}}\) for accept and \((1-p)c_{\mathrm{FP}}\) for reject. Reject when</p>
+<div class="equation">\[
+p&gt;\frac{c_{\mathrm{FP}}}{c_{\mathrm{FN}}+c_{\mathrm{FP}}}.
+\]</div>
+<p>This follows by moving the terms in \(p\,c_{\mathrm{FN}}&gt;(1-p)c_{\mathrm{FP}}\) to one side. With costs 19 and 1, respectively, the threshold is 0.05. The familiar threshold 0.5 is a special case of equal costs, not a universal law of classification. These numbers are hypothetical, and additional options such as manual inspection change the decision problem.</p>
+<p><a href="https://arxiv.org/abs/1810.03993">Model Cards for Model Reporting</a> provides a research extension to this discussion: documenting intended use, evaluation conditions, and disaggregated performance makes it harder to confuse one successful test with unrestricted fitness for use. Documentation does not fix the model, but it preserves the boundaries of the evidence.</p>
+</section>
+
+<section aria-labelledby="tasks">
+<h2 id="tasks">6. One visual world, many output spaces <a class="timestamp" href="https://www.youtube.com/watch?v=2fq9wYslV0A&amp;t=2142" aria-label="Lecture at 35:42">35:42</a></h2>
+<p>The second part of the lecture introduces the course’s progression from classification to richer perception, learning, and interaction. The distinction between tasks is easiest to see by asking what an acceptable output must contain. For <strong>classification</strong>, our part receives a label. For <strong>object detection</strong>, the output includes locations and classes of objects, often using rectangles. For <strong>semantic segmentation</strong>, each pixel receives a category. <strong>Instance segmentation</strong> additionally distinguishes separate objects of the same category.</p>
+<p>These outputs are not interchangeable. “There is a scratch” is insufficient if a repair tool needs its location. A bounding rectangle includes background pixels and may be inadequate for tracing a thin damaged region. Pixel labels alone may not distinguish which of two adjacent components a defect belongs to. Choose the output representation from the downstream requirement.</p>
+<p>Video adds time. Let \(x_t\) denote the image at time index \(t\). A sequence \((x_1,\ldots,x_T)\) of length \(T\) can show whether a part approaches or leaves a station. Averaging frames discards order: \((a,b)\) and \((b,a)\) have the same average \((a+b)/2\). Therefore a system that observes only the average cannot distinguish those two motions, however sophisticated its later classifier becomes. This is an information-loss argument, not an assertion that all video architectures use averaging.</p>
+<p>The course later studies recurrent networks and attention as ways to combine information across sequences and locations. Convolution uses local shared computations; attention lets representations interact according to computed relationships. Each introduces structural assumptions and computational costs. At this stage, the relevant question is what dependencies the task needs: a scratch’s local texture, a part’s global shape, or a sequence showing a mechanical event.</p>
+<p>Scaling these models introduces another axis of the course: distributed training divides computation across devices. That can enlarge the feasible model or batch, but communication and synchronization become part of the algorithm’s cost. A mathematically correct update and an efficient implementation are separate requirements. We will revisit this when unequal worker batch sizes make an unweighted average of worker gradients incorrect. Similarly, visualization and adversarial examples later probe what a trained model uses; an appealing visualization alone is not a causal explanation.</p>
+<p><strong>Self-supervised learning</strong> constructs training signals from the data themselves, reducing reliance on manually provided task labels. It does not eliminate objectives, data selection, or evaluation. <strong>Generative modeling</strong> learns a distribution or procedure for producing observations. A generated image of a flawless component is not evidence that the actual component is flawless. Vision–language systems connect images with text, while 3D methods reason about geometry beyond a single image plane.</p>
+<p>Robotic learning finally closes a loop: an action changes what will be observed next. A wrong image label is one prediction error; a wrong grasp can change the scene and make subsequent inputs unfamiliar. The lecture’s human-centered ending therefore belongs at the foundation of the course. A useful visual system is defined by its relationship to people and environments, not just by the number of layers in its network.</p>
+<p><a href="https://www.youtube.com/watch?v=2fq9wYslV0A&amp;t=2704">Lecture anchor: the course’s progression through models and tasks</a>. The following small implementation checks two ideas already derived: geometric ambiguity and the dependence of aggregate error on population composition.</p>
+</section>
+
+<section aria-labelledby="implementation">
+<h2 id="implementation">7. A small executable audit</h2>
+<p>The code uses ordinary Python lists so the calculation is inspectable. Coordinates are supplied in a consistent length unit, and focal length is in pixels. The mixture function accepts a fraction, not a percentage: use 0.5 for half the images. The error rates are fixed assumptions from our hypothetical evaluation case. The companion <a href="numerical-lab.html">numerical laboratory</a> contains broader NumPy checks used throughout the course.</p>
+<pre><code class="language-python">import math
+
+def project_point(point, focal_length):
+    if len(point) != 3:
+        raise ValueError("point must contain X, Y, Z")
+    values = [float(v) for v in point]
+    focal = float(focal_length)
+    if not all(math.isfinite(v) for v in values + [focal]):
+        raise ValueError("coordinates and focal length must be finite")
+    X, Y, Z = values
+    if Z &lt;= 0 or focal &lt;= 0:
+        raise ValueError("depth and focal length must be positive")
+    return (focal * X / Z, focal * Y / Z)
+
+def mixture_error(dim_fraction):
+    q = float(dim_fraction)
+    if not math.isfinite(q) or not 0 &lt;= q &lt;= 1:
+        raise ValueError("dim fraction must lie in [0, 1]")
+    return (1 - q) * 0.01 + q * 0.20
+
+assert project_point((1, 2, 5), 100) == (20.0, 40.0)
+assert project_point((3, 6, 15), 100) == (20.0, 40.0)
+assert math.isclose(mixture_error(0.1), 29 / 1000)
+assert math.isclose(mixture_error(0.5), 0.105)
+assert math.isclose(mixture_error(0), 0.01)
+assert math.isclose(mixture_error(1), 0.20)</code></pre>
+<p>The two projected points verify one exact ambiguity; they do not reconstruct a scene or test a learned model. The mixture checks verify arithmetic under fixed group error rates; they do not establish those rates from real images. Keeping those scopes explicit prevents a successful unit test from being mistaken for a successful deployment.</p>
+</section>
+
+<section aria-labelledby="exercises">
+<h2 id="exercises">8. Exercises with complete solutions</h2>
+<details class="exercise"><summary>Exercise 1 · What information does the output omit?</summary>
+<p>A classifier correctly states that one of two touching parts is scratched. A robot must remove only the damaged part. Explain why the classification result is insufficient and propose two richer outputs.</p>
+<div class="solution"><p>The class label establishes the presence of a defect but does not bind that defect to a particular part. Detection could provide a box and identity for the damaged part; instance segmentation could provide a separate pixel mask for each part and associate the scratch with one mask. Either may support a removal decision if the robot can map image coordinates into its action frame. Neither output alone guarantees that calibration or grasp planning is correct. The required evidence extends through the full action pipeline.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 2 · Prove the ambiguity and identify a possible remedy</summary>
+<p>With focal length 80, project \((2,-1,4)\) and \((10,-5,20)\). Prove why a single projection cannot choose between them. Would knowing that the scene point lies at depth 4 resolve this particular ambiguity?</p>
+<div class="solution"><p>Both points project to \((40,-20)\): the second is five times the first, and the common scale cancels from both coordinate ratios. A deterministic inverse receiving only those two image coordinates and the focal length receives identical inputs in both cases, so it cannot always return the correct distinct 3D point. If depth is independently known to equal 4, solve \(X=uZ/f=2\) and \(Y=vZ/f=-1\). That resolves this example under the stated camera model. It does not establish that depth can itself be recovered from the image.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 3 · When does invariance become a mistake?</summary>
+<p>A representation maps every image and its horizontal reflection to the same vector. It is used first to recognize a symmetric manufactured part, then to distinguish left-handed from right-handed threaded parts. Explain the difference.</p>
+<div class="solution"><p>For the first task, reflection may preserve the label, making this invariance useful if it suppresses irrelevant orientation variation. For the second, the reflected appearance may reverse the target handedness. If two differently labeled inputs receive exactly the same representation, every deterministic classifier of that representation must give them the same output and misclassify at least one. Invariance is appropriate only relative to a label-preserving transformation; symmetry of the representation is not automatically a virtue.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 4 · Audit a population change</summary>
+<p>Keep bright and dim error rates at 1% and 20%. A deployment audit finds that 30% of inputs are dim. Compute the expected aggregate error and the expected number of errors among 2,000 inputs. Name two assumptions needed to interpret this prediction.</p>
+<div class="solution"><p>The error is \(0.7(0.01)+0.3(0.20)=0.067\), or 6.7%. The expected count is \(2000(0.067)=134\). This is an expectation, not a promised exact count. The conditional error rates must remain appropriate for deployment, and the 30% mixture proportion must describe the population being evaluated. The calculation also treats the supplied rates as fixed; uncertainty in estimates should be propagated in a fuller analysis. Independence is not required to add expected error indicators, although dependence matters for their variance.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 5 · Read a benchmark number precisely</summary>
+<p>Compare top-five error rates of 26.2% and 15.3%. Give the percentage-point improvement and relative error reduction. Can those numbers determine top-one accuracy?</p>
+<div class="solution"><p>The absolute improvement is \(26.2-15.3=10.9\) percentage points. The relative reduction is \(10.9/26.2\approx0.416\), or 41.6%. They cannot determine top-one accuracy because they do not say how often the correct label ranks first rather than second through fifth. Top-one error must be at least top-five error for the same predictions and examples, but many different top-one rates are compatible with either reported top-five rate.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 6 · Separate a probability from an action</summary>
+<p>A calibrated defect probability is 0.08. Accepting a defective part costs 19 units; rejecting a good part costs 1; correct decisions cost zero. Which action minimizes expected cost? What changes if an inspection option costs 0.2 and reveals the true label perfectly?</p>
+<div class="solution"><p>Accept costs \(0.08(19)=1.52\); reject costs \(0.92(1)=0.92\). Reject therefore wins between the two available actions, even though “acceptable” is the more probable class. With perfect inspection at cost 0.2, inspect: its cost is lower than both alternatives. This assumes inspection is indeed perfect and that subsequent correct handling incurs no additional cost. If inspection is noisy, delayed, or limited in capacity, its expected cost must include those consequences. A probability estimate and a rational action are different objects.</p></div>
+</details>
+</section>
+
+<section aria-labelledby="boundaries">
+<h2 id="boundaries">9. What this foundation establishes</h2>
+<p>We now have an explicit chain from measurements to representations, predictions, evaluation, and actions. The camera example establishes a structural limit on information. The representation argument explains why a discarded distinction cannot be recovered downstream. The evaluation example shows exactly how a correct aggregate metric can conceal unequal performance. These are reusable reasoning tools, not evidence that one particular model succeeds or fails.</p>
+<p>The lecture supplies the historical and curricular trajectory, including biological inspiration, symbolic and geometric approaches, engineered features, learned representations, ImageNet, modern task diversity, and human-centered concerns. Primary sources sharpen several historical claims. The formal camera, risk, and decision analyses are teaching extensions; they are intentionally more explicit than the introduction lecture. The next chapter develops classification itself, including the geometry of simple classifiers and the loss functions used to train them.</p>
+</section>
+<!-- BOOK-CONTENT-END --></article><nav class="page-turn" aria-label="Chapter navigation"><span>First available chapter</span><a href="index.html">Lecture index</a><a rel="next" href="lecture-02-classification-and-linear-models.html">Next available chapter</a></nav></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

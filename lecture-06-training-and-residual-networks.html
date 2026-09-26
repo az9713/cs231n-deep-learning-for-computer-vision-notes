@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="4c6e63018f013b59ded64ca4086527fb584d5c0c81f943a706efa941bdb05272"><title>Making a convolutional model trainable · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc" aria-label="On this page"><h2>On this page</h2></aside><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><header class="chapter-header">
+<p class="eyebrow">Chapter 6 · CS231N, Spring 2025</p>
+<h1>Making a convolutional model trainable</h1>
+<p class="lead">An architecture is only one part of a learning system. Signal scale, stochastic regularization, preprocessing, transfer, and validation determine whether its capacity becomes useful behavior.</p>
+<p class="source-note">Based on the complete Lecture 6 transcript and all official slide text. The inspection examples, moment calculations, derivative checks, and exercises are original. Mathematical qualifications and research context distinguish practical heuristics from guarantees.</p>
+</header>
+
+<section aria-labelledby="system">
+<h2 id="system">1. Capacity, optimization, and generalization ask different questions <a class="timestamp" href="https://www.youtube.com/watch?v=aVJy4O5TOk8&amp;t=5" aria-label="Lecture at 0:05">0:05</a></h2>
+<p>Our inspection project now has convolutional operators capable of detecting local structure. A natural next step is to add layers and hope for better recognition. That changes the set of representable functions, but it also changes the optimization problem, memory demands, and susceptibility to limited data. A larger model can be harder to train even when a good solution exists within its parameter space.</p>
+<p>The lecture organizes this problem into building a CNN and training it. Building includes normalization, dropout, activations, architectural blocks, and initialization. Training includes preprocessing, augmentation, transfer learning, and hyperparameter selection. These categories interact: for example, a normalization layer’s training behavior can depend on how examples are batched.</p>
+<p>We will keep three questions separate. <strong>Representation</strong> asks whether a model family contains a suitable function. <strong>Optimization</strong> asks whether the training procedure finds useful parameters within a budget. <strong>Generalization</strong> asks whether performance transfers to unseen examples drawn from the intended conditions. A training curve addresses only part of this chain.</p>
+<p>For manufacturing images, the distinction is practical. High training accuracy with poor accuracy on another production line may indicate reliance on lighting or camera differences. Poor training accuracy in a deeper network may instead suggest an optimization issue. Neither diagnosis follows from depth alone; both require controlled comparisons and checks of the data pipeline.</p>
+</section>
+
+<section aria-labelledby="normalization">
+<h2 id="normalization">2. Normalization is defined by its reduction axes <a class="timestamp" href="https://www.youtube.com/watch?v=aVJy4O5TOk8&amp;t=218" aria-label="Lecture at 3:38">3:38</a></h2>
+<p>Consider a group of scalar activations \(x_1,\ldots,x_m\). Compute an empirical mean \(\mu=m^{-1}\sum_jx_j\) and variance \(v=m^{-1}\sum_j(x_j-\mu)^2\). A common normalization pattern is</p>
+<div class="equation">\[
+\widehat{x}_j=\frac{x_j-\mu}{\sqrt{v+\epsilon}},
+\qquad y_j=\gamma_j\widehat{x}_j+\beta_j,
+\]</div>
+<p>where \(\epsilon&gt;0\) stabilizes division and the scale \(\gamma\) and shift \(\beta\) are learned parameters with a specified sharing pattern. The normalized values have empirical mean zero and variance \(v/(v+\epsilon)\), not exactly one. Centering and scaling do not make an arbitrary distribution Gaussian: a two-valued input remains two-valued after an affine transformation.</p>
+<p>The essential architectural question is which entries form each group. Let an activation tensor have shape \(N\times C\times H\times W\), with batch, channel, height, and width axes. The following table states common conventions; an actual API’s configured axes remain authoritative.</p>
+<table>
+<thead><tr><th>Operation</th><th>Statistics for one group</th><th>Dependence on other examples</th></tr></thead>
+<tbody>
+<tr><td>Batch normalization</td><td>One channel across \(N,H,W\)</td><td>Yes, during ordinary batch-statistic training</td></tr>
+<tr><td>Layer normalization</td><td>Specified feature axes within one example; here \(C,H,W\)</td><td>No</td></tr>
+<tr><td>Instance normalization</td><td>One example and one channel across \(H,W\)</td><td>No</td></tr>
+<tr><td>Group normalization</td><td>One example, a group of channels, and \(H,W\)</td><td>No</td></tr>
+</tbody>
+</table>
+<p>For a simpler matrix \(X\in\mathbb R^{N\times D}\), layer normalization often uses each row’s \(D\) entries. Its means and variances have shape \(N\times1\), and its learned affine parameters have \(D\) entries shared across rows. Batch normalization of these features instead obtains one mean and variance per column across the batch. The names alone are insufficient without this axis description.</p>
+<p>An original example uses rows \((1,3)\) and \((5,7)\), temporarily setting \(\epsilon=0\), \(\gamma=1\), and \(\beta=0\) for exact arithmetic. Row normalization maps both rows to \((-1,1)\). Column normalization maps the first row to \((-1,-1)\) and the second to \((1,1)\). Both calculations are correct; they remove different information. Row normalization discards the difference in overall level between these two examples.</p>
+<p>This matters for inspection if absolute brightness is diagnostic of a material defect rather than merely a nuisance from illumination. Normalization does not know which interpretation is appropriate. Learned affine parameters can adjust feature scales, but cannot necessarily reconstruct all sample-specific information removed by the normalization itself.</p>
+<p>The original <a href="https://arxiv.org/abs/1502.03167">batch-normalization paper</a>, <a href="https://arxiv.org/abs/1607.06450">layer-normalization paper</a>, and <a href="https://arxiv.org/abs/1803.08494">group-normalization paper</a> provide the primary definitions. Ordinary batch normalization uses estimated running statistics for inference, while layer normalization computes the selected within-example statistics in both modes. Batch size, distribution shift, and mode settings therefore matter. A normalization layer is not a substitute for checking signal scales and gradients.</p>
+<p><a href="https://www.youtube.com/watch?v=aVJy4O5TOk8&amp;t=218">Lecture anchor: normalization and the meaning of its axes</a>.</p>
+</section>
+
+<section aria-labelledby="dropout">
+<h2 id="dropout">3. Dropout preserves a chosen expectation, not every property <a class="timestamp" href="https://www.youtube.com/watch?v=aVJy4O5TOk8&amp;t=577" aria-label="Lecture at 9:37">9:37</a></h2>
+<p>Dropout introduces random masks during training. Define \(p\) as the probability of dropping an activation and \(q=1-p\) as its probability of being retained. For \(0&lt;q\leq1\), draw a Bernoulli variable \(m\) with \(\Pr(m=1)=q\). In the <strong>inverted dropout</strong> convention, a fixed activation \(h\) becomes \(\widetilde h=mh/q\) during training and remains \(h\) during inference.</p>
+<div class="equation">\[
+\mathbb E[\widetilde h\mid h]=h,
+\qquad
+\operatorname{Var}(\widetilde h\mid h)
+=\frac{1-q}{q}h^2.
+\]</div>
+<p>The expectation follows from \(\mathbb E[m]=q\). Since \(m^2=m\), the second moment is \(h^2/q\), and subtracting the squared mean gives the variance. For \(h=3\) and keep probability \(q=0.75\), the training value is zero with probability 0.25 and four with probability 0.75. Its mean is three, but its variance is three, whereas deterministic inference has variance zero.</p>
+<p>The lecture also describes the original convention: use \(mh\) during training and \(qh\) at inference. It matches the mean at this local point. Confusing keep probability with drop probability produces the wrong scale except in the special case \(p=q=0.5\). Modern code often uses inverted dropout so inference needs no extra multiplication.</p>
+<p>Local mean matching does not imply that a nonlinear network’s deterministic output equals the exact average over all masks. For the preceding example, \(\mathbb E[\widetilde h^2]=12\), while \((\mathbb E[\widetilde h])^2=9\). Nonlinearity separates those quantities. The interpretation of dropout as averaging many subnetworks is useful, but the usual inference rule is not an exact ensemble average for an arbitrary nonlinear model.</p>
+<p>The <a href="https://jmlr.org/papers/v15/srivastava14a.html">original dropout study</a> motivates reducing harmful feature co-adaptation. In our inspection case, random masking may discourage a classifier from depending exclusively on one correlated feature. It does not guarantee resistance to a lighting shortcut or compensate for missing defect types. Its rate and placement remain empirical choices.</p>
+<p>The backward derivative through inverted dropout is \(m/q\). A dropped activation blocks that particular path, but a shared weight may still receive gradients through other examples or other uses. Zeroing one unit’s output does not imply that every parameter upstream is globally frozen. Training and inference modes must be set deliberately when measuring loss or using a pretrained model.</p>
+</section>
+
+<section aria-labelledby="architecture">
+<h2 id="architecture">4. Small filters and residual blocks solve different problems <a class="timestamp" href="https://www.youtube.com/watch?v=aVJy4O5TOk8&amp;t=1318" aria-label="Lecture at 21:58">21:58</a></h2>
+<p>VGG-style networks use repeated small convolutions to build a broad receptive field. For constant channel count \(C\), three \(3\times3\) convolutions contain \(27C^2\) weights, ignoring biases, compared with \(49C^2\) for one \(7\times7\) convolution. Both have a seven-pixel theoretical support width at stride one, but the three-layer stack can place nonlinearities between its operations.</p>
+<p>For \(C=16\), the counts are 6,912 and 12,544 weights. Equal support does not imply equal functions. Without nonlinearities the stack remains linear and has a factorized parameterization; with nonlinearities it can make different local decisions in different input regions. The <a href="https://arxiv.org/abs/1409.1556">VGG paper</a> studies this small-filter, deeper-network design.</p>
+<p>Residual networks address a different observation. In the experiments discussed in the lecture, a deeper plain network had worse training error as well as worse test error than a shallower counterpart. Pure overfitting would not explain the worse fit to the training data. The result suggests an optimization difficulty under the tested training setup; it does not prove every deeper architecture is harder to train.</p>
+<p>For a vector or shape-compatible tensor \(x\), let \(F(x;\theta)\) be a learned residual function. A residual addition produces</p>
+<div class="equation">\[
+y=x+F(x;\theta).
+\]</div>
+<p>If the desired map is \(H(x)\), the residual can represent its difference from the identity: \(F(x)=H(x)-x\). Setting the residual to zero leaves the input unchanged. This gives the parameterization an explicit route to preserving a representation while learning corrections to it. It does not require every useful layer to be close to identity.</p>
+<p>Let \(J_F\) be the output-by-input Jacobian of \(F\), and \(\bar y=\partial L/\partial y\) the upstream column gradient. Then</p>
+<div class="equation">\[
+\bar x=(I+J_F)^\mathsf T\bar y
+=\bar y+J_F^\mathsf T\bar y.
+\]</div>
+<p>The direct path contributes \(\bar y\) without passing through the residual branch’s derivatives. This can help signal propagation, but the two terms may reinforce or cancel. For example, \(F(x)=-x\) gives zero output and zero total input Jacobian. A shortcut is not a theorem that gradients can never vanish or explode.</p>
+<p>There is also an activation caveat. A block that applies ReLU after the sum outputs \(\max(0,x+F(x))\). When \(F=0\), this equals \(x\) only on a nonnegative input domain. Describing the addition itself as identity-capable is correct; extending that claim to an arbitrary post-activation block requires this qualification.</p>
+<p>Elementwise addition requires matching shapes. If a stage halves height and width and doubles channels, the shortcut must transform its input, for example using a strided \(1\times1\) projection. It then implements \(y=P x+F(x)\), with a learned or specified map \(P\), rather than an unrestricted identity shortcut. Halving both spatial axes and doubling channels halves the activation element count: \(2C(H/2)(W/2)=CHW/2\).</p>
+<p>The <a href="https://arxiv.org/abs/1512.03385">original ResNet paper</a> distinguishes two-layer basic blocks from the three-layer bottleneck blocks used in its 50-, 101-, and 152-layer models. A bottleneck reduces channels with \(1\times1\), processes them with \(3\times3\), and expands them with \(1\times1\). Thus the lecture’s two-convolution diagram illustrates one block family, not every ResNet architecture. Its empirical success supports the design, while a universal explanation in terms of escaping bad local minima would overstate what the evidence establishes.</p>
+<p><a href="https://www.youtube.com/watch?v=aVJy4O5TOk8&amp;t=1751">Lecture anchor: degradation and residual parameterization</a>.</p>
+</section>
+
+<section aria-labelledby="initialization">
+<h2 id="initialization">5. Derive the scale of a ReLU initialization <a class="timestamp" href="https://www.youtube.com/watch?v=aVJy4O5TOk8&amp;t=970" aria-label="Lecture at 16:10">16:10</a></h2>
+<p>Random initialization must break symmetry without repeatedly shrinking or amplifying the signal. Consider a zero-bias preactivation \(z=\sum_{j=1}^{d}w_jh_j\). Here \(d\) is fan-in, the number of scalar inputs contributing to one output. Assume independent zero-mean weights with variance \(\sigma_w^2\), independent of the input activations, and equal input second moments \(q_h=\mathbb E[h_j^2]\). Cross terms vanish under these assumptions, giving \(\mathbb E[z^2]=d\sigma_w^2q_h\).</p>
+<p>If the distribution of \(z\) is symmetric about zero, then ReLU discards exactly half its second moment:</p>
+<div class="equation">\[
+\mathbb E[\max(0,z)^2]
+=\tfrac12\mathbb E[z^2]
+=\tfrac12d\sigma_w^2q_h.
+\]</div>
+<p>Preserving the activation second moment from one such layer to the next suggests \(\sigma_w^2=2/d\), or standard deviation \(\sqrt{2/d}\). This is the fan-in form of Kaiming initialization. For an ungrouped \(3\times3\) convolution with 32 input channels, \(d=3\cdot3\cdot32=288\), so the standard deviation is \(1/12\), approximately 0.08333.</p>
+<p>The distinction between a second moment and a variance is essential. ReLU outputs generally have positive mean, and \(\mathbb E[h^2]=\operatorname{Var}(h)+(\mathbb E[h])^2\). One cannot replace these expressions indiscriminately. The derivation also assumes a statistical model of the initialized network; finite width, correlations, normalization, residual sums, and different activations can change the behavior.</p>
+<p>A useful scalar diagnostic defines the second-moment multiplier \(\alpha=d\sigma_w^2/2\). Under the simplifying model, \(L\) layers multiply the second moment by \(\alpha^L\). A weight standard deviation that is half the target makes \(\alpha=1/4\); doubling the target makes \(\alpha=4\). The resulting exponential shrinkage or growth explains why a seemingly modest scale error can become severe with depth.</p>
+<p>The <a href="https://arxiv.org/abs/1502.01852">rectifier-initialization paper</a> derives forward and backward scaling conditions. Our calculation isolates the forward second moment to expose its assumptions. It does not guarantee equal empirical means and standard deviations at every layer or successful training for arbitrary architectures. Inspecting activation and gradient distributions remains useful even when a familiar initialization rule is used.</p>
+<p>Activation choice belongs to the same signal-propagation problem. Sigmoid’s derivative is at most one quarter and becomes small in saturation; ReLU has derivative one on its positive side but zero on its negative side. GELU and SiLU are smooth alternatives, as defined in Chapter 4. Sigmoid still has valid uses for probabilities and gates. None of these local derivative facts alone determines the full network Jacobian, which also includes weights and all other operations.</p>
+</section>
+
+<section aria-labelledby="data">
+<h2 id="data">6. Preprocessing and augmentation define the input problem <a class="timestamp" href="https://www.youtube.com/watch?v=aVJy4O5TOk8&amp;t=2952" aria-label="Lecture at 49:12">49:12</a></h2>
+<p>Image preprocessing often standardizes each color channel: \(x'_c=(x_c-\mu_c)/s_c\), where \(\mu_c\) and positive \(s_c\) are fixed training-set or pretrained-model statistics. Their units must match the pixel scale. Applying statistics computed on values in \([0,1]\) directly to integer values in \([0,255]\) changes the input distribution drastically.</p>
+<p>When using a pretrained network, its expected channel order, resizing, value range, and normalization are part of its input contract. When estimating statistics for a new pipeline, use the training partition and apply the resulting constants to validation and test data. Recomputing them from a held-out evaluation set can change the protocol and introduce leakage.</p>
+<p>Augmentation samples a transformation \(T\) and trains on \(T(x)\) with an appropriate target. For image classification, retaining the original label assumes \(T\) preserves that label. A horizontal flip may preserve “scratch present,” but a crop that removes the only scratch does not. For localization, the coordinates must transform with the image. Recognizability to a human is a useful inspection step, but it is not a substitute for specifying the target semantics.</p>
+<p>The lecture discusses flips, scale changes, random crops, color jitter, and cutout. Each encodes a hypothesis about plausible variation. Brightness jitter can improve robustness to illumination, yet be inappropriate if absolute brightness is part of the defect criterion. Erasing a patch can simulate occlusion, but might erase all evidence of the class. Augmentation increases the variety of training inputs; it does not create independent new observations of every missing failure mode.</p>
+<p>One described crop pipeline resizes the short image side to a sampled length and then takes a fixed-size crop. This should not be confused with every library’s operation named “random resized crop,” which may sample area and aspect ratio differently. Record the actual transformation parameters, because an operator name does not fully specify its distribution.</p>
+<p>At test time, one may average predictions across chosen views. For classification, an explicit rule is \(\bar p(y\mid x)=K^{-1}\sum_{k=1}^{K}p(y\mid T_kx)\), where \(K\) is the number of views. Averaging probabilities and applying softmax to averaged logits are different procedures. Additional views increase inference cost and may help only when their transformations preserve the task. Evaluate the complete chosen procedure on validation data before fixing it for final testing.</p>
+</section>
+
+<section aria-labelledby="transfer">
+<h2 id="transfer">7. Transfer learning changes which parameters are free <a class="timestamp" href="https://www.youtube.com/watch?v=aVJy4O5TOk8&amp;t=3503" aria-label="Lecture at 58:23">58:23</a></h2>
+<p>Write the classifier as \(s(x)=W\phi_\theta(x)+b\), where \(\phi_\theta(x)\in\mathbb R^D\) is the feature extractor and \(W\in\mathbb R^{C\times D}\) maps features to \(C\) target-class scores. With a frozen pretrained extractor, only \(W\) and \(b\) are fitted. If \(D=512\) and our inspection task has three classes, this head contains \(3\cdot512+3=1{,}539\) parameters.</p>
+<p>The appeal is that a larger source dataset may already have taught useful image features. <a href="https://proceedings.mlr.press/v32/donahue14.html">DeCAF</a> studies the transfer of convolutional activation features. Our new training problem can then resemble the linear classification problem from Chapter 2, but in a learned representation rather than raw pixels.</p>
+<p>Fine-tuning also updates some or all of \(\theta\). This allows the representation to adapt to scratches, material texture, or a specialized camera. It introduces more freedom and additional optimization choices. A head-only baseline, partial fine-tuning, and full fine-tuning should be compared under a suitable validation protocol rather than selected by an absolute image-count rule.</p>
+<p>Freezing weights is not always enough to freeze behavior. Batch-normalization running statistics can change in training mode even if their affine parameters receive no gradients. Dropout can still randomize features. A supposedly fixed feature extractor needs an intentional mode and state policy. Conversely, disabling all gradient recording around a component that must be fine-tuned would prevent the intended updates.</p>
+<p>The lecture’s data-size and domain-similarity matrix is a heuristic. Few examples in a similar domain make a frozen-feature baseline attractive; more data can support broader adaptation. A very different domain may need more relevant pretraining or additional data. There is no universal threshold at which source pretraining becomes helpful or harmful.</p>
+<p>The discussion briefly mentions low-rank adaptation. To make the distinction precise, a frozen matrix \(W_0\in\mathbb R^{m\times d}\) can be supplemented by \(BA\), with \(B\in\mathbb R^{m\times r}\), \(A\in\mathbb R^{r\times d}\), and small rank bound \(r\). This trains \(r(m+d)\) entries instead of all \(md\) entries, before any scaling convention. The <a href="https://arxiv.org/abs/2106.09685">LoRA paper</a> develops this idea for language models. It is a parameter-adaptation method, distinct from adding a ResNet activation shortcut, and is only a bounded extension here.</p>
+</section>
+
+<section aria-labelledby="diagnosis">
+<h2 id="diagnosis">8. Turn training into a sequence of falsifiable checks <a class="timestamp" href="https://www.youtube.com/watch?v=aVJy4O5TOk8&amp;t=4035" aria-label="Lecture at 67:15">67:15</a></h2>
+<p>Start by checking an initial loss against a simple expectation. Uniform scores over \(C\) classes give categorical loss \(\log C\); for three classes this is approximately 1.0986. A large discrepancy is not automatically a bug, but it prompts inspection of labels, logits, reduction conventions, and any regularization term.</p>
+<p>Next attempt to fit a tiny, consistent subset with unnecessary augmentation and regularization disabled. A sufficiently flexible classifier should substantially reduce its loss. Failure can expose a broken update, detached computation, label mismatch, unsuitable learning rate, or insufficient model capacity. Contradictory labels for identical inputs or deliberate constraints can make zero loss impossible, so the diagnostic needs a sensible test case.</p>
+<p>Then search a coarse learning-rate range, compare short runs, and refine promising regions. Learning rate often spans orders of magnitude, making a log-scale sampling rule more informative than uniform sampling on a wide linear interval. Keep compute budgets and evaluation points comparable when ranking trials.</p>
+<p>Plot training and validation metrics with clear mode and preprocessing definitions. A decreasing training loss with a worsening validation loss is consistent with overfitting, but domain differences or label issues may also contribute. Similar low accuracies may suggest underfitting; similar high accuracies may indicate success. A small gap by itself is not a diagnosis. Training loss under dropout and strong augmentation can exceed validation loss without anything paradoxical.</p>
+<p><a href="https://jmlr.org/papers/v13/bergstra12a.html">Bergstra and Bengio’s random-search study</a> explains why a grid can waste evaluations when only a few hyperparameters strongly affect performance. A \(3\times3\) grid has nine trials but only three values along either axis. Nine continuous random draws typically explore nine distinct values on an important axis. This is an allocation argument, not a guarantee that random search always finds the best configuration.</p>
+<p>Repeated validation-driven selection also adapts the project to its validation set. Preserve an untouched final test set, record the selected checkpoint and preprocessing, and report the metric relevant to inspection costs. The best model is the one supported by the evaluation protocol, not simply the run with the lowest training loss.</p>
+</section>
+
+<section aria-labelledby="implementation">
+<h2 id="implementation">9. Check the mechanisms without a large training run</h2>
+<p>The numerical checks below use exact small examples and one finite-difference derivative comparison. They isolate the meaning of normalization axes, dropout moments, residual gradients, and initialization scale. They do not claim to reproduce a paper’s benchmark or establish a preferred architecture.</p>
+<pre><code class="language-python">import numpy as np
+from numerical_lab import central_gradient
+
+X = np.array([[1., 3.], [5., 7.]])
+row = (X - X.mean(1, keepdims=True)) / X.std(1, keepdims=True)
+column = (X - X.mean(0, keepdims=True)) / X.std(0, keepdims=True)
+assert np.array_equal(row, [[-1., 1.], [-1., 1.]])
+assert np.array_equal(column, [[-1., -1.], [1., 1.]])
+# Epsilon is zero only for this nondegenerate exact fixture.
+
+values = np.array([0., 4.])
+probabilities = np.array([0.25, 0.75])
+mean = probabilities @ values
+variance = probabilities @ (values - mean)**2
+assert mean == 3 and variance == 3
+assert probabilities @ values**2 == 12
+
+M = np.array([[0.1, 0.2], [-0.3, 0.4]])
+x = np.array([2., -1.])
+upstream = np.array([3., 2.])
+loss = lambda z: upstream @ (z + M @ z)
+expected = (np.eye(2) + M).T @ upstream
+assert np.allclose(central_gradient(loss, x), expected, atol=1e-8)
+assert np.allclose(expected, [2.7, 3.4])
+
+fan_in = 3 * 3 * 32
+std = np.sqrt(2 / fan_in)
+assert abs(std - 1 / 12) &lt; 1e-15
+assert abs(fan_in * std**2 / 2 - 1) &lt; 1e-15
+assert 3 * 9 * 16**2 == 6912
+assert 49 * 16**2 == 12544
+assert 3 * 512 + 3 == 1539</code></pre>
+<p>For an actual model, extend these checks by inspecting per-layer activation and gradient summaries, training and inference mode behavior, and the data examples after transformation. A training pipeline should make its assumptions visible enough that a failure can be localized.</p>
+</section>
+
+<section aria-labelledby="exercises">
+<h2 id="exercises">10. Exercises with complete solutions</h2>
+<details class="exercise"><summary>Exercise 1 · Standardization is not Gaussianization</summary>
+<p>A group contains \((0,0,2,2)\). With zero epsilon for this nonconstant example, compute its normalized values. Has normalization made its empirical distribution Gaussian?</p>
+<div class="solution"><p>The mean is one and variance is one, giving \((-1,-1,1,1)\). It still has only two distinct values, so the empirical distribution has not become Gaussian. Normalization fixes selected moments and retains other structure. A positive epsilon would reduce the magnitude slightly and make the empirical variance smaller than one.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 2 · Keep probability and dropout variance</summary>
+<p>An activation is \(h=2\), and inverted dropout retains it with probability \(q=0.8\). List the two possible outputs, their mean, and their variance.</p>
+<div class="solution"><p>The output is zero with probability 0.2 and \(2/0.8=2.5\) with probability 0.8. Its mean is two. Its second moment is \(0.8(2.5)^2=5\), so its variance is \(5-4=1\). Deterministic inference also outputs two but has no mask-induced variance. Using the drop probability 0.2 in the denominator would fail to preserve the mean.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 3 · When a shortcut is identity</summary>
+<p>Compare \(y=x+F(x)\) and \(z=\max(0,x+F(x))\) when \(F=0\) and \(x=(-2,3)\). Which map is the identity on this input?</p>
+<div class="solution"><p>The first gives \((-2,3)\), so it is the identity. The second gives \((0,3)\), so it is not. A ReLU after the sum clips negative coordinates. The post-activation block is identity-capable with zero residual only on an appropriate nonnegative input domain. Shape-changing projection shortcuts introduce another qualification.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 4 · A fan-in calculation</summary>
+<p>A \(5\times5\) ungrouped convolution has 18 input channels. Under the ReLU second-moment model, what Gaussian weight standard deviation is suggested? What happens to the per-layer multiplier if this standard deviation is doubled?</p>
+<div class="solution"><p>Fan-in is \(25\cdot18=450\). The suggested standard deviation is \(\sqrt{2/450}=1/15\). Doubling it quadruples weight variance, making the second-moment multiplier four instead of one. Under the simplifying independent-layer approximation, ten layers would amplify the second moment by \(4^{10}=1{,}048{,}576\). Real networks can violate the approximation, but the calculation exposes why scale matters.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 5 · An augmentation can contradict its label</summary>
+<p>An image is labeled “scratch present,” but a random crop excludes its only scratch. Is retaining the label necessarily valid? How does the answer differ for a box-localization target?</p>
+<div class="solution"><p>The classification label is no longer supported by visible evidence in the crop. A suitable policy might restrict crops to retain relevant content, change the target under an explicit rule, or omit that augmentation. For localization, boxes must be translated and clipped to the crop, and objects outside it need a defined removal policy. The transformation must preserve or consistently update the target, rather than merely produce a plausible-looking image.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 6 · A frozen model that still changes</summary>
+<p>A pretrained feature extractor has all trainable parameters frozen, but its outputs on a fixed image drift over training. Name two state or mode effects to inspect before concluding that gradient freezing failed.</p>
+<div class="solution"><p>Batch-normalization running statistics may update in training mode, changing later inference behavior. Dropout may randomize training-mode outputs even with unchanged parameters. Input augmentation or preprocessing changes can also alter the supplied image. Freezing parameter gradients and fixing the entire feature-extraction function are different contracts. Inspect mode, non-parameter state, and the exact input before diagnosing the optimizer.</p></div>
+</details>
+</section>
+
+<section aria-labelledby="boundaries">
+<h2 id="boundaries">11. A trainable system has explicit statistical contracts</h2>
+<p>The lecture brings architecture and procedure together. Normalization specifies which activations share statistics; dropout specifies a distribution over computations; initialization specifies a starting signal scale; augmentation specifies acceptable input variation; transfer specifies which learned components may change. These are mathematical and experimental contracts that can be checked separately.</p>
+<p>The examples here verify local mechanisms and correct several tempting overgeneralizations. Choosing the best inspection model still requires data and validation. The next chapter extends learned computation across time, where repeated transformations make signal propagation and shared parameters even more central.</p>
+</section><!-- BOOK-CONTENT-END --></article><nav class="page-turn" aria-label="Chapter navigation"><a rel="prev" href="lecture-05-convolution-and-spatial-structure.html">Previous available chapter</a><a href="index.html">Lecture index</a><a rel="next" href="lecture-07-recurrent-state-and-sequences.html">Next available chapter</a></nav></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

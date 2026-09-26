@@ -1,0 +1,16 @@
+{
+  "status": "complete",
+  "chapter_count": 18,
+  "course": "CS231N",
+  "term": "Spring2025",
+  "format": "local HTML",
+  "checked_at_utc": "2026-09-26T07:16:04.228958+00:00",
+  "editorial": "editorial-audit.json",
+  "numerical": "numerical-validation.json",
+  "reader": "reader-validation.json",
+  "interactive_lab": "lab-browser-checks.json",
+  "source_manifest": "source-manifest.json",
+  "source_boundary": "Machine transcripts and available official slide text; no complete audiovisual-review claim.",
+  "publication": "local only; no remote publication or PDF",
+  "structural_audit": "completion-audit.json"
+}

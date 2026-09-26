@@ -1,0 +1,158 @@
+{
+  "title": "Generative models and variational inference",
+  "number": 13,
+  "video_id": "zbHXQRUNlH0",
+  "source_type": "locally generated machine transcription and official extracted slide text",
+  "sections": [
+    {
+      "section": "bridge",
+      "start": 5,
+      "end": 632,
+      "lecture_material": "SimCLR, MoCo and DINO recap",
+      "research_extension": "DINOv2 primary source and KL/CE clarification",
+      "teaching_construction": "Factory representation distinction",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "distributions",
+      "start": 632,
+      "end": 1239,
+      "lecture_material": "Generative/discriminative and supervision axes",
+      "research_extension": "Density and OOD caveats",
+      "teaching_construction": "Inspection anomaly boundary",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "conditional",
+      "start": 1239,
+      "end": 1788,
+      "lecture_material": "Conditional generation and applications",
+      "research_extension": "Bayes direction corrected",
+      "teaching_construction": "Rare-defect posterior",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "likelihood",
+      "start": 1788,
+      "end": 2332,
+      "lecture_material": "Model taxonomy and maximum likelihood",
+      "research_extension": "Expected NLL decomposition",
+      "teaching_construction": "Normalized modeling specification",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "autoregression",
+      "start": 2332,
+      "end": 2902,
+      "lecture_material": "Chain rule, pixel order and causal architectures",
+      "research_extension": "PixelRNN and conditional PixelCNN",
+      "teaching_construction": "Binary joint fixture",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "latent",
+      "start": 2902,
+      "end": 3492,
+      "lecture_material": "Autoencoders and latent-variable generation",
+      "research_extension": "Posterior versus inverse distinction",
+      "teaching_construction": "Factory latent semantics",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "variational",
+      "start": 3492,
+      "end": 3769,
+      "lecture_material": "Gaussian approximate posterior and decoder",
+      "research_extension": "Standard deviation and likelihood conventions",
+      "teaching_construction": "Explicit log-variance notation",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "bound",
+      "start": 3769,
+      "end": 4136,
+      "lecture_material": "ELBO derivation and prior regularization",
+      "research_extension": "Expectation versus sample bounds",
+      "teaching_construction": "Fully expanded identity",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "exact",
+      "start": 4136,
+      "end": 4345,
+      "lecture_material": "Reparameterization and latent traversals",
+      "research_extension": "Disentanglement identifiability limits",
+      "teaching_construction": "Exact scalar Gaussian evidence and gap",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original code, calculations, exercises and provenance",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original code, calculations, exercises and provenance",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation",
+      "research_extension": "None",
+      "teaching_construction": "Original code, calculations, exercises and provenance",
+      "evidence_class": "original teaching construction"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_13.pdf",
+      "supports": "Lecture sequence"
+    },
+    {
+      "title": "DINOv2",
+      "url": "https://arxiv.org/abs/2304.07193",
+      "supports": "Large-scale representation learning"
+    },
+    {
+      "title": "Likelihood and OOD",
+      "url": "https://arxiv.org/abs/1810.09136",
+      "supports": "Limits of likelihood anomaly detection"
+    },
+    {
+      "title": "PixelRNN",
+      "url": "https://arxiv.org/abs/1601.06759",
+      "supports": "Autoregressive image modeling"
+    },
+    {
+      "title": "Conditional PixelCNN",
+      "url": "https://arxiv.org/abs/1606.05328",
+      "supports": "Conditioned image generation"
+    },
+    {
+      "title": "Auto-Encoding Variational Bayes",
+      "url": "https://arxiv.org/abs/1312.6114",
+      "supports": "Variational bound and reparameterization"
+    },
+    {
+      "title": "Disentanglement assumptions",
+      "url": "https://arxiv.org/abs/1811.12359",
+      "supports": "Identifiability limitations"
+    }
+  ],
+  "limitations": [
+    "Full transcript read 5.14\u20134344.85 seconds.",
+    "All116 extracted slide-text pages read; no complete visual-review claim.",
+    "Scalar Gaussian experiment validates algebra, not neural image generation."
+  ]
+}

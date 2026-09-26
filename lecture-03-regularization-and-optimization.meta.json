@@ -1,0 +1,165 @@
+{
+  "title": "Choosing a solution and finding it",
+  "number": 3,
+  "video_id": "dyNGd06MWn4",
+  "source_type": "Locally generated automatic speech recognition, checked against official slide text",
+  "sections": [
+    {
+      "section": "objective",
+      "start": 697.09,
+      "end": 926.48,
+      "lecture_material": "Data loss, regularization strength, overfitting and preference",
+      "research_extension": "No additional measured results",
+      "teaching_construction": "Inspection shortcuts and explicit objective accounting",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "penalties",
+      "start": 926.48,
+      "end": 1463.5,
+      "lecture_material": "L1 and L2, spread weights, equal L1 penalties, simplicity and curvature",
+      "research_extension": "Subgradient framework; AdaGrad paper contextual link",
+      "teaching_construction": "Complete scalar soft-threshold derivation and squared-shrinkage comparison",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "gradient",
+      "start": 1463.5,
+      "end": 2174.96,
+      "lecture_material": "Landscape, random search, derivatives, numerical checks, gradient descent, stopping",
+      "research_extension": "No additional performance claims",
+      "teaching_construction": "Euclidean steepest direction proof; finite differences at an absolute-value corner",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "curvature",
+      "start": 2294.05,
+      "end": 2596.02,
+      "lecture_material": "Narrow valley, Hessian conditioning, local minima and saddles",
+      "research_extension": "Dauphin saddle-point research scope",
+      "teaching_construction": "Scalar stability interval, eigenmode generalization and limits of L2 convexification",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "stochastic",
+      "start": 2174.96,
+      "end": 2596.02,
+      "lecture_material": "Minibatches, epoch, noisy gradients",
+      "research_extension": "Independent-sampling covariance identity",
+      "teaching_construction": "Explicit sampling and regularization normalization assumptions",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "momentum",
+      "start": 2596.02,
+      "end": 3235.18,
+      "lecture_material": "Momentum and alternative forms, RMSProp scaling",
+      "research_extension": "Momentum research and historical RMSProp slides; AdaGrad appendix distinguished",
+      "teaching_construction": "Constant-gradient recurrence and rate-dependent equivalence condition",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "adam",
+      "start": 3235.18,
+      "end": 3433.57,
+      "lecture_material": "First and second moments, zero initialization, bias correction",
+      "research_extension": "Original Adam Algorithm1 and initialization analysis",
+      "teaching_construction": "Constant-gradient exact correction and first-step factor",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "decay",
+      "start": 3433.57,
+      "end": 3567.86,
+      "lecture_material": "Adam versus AdamW and regularization interaction",
+      "research_extension": "Decoupled weight decay primary paper",
+      "teaching_construction": "Plain SGD equivalence and fixed diagonal counterexample",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "schedules",
+      "start": 3567.86,
+      "end": 4032.02,
+      "lecture_material": "Step, cosine, linear, inverse-square-root, warmup, scaling, Hessian methods",
+      "research_extension": "Goyal large-minibatch empirical scope",
+      "teaching_construction": "Explicit schedule endpoints; Newton linear system assumptions",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Update rules and optimization failure mechanisms",
+      "research_extension": "None",
+      "teaching_construction": "Three independent executable numerical fixtures",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation of lecture concepts",
+      "research_extension": "None",
+      "teaching_construction": "Six original problems and complete solutions",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Transition to nonlinear neural networks",
+      "research_extension": "Evidence limits",
+      "teaching_construction": "Separate verified toy algebra from trained-model evaluation",
+      "evidence_class": "Lecture synthesis with original mathematical teaching; research claims scoped to cited primary sources"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official Lecture 3 slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_3.pdf",
+      "supports": "Spoken concepts and separate appendix"
+    },
+    {
+      "title": "Adaptive Subgradient Methods for Online Learning and Stochastic Optimization",
+      "url": "https://jmlr.org/papers/v12/duchi11a.html",
+      "supports": "Subgradient geometry and AdaGrad context"
+    },
+    {
+      "title": "Identifying and attacking the saddle point problem",
+      "url": "https://arxiv.org/abs/1406.2572",
+      "supports": "Research context for saddle points in high-dimensional optimization"
+    },
+    {
+      "title": "On the importance of initialization and momentum",
+      "url": "https://proceedings.mlr.press/v28/sutskever13.html",
+      "supports": "Momentum research context, no universal ranking"
+    },
+    {
+      "title": "Tieleman and Hinton lecture slides",
+      "url": "https://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf",
+      "supports": "Historical RMSProp update"
+    },
+    {
+      "title": "Adam: A Method for Stochastic Optimization",
+      "url": "https://arxiv.org/pdf/1412.6980",
+      "supports": "Algorithm1 and initialization-bias formula"
+    },
+    {
+      "title": "Decoupled Weight Decay Regularization",
+      "url": "https://arxiv.org/abs/1711.05101",
+      "supports": "Coupled L2 versus decoupled shrinkage for adaptive optimizers"
+    },
+    {
+      "title": "Accurate, Large Minibatch SGD",
+      "url": "https://arxiv.org/abs/1706.02677",
+      "supports": "Linear scaling and warmup in a specified ImageNet training regime"
+    }
+  ],
+  "limitations": [
+    "Complete transcript read from5.20 to4113.81 seconds.",
+    "Official slide text read across119 pages; appendix begins at page98.",
+    "No claim of reproducing primary-paper experiments.",
+    "Regularization and optimizer benefits are not asserted as universal guarantees.",
+    "Rendered browser review is recorded separately from prose and numerical checks."
+  ]
+}

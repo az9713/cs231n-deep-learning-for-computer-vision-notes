@@ -1,0 +1,114 @@
+{
+  "video_id": "XSfmOH_xVSU",
+  "title": "Robot learning: perception inside a feedback loop",
+  "sections": [
+    {
+      "section": "A robot changes the input it will receive next",
+      "start": 85,
+      "end": 769,
+      "lecture_material": "Sequential decision formulation with goals, states, actions, and rewards",
+      "research_extension": "Finite-horizon objective and outcome-vector boundary",
+      "teaching_construction": "Towel-folding running case",
+      "evidence_class": "Formal decision model"
+    },
+    {
+      "section": "Robot perception is embodied, active, and task-conditioned",
+      "start": 769,
+      "end": 1131,
+      "lecture_material": "Multimodal, active, embodied, and situated perception",
+      "research_extension": "Belief-state interpretation",
+      "teaching_construction": "Hidden towel-corner posterior",
+      "evidence_class": "Definition and numerical check"
+    },
+    {
+      "section": "Reinforcement learning searches behavior",
+      "start": 1131,
+      "end": 2485,
+      "lecture_material": "RL distinctions, games, locomotion, manipulation, and sim-to-real",
+      "research_extension": "Primary locomotion evidence and domain-randomization limits",
+      "teaching_construction": "Task-dependent discontinuity comparison",
+      "evidence_class": "Research interpretation"
+    },
+    {
+      "section": "A learned world model supports planning",
+      "start": 2485,
+      "end": 3289,
+      "lecture_material": "Pixel, keypoint, and particle dynamics with replanning",
+      "research_extension": "Model-predictive formulation and error-growth bound",
+      "teaching_construction": "Lipschitz rollout-error derivation",
+      "evidence_class": "Derivation and operational boundary"
+    },
+    {
+      "section": "Demonstrations simplify credit assignment and create coverage debt",
+      "start": 3289,
+      "end": 3793,
+      "lecture_material": "Behavior cloning, iterative correction, implicit policies, and diffusion policy",
+      "research_extension": "DAgger and Diffusion Policy primary sources",
+      "teaching_construction": "Multimodal action counterexample",
+      "evidence_class": "Algorithm comparison"
+    },
+    {
+      "section": "Generalist policies move the bottleneck to evidence",
+      "start": 3793,
+      "end": 4695,
+      "lecture_material": "Robotic foundation models and evaluation challenges",
+      "research_extension": "Pi-zero report and claim-level evaluation requirements",
+      "teaching_construction": "Evidence checklist",
+      "evidence_class": "Research boundary"
+    },
+    {
+      "section": "A small replanning experiment exposes model mismatch",
+      "start": null,
+      "end": null,
+      "lecture_material": "",
+      "research_extension": "",
+      "teaching_construction": "Executed scalar feedback experiment",
+      "evidence_class": "Original implementation check"
+    },
+    {
+      "section": "Exercises with fully worked solutions",
+      "start": null,
+      "end": null,
+      "lecture_material": "",
+      "research_extension": "",
+      "teaching_construction": "Six original problems and solutions",
+      "evidence_class": "Original assessment"
+    },
+    {
+      "section": "Source boundaries and engineering conclusions",
+      "start": 4444,
+      "end": 4707,
+      "lecture_material": "Evaluation, world models, and remaining challenges",
+      "research_extension": "Claim boundary synthesis",
+      "teaching_construction": "Closed-loop design principle",
+      "evidence_class": "Synthesis"
+    }
+  ],
+  "references": [
+    {
+      "title": "Learning Quadrupedal Locomotion over Challenging Terrain",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33087482/",
+      "supports": "Simulation-trained locomotion transfer and its experimental scope"
+    },
+    {
+      "title": "Deep Visual Foresight for Planning Robot Motion",
+      "url": "https://research.google/pubs/deep-visual-foresight-for-planning-robot-motion/",
+      "supports": "Action-conditioned video prediction and model-predictive pushing"
+    },
+    {
+      "title": "A Reduction of Imitation Learning to No-Regret Online Learning",
+      "url": "https://proceedings.mlr.press/v15/ross11a.html",
+      "supports": "Learner-induced state distributions and iterative expert labeling"
+    },
+    {
+      "title": "Diffusion Policy",
+      "url": "https://arxiv.org/abs/2303.04137",
+      "supports": "Conditional action diffusion and receding-horizon visuomotor control"
+    },
+    {
+      "title": "Pi-zero: A Vision-Language-Action Flow Model",
+      "url": "https://arxiv.org/abs/2410.24164",
+      "supports": "Generalist robot policy architecture, data, and post-training"
+    }
+  ]
+}

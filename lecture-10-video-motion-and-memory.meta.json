@@ -1,0 +1,182 @@
+{
+  "title": "Video, motion, and temporal memory",
+  "number": 10,
+  "video_id": "wElqklprhPE",
+  "source_type": "locally generated machine transcription and official extracted slide text",
+  "sections": [
+    {
+      "section": "data",
+      "start": 5,
+      "end": 404,
+      "lecture_material": "Video tasks, tensor axes and data cost",
+      "research_extension": "Unit and memory conventions",
+      "teaching_construction": "Inspection video budget",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "sampling",
+      "start": 404,
+      "end": 525,
+      "lecture_material": "Sparse frame selection",
+      "research_extension": "Event coverage and temporal aliasing",
+      "teaching_construction": "Independent draws and periodic motion",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "fusion",
+      "start": 525,
+      "end": 1103,
+      "lecture_material": "Early and late fusion",
+      "research_extension": "Order invariance of mean pooling",
+      "teaching_construction": "Forward/reverse sequence counterexample",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "convolution",
+      "start": 1103,
+      "end": 2404,
+      "lecture_material": "3D CNNs and video benchmarks",
+      "research_extension": "Receptive field and benchmark provenance",
+      "teaching_construction": "Parameter and temporal receptive-field arithmetic",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "motion",
+      "start": 2404,
+      "end": 2711,
+      "lecture_material": "Optical flow and two-stream networks",
+      "research_extension": "Brightness-constancy derivation and aperture ambiguity",
+      "teaching_construction": "Two-equation flow recovery",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "memory",
+      "start": 2711,
+      "end": 3103,
+      "lecture_material": "Recurrent video representations",
+      "research_extension": "State compression limitations",
+      "teaching_construction": "Inspection event memory",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "attention",
+      "start": 3103,
+      "end": 3266,
+      "lecture_material": "Non-local networks; later video transformers at3498\u20133576",
+      "research_extension": "Factorized attention costs",
+      "teaching_construction": "3136-token memory calculation",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "inflation",
+      "start": 3266,
+      "end": 3498,
+      "lecture_material": "I3D and inflated weights",
+      "research_extension": "Constant-video identity and boundary conditions",
+      "teaching_construction": "Independent kernel check",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "localization",
+      "start": 3576,
+      "end": 3774,
+      "lecture_material": "Temporal and spatiotemporal localization",
+      "research_extension": "Interval IoU convention",
+      "teaching_construction": "Overlapping event intervals",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "multimodal",
+      "start": 3774,
+      "end": 4120,
+      "lecture_material": "Audiovisual learning, selection, egocentric video and language",
+      "research_extension": "Primary VisualVoice and Listen to Look mechanisms",
+      "teaching_construction": "Selection cost inequality",
+      "evidence_class": "lecture synthesis with identified research and teaching enhancements"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidates preceding concepts",
+      "research_extension": "None",
+      "teaching_construction": "Original teaching material",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidates preceding concepts",
+      "research_extension": "None",
+      "teaching_construction": "Six original fully solved exercises",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidates preceding concepts",
+      "research_extension": "None",
+      "teaching_construction": "Original teaching material",
+      "evidence_class": "original teaching construction"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official lecture slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_10.pdf",
+      "supports": "103 extracted pages"
+    },
+    {
+      "title": "C3D",
+      "url": "https://arxiv.org/abs/1412.0767",
+      "supports": "3D convolutional video features"
+    },
+    {
+      "title": "Two-stream networks",
+      "url": "https://arxiv.org/abs/1406.2199",
+      "supports": "RGB and optical-flow pathways"
+    },
+    {
+      "title": "I3D",
+      "url": "https://arxiv.org/abs/1705.07750",
+      "supports": "Inflation and video pretraining"
+    },
+    {
+      "title": "Non-local networks",
+      "url": "https://arxiv.org/abs/1711.07971",
+      "supports": "Long-range weighted aggregation"
+    },
+    {
+      "title": "TimeSformer",
+      "url": "https://arxiv.org/abs/2102.05095",
+      "supports": "Divided space-time attention"
+    },
+    {
+      "title": "VideoMAE",
+      "url": "https://arxiv.org/abs/2203.12602",
+      "supports": "Masked video pretraining"
+    },
+    {
+      "title": "Large-scale Video Classification",
+      "url": "https://openaccess.thecvf.com/content_cvpr_2014/html/Karpathy_Large-scale_Video_Classification_2014_CVPR_paper.html",
+      "supports": "Sports1M benchmark and fusion study"
+    },
+    {
+      "title": "VisualVoice",
+      "url": "https://arxiv.org/abs/2101.03149",
+      "supports": "Audiovisual speech separation"
+    },
+    {
+      "title": "Listen to Look",
+      "url": "https://arxiv.org/abs/1912.04487",
+      "supports": "Efficient audio-assisted video selection"
+    }
+  ],
+  "limitations": [
+    "Complete transcript read:5.20\u20134119.15 seconds.",
+    "All103 extracted slide-text pages read; no claim of complete visual review.",
+    "Original numerical checks establish identities, not published video benchmark results."
+  ]
+}

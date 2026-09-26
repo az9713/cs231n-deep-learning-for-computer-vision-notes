@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="cfe47e6bf5960eeaa446e7e36fb333fb9de153ff15bcd3c23436599519e69a84"><title>Robot learning: perception inside a feedback loop · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc" aria-label="On this page"><h2>On this page</h2></aside><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><header class="chapter-header">
+<p class="eyebrow">Chapter 17 · CS231N, Spring 2025</p>
+<h1>Robot learning: perception inside a feedback loop</h1>
+<p class="lead">An image classifier can be wrong once. A robot policy can turn one small visual error into the next observation, then face a state absent from its training data. Robot learning therefore couples representation, action, dynamics, and evaluation.</p>
+<p class="source-note">Grounded in Yunzhu Li’s complete robot-learning lecture and the official 103-page slide deck. The towel-folding case, derivations, scalar planning experiment, and exercises are original teaching constructions. Research demonstrations are described with their stated scope rather than as general robot competence.</p>
+</header>
+
+<section aria-labelledby="decision-loop">
+<h2 id="decision-loop">1. A robot changes the input it will receive next <a class="timestamp" href="https://www.youtube.com/watch?v=XSfmOH_xVSU&amp;t=85">01:25</a></h2>
+<p>A laundry robot sees a partly folded towel. Its immediate options include grasping a corner, pulling an edge, smoothing a wrinkle, or moving its camera. A grasp changes the towel’s shape and may hide the corner needed next. A camera move changes evidence without directly advancing the fold. A useful system must choose a sequence, observe what actually happened, and recover when cloth slips.</p>
+<p>Let the decision index be \(t=0,1,\ldots,T-1\). The physical state \(s_t\in\mathcal S\) contains task-relevant geometry, velocities, contacts, and material configuration. The robot receives an observation \(o_t\in\mathcal O\), such as RGB-D images, joint encoders, and tactile signals. It chooses an action \(a_t\in\mathcal A\), such as an end-effector displacement and gripper command. The environment then samples a next state from \(P(s_{t+1}\mid s_t,a_t)\) and supplies reward \(r_t\). A policy \(\pi_\theta(a_t\mid h_t,g)\) maps the available history \(h_t\) and goal \(g\) to an action distribution.</p>
+<p>The expected discounted objective is</p>
+<div class="equation">\[
+J(\theta)=\mathbb E_{\pi_\theta,P}\left[
+\sum_{t=0}^{T-1}\gamma^t r(s_t,a_t,s_{t+1})\right],
+\qquad 0\le\gamma\le1.
+\]</div>
+<p>The expectation includes initial conditions, policy sampling, sensor uncertainty, and physical transitions. This formulation differs from fixed-dataset prediction because \(\theta\) changes the distribution of later states. A slightly poor first grasp can create a configuration on which the policy has little training support.</p>
+<p>Goal, state, action, and reward are design commitments. “Fold the towel” does not specify whether compact area, edge alignment, smoothness, speed, or damage avoidance matters. A scalar reward can combine these only after units and weights are declared. Keeping terminal alignment, collision, force, time, and intervention as separate reported outcomes makes specification errors visible.</p>
+<p>The lecture surveys reinforcement learning, learned dynamics, imitation learning, and foundation policies as different ways to fill this loop. They are not mutually exclusive. A system can imitate demonstrations, improve through reinforcement learning, and use a learned world model for short-horizon planning.</p>
+</section>
+
+<section aria-labelledby="perception">
+<h2 id="perception">2. Robot perception is embodied, active, and task-conditioned <a class="timestamp" href="https://www.youtube.com/watch?v=XSfmOH_xVSU&amp;t=769">12:49</a></h2>
+<p>Conventional vision benchmarks often hold the input fixed and score an output. A robot can change its viewpoint, touch an object, or perturb a pile to obtain information. <strong>Active perception</strong> treats sensing actions as decisions: the agent chooses how to reduce uncertainty relevant to its task. Movement is useful when its informational value exceeds its time, energy, and risk.</p>
+<p>The towel’s full mesh state is hidden. A camera may miss a folded-under corner; depth may fail on reflective material; tactile sensing is local but can reveal grasp stability. Sensor fusion is not mere concatenation. Measurements arrive at different rates and coordinate frames, with distinct noise and missingness. A fusion model needs calibration and a rule for what happens when modalities disagree.</p>
+<p>A <strong>belief state</strong> \(b_t(s)=P(s_t=s\mid h_t)\) represents uncertainty about hidden state. Suppose a corner is either exposed, \(E\), or folded under, \(F\). The prior is \(P(E)=0.4\). A camera signal \(z=1\) occurs with probability 0.8 under \(E\) and 0.2 under \(F\). Bayes’ rule gives</p>
+<div class="equation">\[
+P(E\mid z=1)=
+\frac{0.8(0.4)}{0.8(0.4)+0.2(0.6)}
+=\frac{8}{11}\approx0.727.
+\]</div>
+<p>A positive signal raises confidence without making the corner certainly exposed. The robot can act under that belief or choose a camera motion whose value lies in changing the posterior. A representation optimized only for object identity may discard exactly the contact or occlusion information required for this decision.</p>
+<p>The lecture characterizes robot vision as <strong>embodied</strong> because sensing depends on a physical body, <strong>active</strong> because actions select observations, and <strong>situated</strong> because the current goal determines relevant detail. Buttoning a shirt may require precise local geometry near one button rather than a complete semantic reconstruction of the room. A smaller state can be superior when it preserves task-relevant predictions and avoids irrelevant estimation burden.</p>
+<p>Affordances make the action connection explicit. Instance segmentation answers which pixels belong together; an affordance model asks what interaction those pixels permit under a given embodiment. A handle may be visually recognizable yet unreachable because of joint limits. Perception must connect to geometry, contact, and the robot’s action space.</p>
+</section>
+
+<section aria-labelledby="rl">
+<h2 id="rl">3. Reinforcement learning searches behavior, but interaction is the expensive resource <a class="timestamp" href="https://www.youtube.com/watch?v=XSfmOH_xVSU&amp;t=1131">18:51</a></h2>
+<p>Reinforcement learning obtains evaluative feedback by acting. Four properties distinguish it from ordinary supervised fitting. Transitions can be stochastic; rewards may arrive long after the responsible action; the physical world may be nondifferentiable or unknown; and the policy changes the states from which it learns.</p>
+<p>An action-value function \(Q^\pi(s,a)\) is expected future return after taking \(a\) in \(s\) and then following policy \(\pi\). In a finite action set, choosing the largest estimated value produces a decision rule. A deep Q-network represents these values from pixels, but the network architecture does not remove bootstrapping error, distribution shift, or exploration requirements.</p>
+<p>Game environments made massive interaction and exact reset cheap. Physical robots add wear, human reset labor, damage, sensor drift, and wall-clock latency. Lee and colleagues’ <a href="https://pubmed.ncbi.nlm.nih.gov/33087482/">quadrupedal locomotion study</a> trained a proprioceptive policy in simulation and demonstrated zero-shot transfer to challenging natural terrain. The result supports robust transfer for that controller and training construction. It does not prove that simulation mismatch is negligible for contact-rich manipulation or deformable cloth.</p>
+<p><strong>Domain randomization</strong> samples physical and visual parameters during training so that the real system may fall inside the training distribution. Let \(\phi\) denote mass, friction, delay, or terrain parameters and let \(p_{\rm train}(\phi)\) be their training distribution. Robust empirical performance requires more than a wide interval: important modes must be represented, the policy must use observations that reveal their effects, and unmodeled events may still lie outside support.</p>
+<p>Manipulation can be discontinuous. A small friction-parameter error may slightly alter a push, while a missed contact can change grasp success to failure. This makes “close simulation” task-dependent. Report transfer by outcome and regime rather than one undifferentiated sim-to-real score.</p>
+<p>Exploration also raises a safety problem. A reward penalty for collision does not prevent collisions during learning. Hard constraints, shielding, conservative action sets, simulation, and human supervision change what experience can be collected. They bring assumptions and costs that belong in the learning-system description.</p>
+<h3>Sample efficiency must count the complete experiment</h3>
+<p>A transition count alone can hide the dominant resource. Ten thousand simulator steps may be cheap, while ten thousand physical grasps require calibration, object replacement, battery charging, human resets, and repairs. Parallel robots reduce elapsed time but increase hardware and supervision. A comparison should report physical interactions, simulator interactions, human interventions, compute, and wall-clock time separately before combining them into a project-specific cost.</p>
+<p>Reward design also changes the apparent difficulty. A shaped reward that measures distance to a known target supplies information unavailable from a sparse success bit. Privileged simulator state can calculate that distance even when the deployed robot sees only images. Such shaping can be legitimate, but the information available during training and execution must be stated. Otherwise an algorithmic gain may actually come from stronger instrumentation.</p>
+</section>
+
+<section aria-labelledby="models">
+<h2 id="models">4. A learned world model supports planning only through its representation <a class="timestamp" href="https://www.youtube.com/watch?v=XSfmOH_xVSU&amp;t=2485">41:25</a></h2>
+<p>Model-based control learns or supplies a transition approximation \(\widehat f\) and searches actions using predicted futures. Given current state estimate \(\hat s_t\), a horizon \(H\), and goal cost \(c\), one form is</p>
+<div class="equation">\[
+\min_{a_{t:t+H-1}}
+\sum_{k=0}^{H-1}c(\hat s_{t+k},a_{t+k})+
+c_T(\hat s_{t+H})
+\quad\text{subject to}\quad
+\hat s_{j+1}=\widehat f(\hat s_j,a_j).
+\]</div>
+<p>Executing the whole optimized sequence open loop assumes the model remains accurate. Model-predictive control executes the first action, observes again, and replans. Feedback does not make a bad model correct, but it limits how long prediction error accumulates before correction.</p>
+<p>Representation chooses which prediction errors matter. <a href="https://research.google/pubs/deep-visual-foresight-for-planning-robot-motion/">Deep Visual Foresight</a> predicts action-conditioned video and uses model-predictive control for pushing. Keypoint models predict a sparse set of object locations. Particle models can represent piles, dough, or other high-degree-of-freedom materials. Pixel error preserves appearance detail but may overweight irrelevant background; a sparse keypoint state is efficient but cannot express unmodeled deformation.</p>
+<p>Suppose a one-step model has error at most \(\epsilon\) and is \(L\)-Lipschitz in state: changing its state input by distance \(d\) changes the next prediction by at most \(Ld\). Ignoring action error, an \(H\)-step open-loop discrepancy is bounded recursively by</p>
+<div class="equation">\[
+e_{k+1}\le L e_k+\epsilon,
+\qquad
+e_H\le \epsilon\sum_{j=0}^{H-1}L^j.
+\]</div>
+<p>When \(L=1\), the bound is \(H\epsilon\); when \(L\gt1\), it grows geometrically. This is a worst-case teaching bound, not an empirical claim about a particular robot. It explains why short-horizon replanning can be more reliable than a visually impressive long rollout.</p>
+<p>A planner can exploit model error by selecting actions whose predicted reward is high precisely where the model is untrustworthy. Validation on random transitions may miss this policy-induced distribution. Useful checks include multi-step rollout error, uncertainty under planned actions, real execution of selected plans, and failure cases split by contact regime.</p>
+<h3>Replanning changes the information pattern, not the past</h3>
+<p>After the towel slips, a new observation can redirect the remaining actions. It cannot undo excessive force already applied or recover a corner pushed out of reach. Receding-horizon planning therefore needs a terminal region and intermediate constraints that preserve recoverability. A short horizon can reduce model-error growth while becoming myopic; a long horizon sees delayed consequences while relying on more uncertain predictions.</p>
+<p>The state representation controls both optimization and diagnosis. Pixels retain visual evidence but create a high-dimensional cost surface. Keypoints expose geometry but require stable correspondence. Particles represent deformation but require observation-to-particle reconstruction and permutation-aware comparison. A hybrid can use semantic task stages, geometric object state, and local pixel or tactile evidence. Its interfaces must define frames, units, uncertainty, and update rate.</p>
+</section>
+
+<section aria-labelledby="imitation">
+<h2 id="imitation">5. Demonstrations simplify credit assignment and create coverage debt <a class="timestamp" href="https://www.youtube.com/watch?v=XSfmOH_xVSU&amp;t=3289">54:49</a></h2>
+<p>Behavior cloning fits a policy to demonstration pairs \((o_i,a_i)\) by supervised learning. It avoids online reward exploration and can produce useful physical behavior with modest data. Its central limitation is <strong>covariate shift</strong>: after a small mistake, the learner visits observations rare in the expert dataset and may make a larger mistake.</p>
+<p>If a policy has error probability \(\varepsilon\) on expert-distributed states, independent one-step reasoning might suggest \(T\varepsilon\) expected errors across horizon \(T\). The more damaging effect is distributional: an early error can move the system into states where no \(\varepsilon\) guarantee applies. <a href="https://proceedings.mlr.press/v15/ross11a.html">DAgger</a> addresses this by collecting expert labels on states visited by the learner and aggregating them into training data. It trades a statistical problem for an interactive supervision requirement.</p>
+<p>Even without distribution shift, the probability of at least one error across \(T\) independent decisions is \(1-(1-\varepsilon)^T\). At \(\varepsilon=0.01\) and \(T=100\), this is about \(0.634\), not 0.01. Independence is an optimistic teaching assumption: physical errors can persist and make later mistakes correlated. Per-step validation accuracy therefore cannot substitute for complete-task trials.</p>
+<p>Action distributions can be multimodal. A towel corner may be approached from the left or right; averaging two valid actions can point between them and collide. Energy-based policies score observation-action pairs without forcing one explicit unimodal output. <a href="https://arxiv.org/abs/2303.04137">Diffusion Policy</a> represents visuomotor behavior as conditional denoising over action sequences and combines it with receding-horizon execution. Reported benchmark improvements support the evaluated tasks and protocols, not every manipulation setting.</p>
+<p>A demonstration also embeds the demonstrator’s speed, embodiment, and preferences. Teleoperation can be slower than direct human motion, so a policy that matches it may inherit that pace. More data does not resolve an ambiguous objective unless demonstrations cover the intended variation or task labels distinguish preferences.</p>
+<p>Iterative correction changes dataset governance. A human may label recovery actions on learner-visited states, take over during danger, or provide a preference between rollouts. These signals are not interchangeable. An intervention tells us that continuing was unacceptable; a corrective action demonstrates one recovery; a preference ranks two outcomes. The training loss should preserve which information was actually supplied.</p>
+</section>
+
+<section aria-labelledby="foundation">
+<h2 id="foundation">6. Generalist policies move the bottleneck to evidence <a class="timestamp" href="https://www.youtube.com/watch?v=XSfmOH_xVSU&amp;t=3793">1:03:13</a></h2>
+<p>A vision-language-action policy maps observations and a task description to robot actions across many tasks and embodiments. Pretrained vision-language representations contribute semantic knowledge; robot trajectories connect that representation to physical control. Cross-embodiment data require explicit action normalization, embodiment identifiers, and conventions for time and coordinate frames.</p>
+<p>The <a href="https://arxiv.org/abs/2410.24164">\(\pi_0\) technical report</a> describes a generalist vision-language-action model using flow matching and a heterogeneous robot dataset, followed by task-specific post-training. The distinction between base-model breadth and post-trained reliability is essential. A task shown after fine-tuning is not zero-shot evidence, and a coherent trajectory is not necessarily safe or successful.</p>
+<p>Calling a policy “foundational” creates an evaluation obligation. Broad claims need tasks, objects, initial conditions, perturbations, embodiments, and held-out regimes that reveal the claimed breadth. Curated videos conceal denominators. Report attempt counts, success definitions, intervention rules, speed, selection procedures, and uncertainty.</p>
+<p>One-step action loss is a weak proxy for long-horizon success. A tiny consistent bias can compound; conversely, a policy with higher average action error may recover better through feedback. Real-world trials are costly and noisy, while simulation has a transfer gap. A useful benchmark needs predictive correlation with deployment outcomes, not only realism or visual fidelity.</p>
+<p>Foundation world models are a complementary direction: action-conditioned interaction data contain information about dynamics that policy-only training may not expose. The open design questions include 3D structure, physical priors, uncertainty, contact representation, and correlation between predicted and real outcomes under planned actions.</p>
+<h3>System timing is part of the learned policy</h3>
+<p>A model may emit excellent actions too slowly for stable control. Let sensor capture, preprocessing, inference, communication, and actuation delays sum to \(\Delta\) seconds. The action computed from \(o_t\) is applied to a later physical state. Training with zero delay and deploying with nonzero \(\Delta\) changes the transition distribution. Measure end-to-end latency and jitter, include them in simulation or history, and define a fail-safe response when deadlines are missed.</p>
+<p>Module boundaries can create coordinate errors that no learning curve reveals. Camera points may use meters in one frame, millimeters in another, while actions use an end-effector frame whose calibration drifts. A repository-level model checkpoint is insufficient for reproduction; preprocessing, calibration, action scaling, controller frequency, robot firmware, and safety limits are part of the executable policy.</p>
+</section>
+
+<section aria-labelledby="implementation">
+<h2 id="implementation">7. A small replanning experiment exposes model mismatch</h2>
+<p>The function below controls a scalar position. Its learned model predicts \(x^+=x+a\), while the real plant applies only a fraction \(g\) of the action. The controller divides the remaining predicted gap across the remaining steps. In open-loop mode it plans once; in feedback mode it recomputes after observing each real transition. Inputs are finite numbers, the horizon is a positive integer, and \(0\lt g\le1\). The function writes no files and controls no device.</p>
+<pre><code class="language-python">def scalar_plan(goal, horizon, gain, replan):
+    if type(horizon) is not int or horizon &lt; 1:
+        raise ValueError("horizon must be a positive integer")
+    if not 0.0 &lt; gain &lt;= 1.0:
+        raise ValueError("gain must lie in (0, 1]")
+    state = 0.0
+    actions = [goal / horizon] * horizon
+    for step in range(horizon):
+        if replan:
+            remaining = horizon - step
+            action = (goal - state) / remaining
+        else:
+            action = actions[step]
+        state += gain * action
+    return state
+
+
+assert abs(scalar_plan(1.0, 2, 0.8, False) - 0.8) &lt; 1e-12
+assert abs(scalar_plan(1.0, 2, 0.8, True) - 0.88) &lt; 1e-12
+assert abs(scalar_plan(1.0, 4, 1.0, True) - 1.0) &lt; 1e-12</code></pre>
+<p>With perfect dynamics, both modes reach the target. Under 20% actuation loss, open loop ends at 0.8. Replanning observes the first position \(0.4\), requests the remaining \(0.6\), and ends at \(0.4+0.8(0.6)=0.88\). It improves but does not eliminate error because the last action still uses the wrong gain. Estimating the gain, reserving another correction step, or using integral feedback changes the result.</p>
+<p>This experiment checks one mechanism: feedback reduces persistent model mismatch over a finite horizon. It says nothing about high-dimensional perception, unstable dynamics, actuator bounds, or safe exploration. A useful teaching model earns trust by naming that boundary.</p>
+</section>
+
+<section aria-labelledby="exercises">
+<h2 id="exercises">8. Exercises with fully worked solutions</h2>
+<ol>
+<li><strong>Belief update.</strong> Recompute the exposed-corner posterior when the prior is 0.1, sensitivity is 0.8, and false-positive probability is 0.2.</li>
+<li><strong>Model-error growth.</strong> Evaluate the stated rollout-error bound for \(H=5\), \(\epsilon=0.02\), and \(L=1\), then \(L=1.5\).</li>
+<li><strong>Multimodal actions.</strong> Valid scalar actions are \(-1\) and \(+1\) with equal demonstration probability, while action 0 collides. Diagnose squared-error behavior cloning.</li>
+<li><strong>Simulation transfer.</strong> Explain why wide friction randomization does not guarantee cloth-folding transfer.</li>
+<li><strong>Policy evaluation.</strong> A policy succeeds in 18 of 20 selected video trials. State what is missing for a general-reliability claim and propose a better protocol.</li>
+<li><strong>Replanning.</strong> For goal 1, horizon 3, and gain 0.5, compute open-loop and feedback final positions under the code’s rule.</li>
+</ol>
+<details open><summary>Worked solutions</summary>
+<p><strong>1.</strong> Bayes’ rule gives \(0.8(0.1)/[0.8(0.1)+0.2(0.9)]=0.08/0.26=4/13\approx0.308\). The same positive signal gives lower posterior confidence because exposed corners are rarer under the new prior. Sensitivity alone never determines the posterior.</p>
+<p><strong>2.</strong> For \(L=1\), the bound is \(5(0.02)=0.10\). For \(L=1.5\), it is \(0.02(1+1.5+2.25+3.375+5.0625)=0.26375\). The geometric increase is a worst-case upper bound, not a prediction that every error aligns adversarially.</p>
+<p><strong>3.</strong> Squared error is minimized by the conditional mean, here 0. The learned action can therefore collide although neither demonstration does. A multimodal density, energy model, or conditional diffusion policy can retain separated modes; a downstream selection rule must still choose a feasible sample.</p>
+<p><strong>4.</strong> Cloth introduces deformable geometry, self-contact, grasp discontinuities, perception error, and material behavior absent from friction alone. Transfer requires support over the task-relevant mismatch and observations that let the policy react. Randomizing one parameter widely cannot cover missing mechanisms.</p>
+<p><strong>5.</strong> Missing information includes how trials were selected, the denominator before editing, initial-condition distribution, success criteria, interventions, object diversity, and uncertainty. Pre-register a representative test distribution and success rule, run every trial, keep failures, stratify by condition, and report a binomial interval plus operational costs.</p>
+<p><strong>6.</strong> Open loop uses three actions of \(1/3\), so the final position is \(3(0.5/3)=0.5\). Feedback reaches \(1/6\) after step one. It requests \((1-1/6)/2=5/12\), reaching \(3/8\). The final request is \(5/8\), half of which moves the state to \(3/8+5/16=11/16=0.6875\). Feedback improves on 0.5 but retains terminal error.</p>
+</details>
+</section>
+
+<section aria-labelledby="boundaries">
+<h2 id="boundaries">9. Source boundaries and engineering conclusions <a class="timestamp" href="https://www.youtube.com/watch?v=XSfmOH_xVSU&amp;t=4444">1:14:04</a></h2>
+<p>The recording supplies the progression from sequential formulation through embodied perception, reinforcement learning, learned dynamics, imitation learning, robotic foundation policies, and evaluation challenges. The towel case, belief calculation, model-error bound, scalar feedback experiment, and exercises are teaching extensions. Primary papers support the specific research mechanisms cited beside them.</p>
+<p>The lecture is a broad survey and sometimes uses intentionally provocative summaries. This chapter does not treat locomotion as universally solved, assume that more simulation randomization always closes transfer, or infer foundation-policy reliability from selected videos. It distinguishes the policy’s training loss from task success and a demonstration from a deployment guarantee.</p>
+<p>The durable design principle is to close every claimed loop. A representation must preserve evidence needed by action; a planner must confront model error; a cloned policy must cover its own states; a generalist model must earn breadth through evaluation; and a physical system must report failures, resets, latency, and safety constraints alongside success.</p>
+</section>
+<!-- BOOK-CONTENT-END --></article><nav class="page-turn" aria-label="Chapter navigation"><a rel="prev" href="lecture-16-vision-and-language.html">Previous available chapter</a><a href="index.html">Lecture index</a><a rel="next" href="lecture-18-human-centered-vision.html">Next available chapter</a></nav></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

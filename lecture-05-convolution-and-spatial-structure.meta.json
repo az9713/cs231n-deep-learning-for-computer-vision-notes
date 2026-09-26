@@ -1,0 +1,146 @@
+{
+  "title": "Convolution, spatial structure, and the cost of downsampling",
+  "number": 5,
+  "video_id": "f3g1zGdxptI",
+  "source_type": "Local automatic speech recognition checked against official slide text",
+  "sections": [
+    {
+      "section": "features",
+      "start": 83,
+      "end": 1375,
+      "lecture_material": "General learning recipe, designed features, end-to-end learning.",
+      "research_extension": "None.",
+      "teaching_construction": "Inspection case; flattening is invertible but dense parameterization lacks spatial bias.",
+      "evidence_class": "Lecture content supplemented by identified derivations and teaching examples."
+    },
+    {
+      "section": "operator",
+      "start": 1832,
+      "end": 2620,
+      "lecture_material": "Local filters, channels, bias, and batch shapes.",
+      "research_extension": "Official cross-correlation convention.",
+      "teaching_construction": "Independent two-by-two kernel fixture and full index definition.",
+      "evidence_class": "Lecture content supplemented by identified derivations and teaching examples."
+    },
+    {
+      "section": "dimensions",
+      "start": 2998,
+      "end": 3528,
+      "lecture_material": "Padding, stride, shapes, parameter and compute counts.",
+      "research_extension": "Convolution arithmetic guide.",
+      "teaching_construction": "Floor derivation; independent 224-parameter and 221184-MAC example.",
+      "evidence_class": "Lecture content supplemented by identified derivations and teaching examples."
+    },
+    {
+      "section": "learning",
+      "start": 2214,
+      "end": 2998,
+      "lecture_material": "Parameters versus hyperparameters, shared filters, nonlinearity, visualization.",
+      "research_extension": "Vision Transformer as the lecture's later architectural context.",
+      "teaching_construction": "Explicit shared-weight gradient and conditional symmetry argument.",
+      "evidence_class": "Lecture content supplemented by identified derivations and teaching examples."
+    },
+    {
+      "section": "receptive",
+      "start": 3142,
+      "end": 3360,
+      "lecture_material": "Accumulated receptive fields and downsampling.",
+      "research_extension": "Theoretical versus effective receptive fields.",
+      "teaching_construction": "General jump/support recurrence and mixed-stride example.",
+      "evidence_class": "Lecture content supplemented by identified derivations and teaching examples."
+    },
+    {
+      "section": "pooling",
+      "start": 3528,
+      "end": 3897,
+      "lecture_material": "Pooling reductions, dimensional generalization, variable image sizes.",
+      "research_extension": "Official max-pool padding convention.",
+      "teaching_construction": "Original pooling fixture, backward rules, and one-by-one channel interpretation.",
+      "evidence_class": "Lecture content supplemented by identified derivations and teaching examples."
+    },
+    {
+      "section": "equivariance",
+      "start": 3897,
+      "end": 4078,
+      "lecture_material": "Translation equivariance and boundary caveats.",
+      "research_extension": "Shift consistency and anti-aliasing.",
+      "teaching_construction": "Proof with stated domain and exact stride-two counterexample.",
+      "evidence_class": "Lecture content supplemented by identified derivations and teaching examples."
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Operational concepts made concrete.",
+      "research_extension": "None.",
+      "teaching_construction": "Executed arithmetic, finite-difference, resource, support, and equivariance checks.",
+      "evidence_class": "Lecture content supplemented by identified derivations and teaching examples."
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Chapter concepts revisited.",
+      "research_extension": "None.",
+      "teaching_construction": "Six complete original solutions.",
+      "evidence_class": "Lecture content supplemented by identified derivations and teaching examples."
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Architectural bias and next lecture.",
+      "research_extension": "None.",
+      "teaching_construction": "Separates formal properties from model accuracy.",
+      "evidence_class": "Lecture content supplemented by identified derivations and teaching examples."
+    }
+  ],
+  "references": [
+    {
+      "title": "Lecture 5 recording",
+      "url": "https://www.youtube.com/watch?v=f3g1zGdxptI",
+      "supports": "Full lecture content and order."
+    },
+    {
+      "title": "Official Lecture 5 slides",
+      "url": "https://cs231n.stanford.edu/2025/slides/lecture_5.pdf",
+      "supports": "Shapes, counts, diagrams, and operator definitions; older appendix distinguished."
+    },
+    {
+      "title": "Conv2d documentation",
+      "url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+      "supports": "Cross-correlation convention and operator arguments."
+    },
+    {
+      "title": "MaxPool2d documentation",
+      "url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html",
+      "supports": "Negative-infinity padding and pooling semantics."
+    },
+    {
+      "title": "A guide to convolution arithmetic for deep learning",
+      "url": "https://arxiv.org/abs/1603.07285",
+      "supports": "Shape and padding relationships."
+    },
+    {
+      "title": "Understanding the Effective Receptive Field in Deep Convolutional Neural Networks",
+      "url": "https://arxiv.org/abs/1701.04128",
+      "supports": "Distinction between theoretical support and actual influence."
+    },
+    {
+      "title": "Making Convolutional Networks Shift-Invariant Again",
+      "url": "https://arxiv.org/abs/1904.11486",
+      "supports": "Downsampling and anti-aliasing research context."
+    },
+    {
+      "title": "An Image is Worth 16x16 Words",
+      "url": "https://arxiv.org/abs/2010.11929",
+      "supports": "Patch-based transformer context."
+    }
+  ],
+  "limitations": [
+    "The full transcript and all extracted slide text were read; no claim of complete audiovisual review.",
+    "Slides 109 onward are an older appendix; unspoken material is not attributed as lecture speech.",
+    "Research extensions are bounded to formal clarification; no paper experiments were reproduced.",
+    "Numerical fixtures are original teaching examples; rendered browser validation is recorded separately."
+  ]
+}

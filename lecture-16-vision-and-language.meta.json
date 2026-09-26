@@ -1,0 +1,189 @@
+{
+  "video_id": "mQOK0Mfyrkk",
+  "title": "Vision-language foundation models: alignment, grounding, and composition",
+  "status": "complete; recorded editorial and validation gates passed",
+  "transcript_provenance": "Local machine transcription; not publisher captions",
+  "transcription_model": "Systran/faster-whisper-small.en",
+  "audio_duration_seconds": 4193.121,
+  "source_uncertainties": [
+    "ASR names SimCLR, CLIP, CoCa, LLaVA, Flamingo, Molmo, SAM and VisProg inconsistently; corrected against official slides and primary papers.",
+    "Zero-shot means no target-task labels used for adaptation, not absence of related pretraining data.",
+    "Pointing and chaining are described as auditable interfaces rather than guarantees against hallucination.",
+    "Minimum-loss mask selection is separated from ground-truth-free deployment selection."
+  ],
+  "sections": [
+    {
+      "section": "CLIP turns paired images and text into a shared retrieval geometry",
+      "start": 320.0,
+      "end": 646.9,
+      "lecture_material": "Symmetric image-text contrast and scale.",
+      "research_extension": "Primary CLIP equations integrated.",
+      "teaching_construction": "Persistent mug relation case.",
+      "evidence_class": "source-grounded with derivation"
+    },
+    {
+      "section": "Zero-shot classification is text-prototype nearest neighbor",
+      "start": 646.9,
+      "end": 1104.0,
+      "lecture_material": "Text categories, prompts, zero-shot and linear probes.",
+      "research_extension": "Prompt ensembling interpretation.",
+      "teaching_construction": "Executable stable softmax.",
+      "evidence_class": "source-grounded with numerical check"
+    },
+    {
+      "section": "CoCa adds generation so the representation must retain descriptive detail",
+      "start": 1104.0,
+      "end": 1215.4,
+      "lecture_material": "Captioning decoder added to contrastive training.",
+      "research_extension": "Primary CoCa objective integrated.",
+      "teaching_construction": "Information-retention comparison.",
+      "evidence_class": "source-grounded with derivation"
+    },
+    {
+      "section": "Global alignment is open vocabulary but weakly grounded",
+      "start": 1215.4,
+      "end": 1540.2,
+      "lecture_material": "CLIP advantages, compositional and grounding limits.",
+      "research_extension": "Minimal-pair evaluation.",
+      "teaching_construction": "Counterfactual mug tests.",
+      "evidence_class": "source-grounded with explicit qualification"
+    },
+    {
+      "section": "A vision-language model maps spatial tokens into a language model",
+      "start": 1744.5,
+      "end": 2450.5,
+      "lecture_material": "LLaVA features, Flamingo resampling, fusion and few-shot behavior.",
+      "research_extension": "Primary Flamingo architecture integrated.",
+      "teaching_construction": "Shape ledger and gated update.",
+      "evidence_class": "source-grounded with formal completion"
+    },
+    {
+      "section": "Pointing makes a model expose visual evidence",
+      "start": 2637.2,
+      "end": 3247.1,
+      "lecture_material": "Open Molmo model and pointing capabilities.",
+      "research_extension": "Primary Molmo report integrated.",
+      "teaching_construction": "Coordinate and joint-consistency audit.",
+      "evidence_class": "source-grounded with evaluation extension"
+    },
+    {
+      "section": "Segment Anything resolves prompts into several plausible masks",
+      "start": 3247.1,
+      "end": 3612.2,
+      "lecture_material": "SAM prompts, ambiguity, architecture and data engine.",
+      "research_extension": "Primary SAM paper integrated.",
+      "teaching_construction": "Deployment leakage boundary.",
+      "evidence_class": "source-grounded with formal metric"
+    },
+    {
+      "section": "Chaining composes specialized interfaces into new visual programs",
+      "start": 3612.2,
+      "end": 4181.9,
+      "lecture_material": "Language descriptions, tool programs, verification and tool creation.",
+      "research_extension": "Primary VisProg paper integrated.",
+      "teaching_construction": "Reliability product and typed contracts.",
+      "evidence_class": "source-grounded with systems analysis"
+    },
+    {
+      "section": "Evaluation must follow the interface through to the task",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation of chapter topics",
+      "research_extension": "No separate empirical claim",
+      "teaching_construction": "Original evaluation, exercises and synthesis",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "Exercises with worked solutions",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation of chapter topics",
+      "research_extension": "No separate empirical claim",
+      "teaching_construction": "Original evaluation, exercises and synthesis",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "What this chapter establishes",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidation of chapter topics",
+      "research_extension": "No separate empirical claim",
+      "teaching_construction": "Original evaluation, exercises and synthesis",
+      "evidence_class": "original teaching construction"
+    }
+  ],
+  "references": [
+    {
+      "title": "CS231N lecture 16 recording",
+      "url": "https://www.youtube.com/watch?v=mQOK0Mfyrkk",
+      "supports": "Delivered topic order and examples."
+    },
+    {
+      "title": "CS231N lecture 16 slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_16.pdf",
+      "supports": "Architectures, benchmark figures and lecture terminology."
+    },
+    {
+      "title": "Learning Transferable Visual Models From Natural Language Supervision",
+      "url": "https://arxiv.org/abs/2103.00020",
+      "supports": "CLIP objective, data and zero-shot evaluation."
+    },
+    {
+      "title": "CoCa: Contrastive Captioners are Image-Text Foundation Models",
+      "url": "https://arxiv.org/abs/2205.01917",
+      "supports": "Joint contrastive and captioning objectives."
+    },
+    {
+      "title": "Flamingo: a Visual Language Model for Few-Shot Learning",
+      "url": "https://arxiv.org/abs/2204.14198",
+      "supports": "Perceiver resampling, gated cross-attention and interleaved context."
+    },
+    {
+      "title": "Molmo and PixMo",
+      "url": "https://arxiv.org/abs/2409.17146",
+      "supports": "Open multimodal model and pointing data/capability."
+    },
+    {
+      "title": "Segment Anything",
+      "url": "https://arxiv.org/abs/2304.02643",
+      "supports": "Promptable segmentation architecture and data engine."
+    },
+    {
+      "title": "Visual Programming",
+      "url": "https://arxiv.org/abs/2211.11559",
+      "supports": "Generating programs that compose visual tools."
+    }
+  ],
+  "symbol_ledger": [
+    {
+      "symbol": "x,y,f_I,f_T,v,t,tau",
+      "first_section": "opening",
+      "definition": "Image/text inputs, encoders, normalized embeddings and positive temperature."
+    },
+    {
+      "symbol": "N,s_ij,L_ItoT,L_TtoI",
+      "first_section": "clip",
+      "definition": "Batch size, similarity logits and symmetric contrastive losses."
+    },
+    {
+      "symbol": "C,p(c|x),p(c)",
+      "first_section": "zeroshot",
+      "definition": "Class count, zero-shot posterior and text prompt."
+    },
+    {
+      "symbol": "lambda_c,lambda_g,y_1:L",
+      "first_section": "coca",
+      "definition": "Loss weights and caption token sequence."
+    },
+    {
+      "symbol": "Z_I,P,d_I,d_L,W,H,alpha",
+      "first_section": "vlm",
+      "definition": "Patch features, dimensions, projection, language states and visual gate."
+    },
+    {
+      "symbol": "M_k,G,IoU",
+      "first_section": "sam",
+      "definition": "Candidate mask, ground truth and intersection-over-union."
+    }
+  ]
+}

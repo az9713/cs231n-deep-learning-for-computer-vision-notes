@@ -1,0 +1,9 @@
+{
+  "inline_and_display_math_segments": 120,
+  "balanced_math_braces": true,
+  "raw_math_comparisons": 0,
+  "embedded_python_blocks_executed": 1,
+  "timestamp_bounds": "passed",
+  "duplicate_ids": 0,
+  "private_paths": 0
+}

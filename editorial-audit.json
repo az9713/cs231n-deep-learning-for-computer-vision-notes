@@ -1,0 +1,211 @@
+{
+  "status": "passed",
+  "scope": "All18 chapters; editorial judgment complements mechanical checks",
+  "reference_calibration": "CS329A reference chapters2 and5; representative CS221 pilot completed before course drafting",
+  "passes": [
+    {
+      "pass": 1,
+      "name": "Coverage",
+      "evidence": "All18 complete machine transcripts read; available official slide text read; section-level source spans and distinct lecture/research/teaching columns."
+    },
+    {
+      "pass": 2,
+      "name": "Full-depth prose",
+      "evidence": "Persistent manufactured-part case in core chapters; guest-specific mug,towel and hospital cases; causal explanations and limitations developed before implementation."
+    },
+    {
+      "pass": 3,
+      "name": "Mathematics",
+      "evidence": "Local symbols,shape/unit assumptions,hinge derivations,and original numerical or counterexample checks; balanced MathJax and actual rendering verified."
+    },
+    {
+      "pass": 4,
+      "name": "Research",
+      "evidence": "Primary papers linked alongside mechanisms and bounded extensions; ASR names and source inconsistencies corrected."
+    },
+    {
+      "pass": 5,
+      "name": "Implementation",
+      "evidence": "Actual18 Python examples executed; cumulative NumPy suite and three browser experiments passed."
+    },
+    {
+      "pass": 6,
+      "name": "Exercises",
+      "evidence": "Six exercises per chapter with full solutions; computation,derivation,assumptions,counterexamples,and design judgment represented."
+    },
+    {
+      "pass": 7,
+      "name": "Prose",
+      "evidence": "Definitions precede consequential use; claims distinguish model assumptions,mechanisms,empirical evidence,and limits."
+    },
+    {
+      "pass": 8,
+      "name": "Parity",
+      "evidence": "Compared explanatory work with calibrated reference: recurring cases,derivations,checked implementations,integrated primary research,and reasoned solutions; no word-count-only completion rule."
+    },
+    {
+      "pass": 9,
+      "name": "Validation",
+      "evidence": "All chapter code,source interval bounds,local links,MathJax,desktop/mobile DOM,controls,offline rendering,and privacy scan passed."
+    }
+  ],
+  "chapters": [
+    {
+      "chapter": "lecture-01-visual-intelligence.html",
+      "prose_word_count_including_math_tokens": 4465,
+      "body_sha256": "9b345785357d187177ab0c66c9fb13b02d0debe05265a21ee695ef41557d1dfa",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-02-classification-and-linear-models.html",
+      "prose_word_count_including_math_tokens": 4456,
+      "body_sha256": "75e5c0c4ef03d6b493b978152378a240269d9e71aa35e7d433dc7b97842a8f39",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-03-regularization-and-optimization.html",
+      "prose_word_count_including_math_tokens": 4383,
+      "body_sha256": "93889c72e3a7650b6e73b00fd0aa08083b49e2fa4e9e63dcb5f9d589f3207155",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-04-networks-and-backpropagation.html",
+      "prose_word_count_including_math_tokens": 4071,
+      "body_sha256": "9dce639a20db69156ff729bc478ec53856bbb33f467231fd32933500430e3d2a",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-05-convolution-and-spatial-structure.html",
+      "prose_word_count_including_math_tokens": 3940,
+      "body_sha256": "c65d776960b6b50da770f69ebd93709a64f15225fc3a813c9d550155096cc502",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-06-training-and-residual-networks.html",
+      "prose_word_count_including_math_tokens": 3978,
+      "body_sha256": "4c6e63018f013b59ded64ca4086527fb584d5c0c81f943a706efa941bdb05272",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-07-recurrent-state-and-sequences.html",
+      "prose_word_count_including_math_tokens": 3973,
+      "body_sha256": "620cdcaa636c83a0b556695ed2bee07fba6579357d14582da7d85924ebea1213",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-08-attention-and-transformers.html",
+      "prose_word_count_including_math_tokens": 3887,
+      "body_sha256": "0f67446df98a23eea2deea9e2e96e7c6356aa79674a5b3f4c3b6999949cf7f50",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-09-detection-segmentation-and-explanation.html",
+      "prose_word_count_including_math_tokens": 3864,
+      "body_sha256": "fc3f299f455a5618c17d2ce628ef6d4e9416d70f53ce17d22158f63fac6ca156",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-10-video-motion-and-memory.html",
+      "prose_word_count_including_math_tokens": 3726,
+      "body_sha256": "a313e20c5c2e07ef8d0db1bceba1fcafc8220a5316408d242d27793c26d5e246",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-11-distributed-training.html",
+      "prose_word_count_including_math_tokens": 4031,
+      "body_sha256": "325e2009e56ecca3b33a24ceabdea3ea19184dcf86eac2ce05991a9dde09e264",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-12-self-supervised-representations.html",
+      "prose_word_count_including_math_tokens": 4051,
+      "body_sha256": "b3be37487c973a14e805cd4c887003f8d9e612e4e7e0c66a78143660db844783",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-13-generative-models-and-variational-inference.html",
+      "prose_word_count_including_math_tokens": 3135,
+      "body_sha256": "322eaf909fb3af68e4ad0ac69ba9ecea68b2aa0624b51e8f35ee9fcb4bc1f8c5",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-14-adversarial-generation-and-diffusion.html",
+      "prose_word_count_including_math_tokens": 3354,
+      "body_sha256": "8bf657085be260e46bb9f3f3bd3560109800ed84d812cba71694c635cb342278",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-15-geometry-and-neural-scenes.html",
+      "prose_word_count_including_math_tokens": 3724,
+      "body_sha256": "6298427b81b57bec41b474c896773ba2a4df179e81877d8b0175152227ee93d2",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-16-vision-and-language.html",
+      "prose_word_count_including_math_tokens": 2656,
+      "body_sha256": "d1eaad07bb8c5a75aa774c931c26edac2e95825b3b2bd77cf974620660b8822f",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-17-robot-learning.html",
+      "prose_word_count_including_math_tokens": 3263,
+      "body_sha256": "cfe47e6bf5960eeaa446e7e36fb333fb9de153ff15bcd3c23436599519e69a84",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    },
+    {
+      "chapter": "lecture-18-human-centered-vision.html",
+      "prose_word_count_including_math_tokens": 3491,
+      "body_sha256": "7ec1978ca24930e9374b89815b6fb2eb836bd577d18f464452554649a81882ce",
+      "source": "complete transcript read; available official slide text and primary references",
+      "exercises": 6,
+      "review": "source,concept,first-use notation,derivation,example,exercise and prose review completed"
+    }
+  ],
+  "limitations": [
+    "Locally generated machine ASR,not human captions.",
+    "Extracted slide-text review,not full audiovisual review.",
+    "No external paper benchmark reproduction.",
+    "External source links verified during research; offline reader testing does not assert their future availability.",
+    "No content-reuse percentage claimed."
+  ],
+  "privacy": {
+    "status": "passed",
+    "text_files_scanned": 67,
+    "raw_source_files": 0,
+    "private_paths": 0
+  }
+}

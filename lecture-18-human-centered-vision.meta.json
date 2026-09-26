@@ -1,0 +1,129 @@
+{
+  "video_id": "g8UaBfj6Sh8",
+  "title": "Human-centered vision: capability, restraint, and useful action",
+  "sections": [
+    {
+      "section": "A monitor can observe more than its task requires",
+      "start": 5,
+      "end": 264,
+      "lecture_material": "Human perspective and the uses of vision",
+      "research_extension": "Threshold loss and explicit privacy threat model",
+      "teaching_construction": "Hospital-room alert system",
+      "evidence_class": "Decision model and numerical check"
+    },
+    {
+      "section": "Seeing what humans see required data, models, and sharper tasks",
+      "start": 264,
+      "end": 1409,
+      "lecture_material": "Object recognition, ImageNet, scene graphs, captioning, and dynamic scenes",
+      "research_extension": "Primary ImageNet, Visual Genome, and relationship-detection sources",
+      "teaching_construction": "Task-output hierarchy for hospital activity",
+      "evidence_class": "Historical and representational analysis"
+    },
+    {
+      "section": "Seeing what humans do not see changes the unit of inference",
+      "start": 1409,
+      "end": 1952,
+      "lecture_material": "Fine-grained recognition, population analysis, attention limits, and healthcare",
+      "research_extension": "Ecological-inference boundary and ambient-intelligence evidence",
+      "teaching_construction": "Rare-event alert calculation",
+      "evidence_class": "Empirical interpretation and numerical check"
+    },
+    {
+      "section": "Privacy is a property of a system and threat model",
+      "start": 1952,
+      "end": 2304,
+      "lecture_material": "Bias, privacy, and privacy-preserving visual sensing",
+      "research_extension": "Coded-aperture evidence and attacker-constrained formulation",
+      "teaching_construction": "Multiple-adversary privacy constraint",
+      "evidence_class": "Engineering model and research boundary"
+    },
+    {
+      "section": "Seeing what humans want begins with augmentation",
+      "start": 2304,
+      "end": 2878,
+      "lecture_material": "Labor, augmentation, healthcare monitoring, and ambient intelligence",
+      "research_extension": "End-to-end workflow evaluation",
+      "teaching_construction": "Detection-attendance-prevention product",
+      "evidence_class": "Operational model"
+    },
+    {
+      "section": "Embodied systems close the loop",
+      "start": 2878,
+      "end": 3875,
+      "lecture_material": "Open-instruction robotics, ecological benchmarks, and human task preferences",
+      "research_extension": "BEHAVIOR and BEHAVIOR-1K primary papers",
+      "teaching_construction": "Goal and continuous safety constraints",
+      "evidence_class": "Formalization and empirical boundary"
+    },
+    {
+      "section": "An executable audit keeps prevalence and workflow visible",
+      "start": null,
+      "end": null,
+      "lecture_material": "",
+      "research_extension": "",
+      "teaching_construction": "Standard-library alert audit with executed assertions",
+      "evidence_class": "Original implementation check"
+    },
+    {
+      "section": "Exercises and fully worked solutions",
+      "start": null,
+      "end": null,
+      "lecture_material": "",
+      "research_extension": "",
+      "teaching_construction": "Six original problems and solutions",
+      "evidence_class": "Original assessment"
+    },
+    {
+      "section": "Evidence boundaries and a design discipline",
+      "start": 3875,
+      "end": 3910,
+      "lecture_material": "AI as augmentation and help",
+      "research_extension": "Claim-level evidence boundaries",
+      "teaching_construction": "System design checklist",
+      "evidence_class": "Synthesis"
+    }
+  ],
+  "references": [
+    {
+      "title": "ImageNet: A Large-Scale Hierarchical Image Database",
+      "url": "https://www.image-net.org/static_files/papers/imagenet_cvpr09.pdf",
+      "supports": "ImageNet scale and hierarchical dataset design"
+    },
+    {
+      "title": "Visual Genome",
+      "url": "https://link.springer.com/article/10.1007/s11263-016-0981-7",
+      "supports": "Objects, attributes, relationships, and region descriptions"
+    },
+    {
+      "title": "Visual Relationship Detection with Language Priors",
+      "url": "https://arxiv.org/abs/1608.00187",
+      "supports": "Long-tailed and unusual visual relationship recognition"
+    },
+    {
+      "title": "Using Deep Learning and Google Street View to Estimate Demographic Makeup",
+      "url": "https://www.pnas.org/doi/10.1073/pnas.1700035114",
+      "supports": "Regional socioeconomic inference from vehicle distributions"
+    },
+    {
+      "title": "Illuminating the Dark Spaces of Healthcare with Ambient Intelligence",
+      "url": "https://www.nature.com/articles/s41586-020-2669-y",
+      "supports": "Ambient sensing applications and clinical, privacy, and validation boundaries"
+    },
+    {
+      "title": "Privacy-Preserving Action Recognition Using Coded Aperture Videos",
+      "url": "https://openaccess.thecvf.com/content_CVPRW_2019/html/CV-COPS/Wang_Privacy-Preserving_Action_Recognition_Using_Coded_Aperture_Videos_CVPRW_2019_paper.html",
+      "supports": "Coded-aperture mechanism and preliminary evidence limits"
+    },
+    {
+      "title": "BEHAVIOR: Benchmark for Everyday Household Activities",
+      "url": "https://arxiv.org/abs/2108.03332",
+      "supports": "Formal activity definitions, simulation, and benchmark scope"
+    },
+    {
+      "title": "BEHAVIOR-1K",
+      "url": "https://arxiv.org/abs/2403.09227",
+      "supports": "Human-grounded task selection and expanded embodied benchmark"
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="75e5c0c4ef03d6b493b978152378a240269d9e71aa35e7d433dc7b97842a8f39"><title>From remembered examples to learned class scores · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc" aria-label="On this page"><h2>On this page</h2></aside><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><header class="chapter-header">
+<p class="eyebrow">Chapter 2 · CS231N, Spring 2025</p>
+<h1>From remembered examples to learned class scores</h1>
+<p class="lead">Nearest neighbors answer “which stored example resembles this image?” A linear classifier asks “which learned scoring rule favors this image?” The difference reveals the roles of representation, model parameters, validation, and loss.</p>
+<p class="source-note">Based on the complete Lecture 2 recording and its official slides. The transcript was generated locally by automatic speech recognition. Worked inspection examples, proofs, numerical checks, and exercises are original additions. The slides’ optional SVM reading is labeled separately from the spoken lecture.</p>
+</header>
+
+<section aria-labelledby="task">
+<h2 id="task">1. A classification contract before an algorithm <a class="timestamp" href="https://www.youtube.com/watch?v=pdqofxJeBN8&amp;t=5" aria-label="Lecture at 0:05">0:05</a></h2>
+<p>Our inspection camera now needs three labels: acceptable, scratched, and gouged. For this chapter, assume every image contains one relevant part and receives exactly one of these mutually exclusive labels. That assumption excludes a part with both defects unless the labeling policy assigns a priority. A task specification must resolve such cases before model evaluation; an algorithm cannot know which interpretation an undocumented label intended.</p>
+<p>Let \(x\in\mathbb{R}^{d}\) be an image flattened into a vector of \(d\) numerical features. Flattening changes the arrangement, not the information, provided the pixel ordering is known and consistent. A 32-by-32 RGB image has \(d=32\cdot32\cdot3=3072\) entries. Let \(C\) be the number of classes and \(y\in\{0,\ldots,C-1\}\) the correct integer class. In our case \(C=3\), with labels 0, 1, and 2 in the order just given. A training dataset contains \(N\) pairs \((x_i,y_i)\), where \(i\) indexes examples.</p>
+<p>The lecture calls the gap between numerical measurements and meaningful labels the <strong>semantic gap</strong>. Viewpoint, illumination, background clutter, occlusion, deformation, scale, and variation within a category all affect image appearance. Occlusion hides information; resizing does not necessarily restore it. Two scratches can look different, and a harmless shadow can resemble a scratch. A good classifier must respond to relevant variation and tolerate irrelevant variation.</p>
+<p>Image encoding is a separate issue. Eight-bit RGB stores each of three channels using values from 0 to 255, but images can use other bit depths and representations. Before arithmetic, converting unsigned bytes to a suitable numerical type matters: subtraction in an unsigned type can wrap instead of producing a negative difference. Our mathematical vectors use real numbers, and the implementations use floating-point values.</p>
+<p>The data-driven procedure is to collect labeled examples, construct a classifier using them, and evaluate it on new examples. This does not eliminate programming: it shifts much of the behavior specification from a long list of hand-authored visual rules to data, a model family, and a learning procedure. The lecture’s first classifier makes that shift unusually visible because its “training” is simply remembering examples.</p>
+<p><a href="https://www.youtube.com/watch?v=pdqofxJeBN8&amp;t=165">Lecture anchor: defining image classification and its challenges</a>.</p>
+</section>
+
+<section aria-labelledby="neighbors">
+<h2 id="neighbors">2. Nearest neighbors: the distance is part of the model <a class="timestamp" href="https://www.youtube.com/watch?v=pdqofxJeBN8&amp;t=1033" aria-label="Lecture at 17:13">17:13</a></h2>
+<p>A <strong>nearest-neighbor classifier</strong> stores the training pairs. For a query image \(x\), it finds the training image with the smallest distance to \(x\), then returns that image’s label. If \(D(x,z)\) denotes the chosen distance between two feature vectors, the rule is</p>
+<div class="equation">\[
+i^\star\in\operatorname*{arg\,min}_{1\leq i\leq N}D(x,x_i),
+\qquad \widehat y=y_{i^\star}.
+\]</div>
+<p>The star marks a selected minimizing index, and \(\widehat y\) is the predicted class. The set-valued notation matters when two examples tie: an implementation must specify a tie rule. Choosing the first stored example is deterministic but can make predictions depend on storage order.</p>
+<p>Two common distances are the Manhattan, or \(L_1\), distance and the Euclidean, or \(L_2\), distance:</p>
+<div class="equation">\[
+D_1(x,z)=\sum_{j=1}^{d}|x_j-z_j|,
+\qquad
+D_2(x,z)=\sqrt{\sum_{j=1}^{d}(x_j-z_j)^2}.
+\]</div>
+<p>Here \(j\) indexes features, not training examples. For nearest-neighbor ranking, the square root in \(D_2\) may be omitted because square root preserves the order of nonnegative numbers. This does not make squared Euclidean distance identical to Euclidean distance for every purpose; their numerical values and some mathematical properties differ.</p>
+<p>To expose the choice of geometry, consider a two-dimensional feature space with query \(x=(0,0)\), an acceptable example \(a=(3,0)\), and a scratched example \(b=(2,2)\). Manhattan distances are 3 and 4, so the classifier predicts acceptable. Euclidean distances are 3 and \(\sqrt8\approx2.828\), so it predicts scratched. Neither computation is erroneous. They implement different assumptions about what constitutes similarity.</p>
+<p>In two dimensions, points at unit Manhattan distance from the origin form a diamond; points at unit Euclidean distance form a circle. If \(R\) is an orthogonal rotation matrix, meaning \(R^\mathsf{T}R=I\), then</p>
+<div class="equation">\[
+\|R(x-z)\|_2^2
+=(x-z)^\mathsf{T}R^\mathsf{T}R(x-z)
+=\|x-z\|_2^2.
+\]</div>
+<p>The superscript \(\mathsf T\) denotes transpose and \(I\) the identity matrix. Euclidean distance is thus unchanged by this rotation of coordinates. Manhattan distance generally changes: \((1,0)\) has \(L_1\) length 1, while its 45-degree rotation \((1/\sqrt2,1/\sqrt2)\) has length \(\sqrt2\). This is a precise symmetry statement, not a theorem that one metric always produces better classification.</p>
+<p>Feature scaling matters even for Euclidean distance. If one feature measures area in square millimeters and another measures a normalized contrast between zero and one, the former may dominate merely because of units. Scaling based on training-set statistics can change the geometry deliberately. Those statistics must be fitted within the training portion of each evaluation split; computing them on the full dataset leaks information from held-out examples.</p>
+<p>The lecture’s raw-pixel examples show why numerical proximity can disagree with perception. A one-pixel translation can create a large pixel difference despite preserving the object. Background color can make unrelated objects look close under the metric. This is a limitation of the representation–distance pair, not a proof that all nearest-neighbor methods are useless. A learned representation can provide a very different space for retrieval.</p>
+</section>
+
+<section aria-labelledby="voting">
+<h2 id="voting">3. Voting trades local detail against robustness <a class="timestamp" href="https://www.youtube.com/watch?v=pdqofxJeBN8&amp;t=1547" aria-label="Lecture at 25:47">25:47</a></h2>
+<p>The <strong>\(k\)-nearest-neighbor</strong> rule uses the \(k\) closest examples, where \(1\leq k\leq N\), and predicts the most frequent class among them. Let \(\mathcal N_k(x)\) be their index set. For class \(c\), define its vote count</p>
+<div class="equation">\[
+v_c(x)=\sum_{i\in\mathcal N_k(x)}\mathbf1[y_i=c].
+\]</div>
+<p>The indicator \(\mathbf1[\cdot]\) equals one if its statement is true and zero otherwise. Predict a class maximizing \(v_c(x)\), again with an explicit tie rule. With one neighbor, a mislabeled or atypical point can create a small region of predictions that disagree with the surrounding population. More neighbors can suppress that isolated effect. But too many neighbors can erase a genuine small class or wash out a meaningful local boundary.</p>
+<p>Suppose the five nearest labels to a new part are scratched, acceptable, acceptable, scratched, gouged. Their counts are \(2,2,1\), so the highest vote ties despite \(k=5\) being odd. Odd \(k\) prevents a two-class equal-count tie when all \(k\) votes are counted, but it does not prevent multiclass ties. Choosing the nearest tied class, the smallest class index, or a seeded random choice are possible policies; each should be specified before measuring performance.</p>
+<p>Ambiguous regions may suggest where additional labeled examples would be informative. Yet a vote tie is not automatically evidence that new data will resolve the issue. Identical measurements can correspond to different labels because of hidden variables or annotation inconsistency. More examples can reveal that irreducible uncertainty rather than eliminate it. Our inspection system may need a second camera or a better target definition.</p>
+<p>There is also a computational tradeoff. Merely storing references to already loaded arrays can take constant time, explaining the lecture’s \(O(1)\) “training” shorthand. Loading or copying \(N\) vectors of length \(d\) costs \(O(Nd)\) work and storage. A brute-force query computes \(N\) distances and costs \(O(Nd)\), followed by neighbor selection; sorting all distances costs \(O(N\log N)\), though selection need not sort them all. For fixed image dimension, the dominant distance scan is often summarized as \(O(N)\).</p>
+<p>The original <a href="https://arxiv.org/abs/1702.08734">FAISS-related similarity-search paper</a> studies efficient GPU search, including brute-force, approximate, and compressed-domain methods. Its relevance here is the distinction between the conceptual neighbor rule and a scalable search implementation. Approximate retrieval introduces a further quality–cost tradeoff. Faster search cannot by itself make an inappropriate pixel metric semantically meaningful.</p>
+<p><a href="https://www.youtube.com/watch?v=pdqofxJeBN8&amp;t=1547">Lecture anchor: neighborhoods, votes, and distance geometry</a>.</p>
+</section>
+
+<section aria-labelledby="validation">
+<h2 id="validation">4. Hyperparameters require evidence the model did not already use <a class="timestamp" href="https://www.youtube.com/watch?v=pdqofxJeBN8&amp;t=2142" aria-label="Lecture at 35:42">35:42</a></h2>
+<p>The distance function and \(k\) are <strong>hyperparameters</strong>: choices that specify how the procedure operates. They differ from learned weights in a linear classifier, although both kinds of choice can adapt to data. Selecting whichever \(k\) performs best on the stored training examples is a poor test of generalization. If every training point is allowed to be its own nearest neighbor and there are no conflicting duplicate examples that disturb the tie policy, \(k=1\) retrieves its own label perfectly.</p>
+<p>That result asks whether memory can retrieve what it already contains. Deployment asks whether the rule predicts unseen cases. Excluding each query itself, called leave-one-out evaluation in this setting, changes the question and removes the trivial self-match, but it still requires disciplined use of the resulting score.</p>
+<p>A <strong>validation set</strong> is held out from fitting and used to choose settings. A <strong>test set</strong> is reserved for evaluating the final chosen procedure. If we repeatedly inspect test performance and change \(k\), preprocessing, or the feature representation in response, the test set becomes part of development. Its score is then an optimistically selected quantity rather than an independent final check.</p>
+<p>For example, suppose two equally good configurations each have a noisy validation error estimate. Choosing the smaller observed error tends to choose a favorable fluctuation as well as a configuration. Trying more settings gives more opportunities for such selection. A separate final test does not make the model intrinsically better; it preserves a less contaminated measurement of the complete selection procedure.</p>
+<p><strong>Cross-validation</strong> partitions development data into folds. For each candidate setting, train on all but one fold and evaluate on the omitted fold, rotating through the folds. Average the held-out results to compare settings. With \(F\) equal-sized folds and fold errors \(e_1,\ldots,e_F\), the average is \(\frac1F\sum_{r=1}^F e_r\). For unequal fold sizes, a sample-weighted mean answers the per-example error question. Any fitted preprocessing belongs inside each training fold.</p>
+<p>The splits must reflect dependence in the data. Multiple views of the same factory part should stay together if the intended test is generalization to new parts. Otherwise a nominally held-out image may reveal a part already seen during fitting. Cross-validation is computationally expensive for large neural networks because it repeats training, which helps explain the lecture’s emphasis on a separate validation split in large-scale settings.</p>
+<p>The official <a href="https://cave.cs.toronto.edu/kriz/cifar.html">CIFAR-10 dataset description</a> specifies 60,000 color images of size 32 by 32 in ten classes, with 50,000 training and 10,000 test images. The lecture uses a particular cross-validation plot where a value near \(k=7\) performs best. That is an observation about the displayed experiment, not a universal prescription. Uniform random guessing among ten classes has expected accuracy 10%; comparing to that baseline does not establish that a classifier is useful for a factory task with different classes and costs.</p>
+<p><a href="https://www.youtube.com/watch?v=pdqofxJeBN8&amp;t=2142">Lecture anchor: choosing settings without consuming the test set</a>. We now replace the stored-example rule with a fixed-size parametric scoring function.</p>
+</section>
+
+<section aria-labelledby="linear">
+<h2 id="linear">5. A linear classifier has algebraic, visual, and geometric interpretations <a class="timestamp" href="https://www.youtube.com/watch?v=pdqofxJeBN8&amp;t=2786" aria-label="Lecture at 46:26">46:26</a></h2>
+<p>Let \(W\in\mathbb R^{C\times d}\) be a weight matrix and \(b\in\mathbb R^C\) a bias vector. The class-score vector \(s\in\mathbb R^C\) is</p>
+<div class="equation">\[
+s=Wx+b,\qquad s_c=\sum_{j=1}^{d}W_{cj}x_j+b_c.
+\]</div>
+<p>Each row of \(W\) is a scoring rule for one class. Scores may be negative and need not sum to one. A prediction selects a largest score. The function is technically affine when the bias is included, although “linear classifier” conventionally includes that offset. For CIFAR-10, \(W\) has shape \(10\times3072\), and \(b\) has ten entries.</p>
+<p>Our deliberately tiny inspection patch has four entries \(x=(0,1,0,1)^\mathsf T\). Choose the following illustrative, untrained parameters:</p>
+<div class="equation">\[
+W=\begin{bmatrix}0&0&0&0\\0&1&0&1\\1&0&1&0\end{bmatrix},
+\qquad
+b=\begin{bmatrix}0\\-1\\-0.5\end{bmatrix}.
+\]</div>
+<p>The scores are \(s=(0,1,-0.5)^\mathsf T\), so scratched, class 1, wins. This is an arithmetic example, not a working defect detector. Algebraically, the scratch row accumulates the second and fourth inputs, then subtracts one. Visually, each weight row can be reshaped to the original image dimensions and viewed as a template. Negative weights suppress a score when the corresponding inputs are large; a weight image is not necessarily a photograph or a causal explanation.</p>
+<p>Geometrically, the boundary between classes \(a\) and \(b\) occurs where their scores agree:</p>
+<div class="equation">\[
+(W_{a,:}-W_{b,:})x+(b_a-b_b)=0.
+\]</div>
+<p>The notation \(W_{a,:}\) means row \(a\), including all feature columns. This equality describes a hyperplane when the weight-row difference is nonzero. It is an active decision boundary only where those tied classes also beat the other classes. The bias difference moves the plane away from the origin. Setting every bias to zero forces every nondegenerate pairwise equality plane through the origin.</p>
+<p>A class’s winning region is an intersection of half-spaces, one for each competing class, so it is convex, apart from details of tie ownership. Consequently a single linear scoring layer cannot express arbitrary disconnected regions for one class. The lecture’s alternating quadrants, ring-shaped region, and multiple separated modes expose that limitation. More training iterations cannot make a model family represent a boundary it does not contain.</p>
+<p>Nonlinear features can change the situation. A rule that is linear in \((x_1,x_2,x_1x_2)\) need not be linear in the original pair \((x_1,x_2)\). Neural networks learn such transformed representations rather than requiring all of them to be manually specified. Stacking affine layers without nonlinear operations, however, still produces an affine function: \(W_2(W_1x+b_1)+b_2=(W_2W_1)x+(W_2b_1+b_2)\).</p>
+<p>Prediction now costs \(O(Cd)\), independent of the training-set size \(N\), and stores \(Cd+C\) parameters. This fixed-size representation may discard useful detail, but it changes the storage and latency tradeoff decisively. The remaining question is how to choose its parameters.</p>
+</section>
+
+<section aria-labelledby="softmax">
+<h2 id="softmax">6. Softmax turns scores into a categorical probability model <a class="timestamp" href="https://www.youtube.com/watch?v=pdqofxJeBN8&amp;t=3320" aria-label="Lecture at 55:20">55:20</a></h2>
+<p>A <strong>logit</strong> is an unnormalized class score used by a probability model. Softmax maps the score vector to positive class probabilities \(p_0,\ldots,p_{C-1}\):</p>
+<div class="equation">\[
+p_c=\frac{\exp(s_c)}{\sum_{j=0}^{C-1}\exp(s_j)}.
+\]</div>
+<p>The denominator sums over classes of the same example, not over different images. For finite scores, every exponential is positive, and the denominator is their sum, so the probabilities sum to one. For our scores \((0,1,-0.5)\), the probabilities are approximately \((0.2312,0.6285,0.1402)\). The largest probability selects the same class as the largest logit because exponentiation preserves order.</p>
+<p>These are probabilities asserted by the model, not automatically calibrated frequencies in the world. <a href="https://arxiv.org/abs/1706.04599">Guo and colleagues’ calibration study</a> investigates the gap between confidence and empirical correctness in modern neural networks. A normalized output can still be systematically overconfident. The previous chapter’s cost-sensitive decision calculation requires a probability estimate appropriate to its deployment setting, which must be evaluated.</p>
+<p>For correct label \(y\), use the negative log-likelihood loss \(\ell(s,y)=-\log p_y\). Natural logarithms measure this loss in nats. Substituting softmax gives</p>
+<div class="equation">\[
+\ell(s,y)=\log\left(\sum_{j=0}^{C-1}e^{s_j}\right)-s_y.
+\]</div>
+<p>On our patch with correct class 1, this is about 0.464369. A probability close to one gives a small loss; a very small correct-class probability gives a large penalty. For \(C&gt;1\) and finite logits, the loss is strictly positive. Zero is an infimum approached as the correct logit dominates all others, while the loss is unbounded above when the correct-class probability approaches zero.</p>
+<p>If all scores are equal, then \(p_y=1/C\) and \(\ell=\log C\). For ten classes this is about 2.302585. This provides a useful initialization check when scores begin near one another. It does not apply merely because weights were sampled randomly: their scale, input scale, and biases must make the resulting scores sufficiently similar.</p>
+<p>Why a logarithm? Under a model that treats the observed labels as conditionally independent given their inputs and parameters, their joint likelihood is \(\prod_{i=1}^N p_{i,y_i}\). Maximizing its logarithm is equivalent because log is increasing, and log turns the product into a sum. Negating gives a minimization objective. Averaging by \(N\) preserves the minimizers for this fixed dataset while changing the gradient scale:</p>
+<div class="equation">\[
+L(W,b)=\frac1N\sum_{i=1}^N\ell(Wx_i+b,y_i).
+\]</div>
+<p>The logarithm is therefore more than a way to make numbers manageable. It connects individual probability assignments to a coherent likelihood objective and imposes a strong penalty on confident wrong predictions.</p>
+</section>
+
+<section aria-labelledby="information">
+<h2 id="information">7. Cross-entropy, KL divergence, and the gradient <a class="timestamp" href="https://www.youtube.com/watch?v=pdqofxJeBN8&amp;t=3767" aria-label="Lecture at 62:47">62:47</a></h2>
+<p>Let \(q_c=\mathbf1[c=y]\) be the one-hot target distribution: all its mass is on the observed class. The <strong>cross-entropy</strong> of target \(q\) and prediction \(p\) is \(H(q,p)=-\sum_c q_c\log p_c\). Only the correct-class term survives, so \(H(q,p)=-\log p_y\). For a general target distribution, define its entropy \(H(q)=-\sum_c q_c\log q_c\), and the Kullback–Leibler divergence</p>
+<div class="equation">\[
+D_{\mathrm{KL}}(q\|p)=\sum_{c:q_c&gt;0}q_c\log\frac{q_c}{p_c}.
+\]</div>
+<p>We require \(p_c&gt;0\) wherever \(q_c&gt;0\), and use the usual zero-contribution convention for \(q_c=0\). Expanding the logarithm yields \(H(q,p)=H(q)+D_{\mathrm{KL}}(q\|p)\). One-hot \(q\) has zero entropy, so its cross-entropy equals this divergence. KL divergence is generally asymmetric and is not a distance metric despite its usefulness for comparing distributions.</p>
+<p>The lecture connects these names; implementation requires keeping their task assumptions straight. Categorical softmax models one mutually exclusive class. Independent binary cross-entropy models separate yes/no labels, such as a part that may have both a scratch and a gouge. Binary classification can be expressed with a two-class softmax or one sigmoid, but applying independent sigmoid losses to all classes changes the model unless that multilabel interpretation is intended.</p>
+<p>An original derivation prepares the next chapter’s optimization. Differentiate the log-sum-exp form with respect to score \(s_c\):</p>
+<div class="equation">\[
+\frac{\partial\ell}{\partial s_c}
+=\frac{e^{s_c}}{\sum_j e^{s_j}}-\mathbf1[c=y]
+=p_c-q_c.
+\]</div>
+<p>The first term follows from the chain rule: the derivative of log is the reciprocal of its argument, and the derivative of the sum of exponentials with respect to \(s_c\) is \(e^{s_c}\). The derivative of \(-s_y\) is minus one for the correct class and zero otherwise. For our example, the gradient is approximately \((0.2312,-0.3715,0.1402)\). A small negative-gradient step raises the correct score and lowers the others.</p>
+<p>The components sum to zero because both \(p\) and \(q\) sum to one. This matches an exact invariance: adding the same constant \(a\) to every score changes no probability, since the common factor \(e^a\) cancels. It also implies non-uniqueness of parameters: adding the same weight vector to every class row and the same scalar to every bias shifts all scores equally for each input without changing predictions or probabilities.</p>
+<p>For a single example, the parameter derivatives follow from the affine score: \(\partial\ell/\partial W_{cj}=(p_c-q_c)x_j\) and \(\partial\ell/\partial b_c=p_c-q_c\). Average these over examples for the mean objective. The loss, its derivative, and an optimizer are now distinct objects. A later step-size choice determines how far to move; the derivative alone does not specify that choice.</p>
+</section>
+
+<section aria-labelledby="implementation">
+<h2 id="implementation">8. Numerical stability is part of mathematical correctness</h2>
+<p>Computing \(e^{s_c}\) directly may overflow for large logits even when the final probabilities are perfectly ordinary. Let \(m=\max_c s_c\) and \(z_c=s_c-m\). Every \(z_c\leq0\), and at least one is zero. Softmax can be computed from \(z\), while the loss becomes</p>
+<div class="equation">\[
+\ell(s,y)=\log\left(\sum_j e^{z_j}\right)-z_y.
+\]</div>
+<p>Computing this expression directly also avoids taking the log of an underflowed probability. For scores \((1000,-1000)\) and correct class 1, the correct-class exponential can round to zero, yet the loss is approximately 2000 and remains representable. The <a href="https://arxiv.org/abs/1909.03469">numerical analysis by Blanchard, Higham, and Higham</a> examines shifted log-sum-exp and softmax formulas and their floating-point behavior. The invariant derivation here explains the basic shift; it does not imply that all finite input magnitudes are safe under every floating-point operation.</p>
+<p>The companion function accepts rows of logits with shape \((N,C)\) and one integer label per row. It returns the mean loss and the gradient with respect to those logits. This differs from the column-vector convention used to derive a single affine score; writing the shapes prevents an accidental normalization over the wrong axis.</p>
+<pre><code class="language-python">import numpy as np
+from numerical_lab import softmax_loss_grad, central_gradient
+
+scores = np.array([[0., 1., -0.5]])
+labels = np.array([1])
+loss, gradient = softmax_loss_grad(scores, labels)
+assert abs(loss - 0.4643687841079449) &lt; 1e-12
+assert np.allclose(gradient.sum(axis=1), 0)
+
+shifted_loss, shifted_gradient = softmax_loss_grad(
+    scores + 1000, labels)
+assert abs(shifted_loss - loss) &lt; 1e-12
+assert np.allclose(shifted_gradient, gradient)
+
+approximation = central_gradient(
+    lambda z: softmax_loss_grad(z, labels)[0], scores)
+assert np.max(np.abs(approximation - gradient)) &lt; 1e-8
+
+extreme_loss, _ = softmax_loss_grad([[1000., -1000.]], [1])
+assert extreme_loss == 2000.</code></pre>
+<p>A central finite difference approximates the derivative by evaluating the loss at a small positive and negative perturbation of one coordinate. Agreement catches many sign, indexing, and averaging mistakes, but it is a numerical check at chosen points rather than a proof for every input. The derivative above supplies the proof under differentiability; the code checks that the implementation agrees. The laboratory also rejects nonfinite inputs and invalid labels.</p>
+<p><strong>Optional reading extension.</strong> The official slides include a multiclass hinge-loss section after the spoken lecture’s conclusion. With positive margin \(\Delta\), one version is \(\sum_{c\ne y}\max(0,s_c-s_y+\Delta)\). Once every incorrect score is below the correct score by at least \(\Delta\), this loss is zero. Categorical cross-entropy continues to reward a larger correct-class probability. We identify this distinction here without treating the unspoken backup slides as additional recorded lecture coverage.</p>
+</section>
+
+<section aria-labelledby="exercises">
+<h2 id="exercises">9. Exercises with complete solutions</h2>
+<details class="exercise"><summary>Exercise 1 · Make the metric choice explicit</summary>
+<p>For query \((0,0)\), compare training points \(a=(3,0)\) and \(b=(2,2)\) using \(L_1\) and \(L_2\). Then scale only the first coordinate by 2 and repeat. What changed?</p>
+<div class="solution"><p>Initially \(L_1\) distances are 3 and 4, selecting \(a\); \(L_2\) distances are 3 and \(\sqrt8\), selecting \(b\). After scaling, the points are \((6,0)\) and \((4,2)\). Both have \(L_1\) distance 6, so a tie rule is needed. Euclidean distances are 6 and \(\sqrt{20}\approx4.472\), selecting \(b\). The labels and observations did not change, but the representation’s units changed their numerical geometry. Coordinate scaling is not an orthogonal rotation, so Euclidean rotation invariance offers no protection.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 2 · Why can perfect training retrieval fail?</summary>
+<p>A one-neighbor classifier scores 100% on its stored examples. State the assumptions behind this result and give a reason it may still perform badly on new parts.</p>
+<div class="solution"><p>Each query must be allowed to retrieve itself, and contradictory labels on identical inputs must not produce a tie policy that selects a different label. Under those conditions, zero distance to itself gives its memorized label. A new part has no such guarantee. If lighting or background dominates the distance, its nearest stored image may have the wrong defect class. The result verifies storage and retrieval, not invariance or generalization. Excluding self-matches provides a more informative estimate but does not resolve representation defects automatically.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 3 · Derive an actual class boundary</summary>
+<p>Using the chapter’s four-input model, find the equality between acceptable and scratched scores. Explain why the equality alone is insufficient to prove those are the predicted classes on either side.</p>
+<div class="solution"><p>The acceptable score is zero; scratched is \(x_2+x_4-1\), using one-based feature indices in the mathematical vector. Their equality is \(x_2+x_4=1\). Above it scratched beats acceptable; below it acceptable beats scratched. But the gouged score is \(x_1+x_3-0.5\), which may exceed both. The equality defines a pairwise plane; the actual classification boundary is its portion where these tied scores are at least as large as the gouged score. This is why plotting one score equation without the competitors can misdescribe a multiclass decision region.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 4 · Loss is more informative than a correct label</summary>
+<p>For two classes with correct label 0, compare logits \((0,0)\), \((2,0)\), and \((20,0)\). Derive each loss and state whether any finite case has exactly zero loss.</p>
+<div class="solution"><p>For logits \((a,0)\), the correct-class loss is \(\log(1+e^{-a})\). It is \(\log2\approx0.693147\), approximately 0.126928, and approximately \(2.061\times10^{-9}\), respectively. The second and third predict the same correct class, yet their probability assignments differ. All three losses are positive in exact real arithmetic. Floating-point rounding may report zero for an extreme favorable score difference, which is a numerical artifact rather than an attained mathematical minimum for finite logits.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 5 · Check the missing mean factor</summary>
+<p>A batch contains four examples. A programmer computes each row’s gradient as \(p-q\) but declares that it is the gradient of the mean loss. What is missing? How can a finite-difference check expose it?</p>
+<div class="solution"><p>Each row must be divided by four because the scalar objective averages four losses. Without that factor the array differentiates the summed loss, so it is four times the gradient of the stated mean. Perturb one logit while evaluating the actual mean objective on both sides. Its central difference will be about one quarter of the incorrect analytical entry. This mismatch is not repaired by claiming that averages and sums have the same minimizers: they can share minimizers while producing different gradient scales and step-size behavior.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 6 · Explain the objective for a soft target</summary>
+<p>For target \(q=(0.75,0.25)\), express cross-entropy and KL divergence in terms of prediction \(p=(p_0,p_1)\). Do they have the same value? Do they have the same minimizing prediction?</p>
+<div class="solution"><p>The cross-entropy is \(-0.75\log p_0-0.25\log p_1\). The target entropy is \(-0.75\log0.75-0.25\log0.25\approx0.562335\), so KL divergence is cross-entropy minus 0.562335. They do not have the same value, unlike the one-hot case. They have the same minimizer over positive normalized predictions because the difference is a constant independent of \(p\); both are minimized at \(p=q\). At that point KL is zero and cross-entropy equals the positive target entropy. The target itself must be justified—for example by an explicit probabilistic labeling policy—rather than assumed to be an observed frequency without evidence.</p></div>
+</details>
+</section>
+
+<section aria-labelledby="boundaries">
+<h2 id="boundaries">10. The model, the objective, and the experiment are separate choices</h2>
+<p>The recorded lecture establishes nearest neighbors, metric and hyperparameter choices, linear scoring, and the categorical probability objective. Our derivations add explicit computational dimensions, tie conditions, affine geometry, stable arithmetic, and gradients. None of the toy scores or numerical checks represents measured defect-classification performance. The useful outcome is a complete chain of objects whose contracts can be inspected: input representation, predictor, probability model, loss, and evaluation split.</p>
+<p>We can now calculate how wrong a set of parameters is and in which local direction to change it. The next chapter asks how to make those changes reliably, and why fitting the available data too aggressively can damage performance on new examples.</p>
+</section>
+<!-- BOOK-CONTENT-END --></article><nav class="page-turn" aria-label="Chapter navigation"><a rel="prev" href="lecture-01-visual-intelligence.html">Previous available chapter</a><a href="index.html">Lecture index</a><a rel="next" href="lecture-03-regularization-and-optimization.html">Next available chapter</a></nav></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

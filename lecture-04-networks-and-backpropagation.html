@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light"><meta name="book-content-sha256" content="9dce639a20db69156ff729bc478ec53856bbb33f467231fd32933500430e3d2a"><title>Neural representations and the backward computation · CS231N</title>
+<link rel="stylesheet" href="assets/book.css"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'local'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="assets/mathjax-tex-svg.js"></script><script defer src="assets/book.js"></script></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html">CS231N · Spring 2025</a><nav class="course-nav" aria-label="Book"><a href="index.html">Lectures</a><a href="source-map.html">Source map</a><a href="references.html">References</a><a href="numerical-lab.html">Numerical lab</a></nav></header>
+<div class="layout"><aside class="toc" id="chapter-toc" aria-label="On this page"><h2>On this page</h2></aside><main id="main">
+<div class="reading-tools" aria-label="Reading controls"><button id="theme-toggle" aria-pressed="false">Light theme</button><button id="text-toggle" aria-pressed="false">Larger text</button><button id="solutions-toggle" aria-pressed="false">Expand solutions</button><button id="print-page">Print with solutions</button></div>
+<article id="chapter-content"><!-- BOOK-CONTENT-START --><header class="chapter-header">
+<p class="eyebrow">Chapter 4 · CS231N, Spring 2025</p>
+<h1>Neural representations and the backward computation</h1>
+<p class="lead">A nonlinear network changes the representation of an image. Backpropagation computes how each part of that computation influences a scalar objective, reusing local derivative rules instead of expanding one enormous formula.</p>
+<p class="source-note">Based on the complete Lecture 4 recording, its official slide text, and primary differentiation references. The inspection examples, matrix fixtures, memory calculation, and exercises are original. Mathematical gradients are distinguished from biological analogies and optimizer updates.</p>
+</header>
+
+<section aria-labelledby="representation">
+<h2 id="representation">1. More layers matter only when the computation changes <a class="timestamp" href="https://www.youtube.com/watch?v=25zD5qJHYsk&amp;t=593" aria-label="Lecture at 9:53">9:53</a></h2>
+<p>Our inspection model must separate acceptable parts, scratches, and gouges. A single affine scoring rule divides its input space using hyperplanes. If acceptable examples surround damaged examples, or one defect has several distinct appearances, that family may be too restrictive. Collecting additional examples does not remove a representational limitation; we need a different map from inputs to scores.</p>
+<p>For one image, let \(x\in\mathbb R^d\) be its feature vector, \(h\) the number of hidden units, and \(C\) the number of output classes. Using a column-vector convention, define a two-layer network by</p>
+<div class="equation">\[
+a=W_1x+b_1,\qquad z=\phi(a),\qquad s=W_2z+b_2,
+\]</div>
+<p>where \(W_1\in\mathbb R^{h\times d}\), \(b_1\in\mathbb R^h\), \(W_2\in\mathbb R^{C\times h}\), and \(b_2\in\mathbb R^C\). The activation function \(\phi\) acts elementwise here. The hidden preactivation is \(a\), the hidden representation is \(z\), and the class-score vector is \(s\). “Two layers” conventionally counts the two learned affine transformations; the input is not counted as a learned layer.</p>
+<p>If \(\phi\) is the identity function, then \(s=(W_2W_1)x+(W_2b_1+b_2)\), another affine map. Depth without a nonlinear operation does not escape the original family. With a nonlinear activation, the first layer can expose distinctions that the second separates. The lecture illustrates this with a nonlinear coordinate transformation that makes previously inseparable classes linearly separable.</p>
+<p>An original one-dimensional example makes the mechanism explicit. Suppose a scalar measurement \(r\) describes deviation from a nominal surface profile, and a part is unacceptable when \(|r|&gt;1\). Define two hidden features \(z_1=\max(0,r)\) and \(z_2=\max(0,-r)\). Their sum equals \(|r|\), so a final score \(s=z_1+z_2-1\) distinguishes the two extreme regions from the acceptable middle. No single threshold of the form \(ar+b&gt;0\) can represent both tails and exclude the interval between them.</p>
+<p>This is a small constructive expressivity result. It does not show that training from arbitrary initialization will discover these features, or that an image-based defect detector should use this particular scalar. It separates what a model can express from what an optimization procedure learns. The lecture’s “templates” interpretation is similarly a useful intuition: hidden units can supply reusable features to several classes, but each unit need not correspond to a recognizable object part.</p>
+<p><a href="https://www.youtube.com/watch?v=25zD5qJHYsk&amp;t=593">Lecture anchor: hidden layers, dimensions, and nonlinear representations</a>.</p>
+</section>
+
+<section aria-labelledby="activations">
+<h2 id="activations">2. Activation functions control values and derivatives <a class="timestamp" href="https://www.youtube.com/watch?v=25zD5qJHYsk&amp;t=1116" aria-label="Lecture at 18:36">18:36</a></h2>
+<p>The rectified linear unit, <strong>ReLU</strong>, is \(\phi(a)=\max(0,a)\). For positive \(a\), its derivative is one; for negative \(a\), zero. It is not differentiable at zero, where software uses a specified convention, often zero. A ReLU network is piecewise affine: within a region where the signs of all preactivations remain fixed, the gates are fixed and the resulting map is affine. Crossing a gate boundary changes that local map.</p>
+<p>A unit that stays negative on all relevant examples passes zero values and zero derivatives through that activation. This can prevent its incoming weights from receiving a learning signal through those examples, a phenomenon often called a dead ReLU. A leaky ReLU uses a small positive slope on the negative side, allowing a signal there. It changes the model rather than proving that optimization will always succeed.</p>
+<p>The sigmoid \(\sigma(a)=1/(1+e^{-a})\) maps a real number to \((0,1)\). Differentiating gives \(\sigma'(a)=\sigma(a)(1-\sigma(a))\). Its derivative is at most one-quarter and approaches zero in both tails. The hyperbolic tangent maps to \((-1,1)\) and has derivative \(1-\tanh^2(a)\), which also becomes small in its saturated tails. Repeated small derivative factors can attenuate backward signals, although weight matrices and the full composition also matter.</p>
+<p>The lecture surveys alternatives including exponential linear units, Gaussian error linear units, and sigmoid-weighted linear units. An ELU uses a linear positive branch and an exponential negative branch, allowing negative outputs with a different derivative profile. The <a href="https://arxiv.org/abs/1606.08415">GELU paper</a> defines the activation \(a\Phi(a)\), where \(\Phi\) is the standard-normal cumulative distribution function. The <a href="https://arxiv.org/abs/1702.03118">SiLU paper</a> defines \(a\sigma(a)\). These multiply the input by a smooth value-dependent factor instead of ReLU’s hard sign gate.</p>
+<p>Choice of activation affects both what the model represents and how gradients propagate. Smoothness, output centering, saturation, computational cost, and architectural precedent are useful considerations, but no single property identifies a universally best function. Sigmoid and tanh remain appropriate for specific uses, including gates and bounded outputs. A statement that they can saturate is not a blanket prohibition.</p>
+<p>Width and regularization must also be evaluated together. The lecture favors enough capacity to fit meaningful structure, then tuning regularization rather than relying solely on a tiny network to suppress overfitting. This is a development heuristic, not a rule that model size should never be varied. Compute, latency, data volume, and target complexity all constrain the choice. Neither greater width nor a positive regularization coefficient guarantees generalization.</p>
+<p>Finally, the word “neuron” is a loose inspiration. A numerical affine transformation followed by a scalar activation omits much of the physiology, dynamics, and connectivity of biological cells. The lecture explicitly warns against equating the two. The mathematical value of the model comes from its specified computation and evidence of behavior, not the biological name.</p>
+</section>
+
+<section aria-labelledby="graph">
+<h2 id="graph">3. A computational graph exposes reusable local structure <a class="timestamp" href="https://www.youtube.com/watch?v=25zD5qJHYsk&amp;t=2333" aria-label="Lecture at 38:53">38:53</a></h2>
+<p>Let \(L\) be a scalar training objective. It might combine categorical negative log-likelihood with a parameter penalty, or use a different task loss. The lecture revisits hinge loss to emphasize that turning scores into probabilities is not the only option. Changing the final loss should not require deriving every preceding layer again from scratch.</p>
+<p>A <strong>computational graph</strong> records dependencies among operations. In the forward pass, inputs and parameters produce intermediate values and eventually \(L\). In the backward pass, derivative information follows those dependencies in reverse. Each operation needs a local derivative rule and whatever forward values that rule requires.</p>
+<p>Consider a tiny inspection calibration module with scalar gain \(a\), measured feature \(b\), desired response \(c\), and nonnegative penalty strength \(\lambda\). Define</p>
+<div class="equation">\[
+r=ab,\qquad e=r-c,\qquad
+L_{\mathrm{data}}=\frac12e^2,\qquad
+L_{\mathrm{reg}}=\frac\lambda2a^2,\qquad
+L=L_{\mathrm{data}}+L_{\mathrm{reg}}.
+\]</div>
+<p>The gain \(a\) affects the loss through two paths: the prediction error and its own penalty. This simple branch captures an issue that occurs throughout modern networks: shared values can influence the result more than once.</p>
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-labelledby="graph-title graph-desc" style="width:100%;height:auto;max-width:760px">
+<title id="graph-title">Forward dependencies for a shared gain</title>
+<desc id="graph-desc">Gain a and feature b form r equals a times b. Subtract target c to get e, then square and halve to get data loss. Gain a also feeds the regularization loss. Both losses add to total loss.</desc>
+<defs><marker id="graph-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g fill="none" stroke="currentColor" stroke-width="2" marker-end="url(#graph-arrow)">
+<path d="M90 65H160"/><path d="M230 65H300"/><path d="M370 65H440"/><path d="M555 65L640 110"/>
+<path d="M55 90V170H350"/><path d="M485 170L640 120"/>
+</g>
+<g fill="none" stroke="currentColor" stroke-width="1.5">
+<rect x="20" y="35" width="70" height="55" rx="8"/><rect x="160" y="35" width="70" height="55" rx="8"/>
+<rect x="300" y="35" width="70" height="55" rx="8"/><rect x="440" y="35" width="115" height="55" rx="8"/>
+<rect x="350" y="145" width="135" height="55" rx="8"/><rect x="640" y="88" width="95" height="55" rx="8"/>
+</g>
+<g fill="currentColor" font-family="sans-serif" font-size="18" text-anchor="middle">
+<text x="55" y="69">a</text><text x="195" y="69">r = ab</text><text x="335" y="69">e = r-c</text>
+<text x="497" y="69">data loss</text><text x="417" y="180">gain penalty</text><text x="687" y="122">total L</text>
+</g>
+</svg>
+<figcaption>Original graph. The forward branch from \(a\) implies that its backward contributions must add.</figcaption>
+</figure>
+<p>A graph describes the computation we chose. Replacing a chain of primitive operations by a fused operation can preserve the function while changing storage and numerical behavior. For example, sigmoid can be represented as negation, exponentiation, addition, and reciprocal, or as one operation with its known derivative. Either representation must produce the same mathematical chain rule under equivalent assumptions.</p>
+</section>
+
+<section aria-labelledby="scalar">
+<h2 id="scalar">4. Backpropagation is the chain rule with accumulation <a class="timestamp" href="https://www.youtube.com/watch?v=25zD5qJHYsk&amp;t=2621" aria-label="Lecture at 43:41">43:41</a></h2>
+<p>For any scalar intermediate \(v\), write its <strong>adjoint</strong> as \(\overline v=\partial L/\partial v\). This is the sensitivity of the final loss to \(v\), including all paths through the graph. Seed the backward calculation with \(\overline L=1\), because a scalar changes one-for-one with itself.</p>
+<p>At an operation \(z=f(u,v)\), the incoming or <strong>upstream gradient</strong> is \(\overline z\). The local derivatives are \(\partial z/\partial u\) and \(\partial z/\partial v\). Their products contribute to the downstream adjoints: \(\overline u\mathrel{+}=\overline z\,\partial z/\partial u\) and \(\overline v\mathrel{+}=\overline z\,\partial z/\partial v\). The addition symbol is essential whenever a value has more than one use.</p>
+<p>For our inspection graph, the sum sends gradient one to each loss branch. Squaring gives \(\overline e=e\). Subtraction gives \(\overline r=e\) and \(\overline c=-e\). Multiplication then contributes \(eb\) to \(\overline a\) and \(ea\) to \(\overline b\). The regularization branch contributes \(\lambda a\) to \(\overline a\). Therefore</p>
+<div class="equation">\[
+\frac{\partial L}{\partial a}=eb+\lambda a,\qquad
+\frac{\partial L}{\partial b}=ea,\qquad
+\frac{\partial L}{\partial c}=-e.
+\]</div>
+<p>With \(a=2,b=3,c=5,\lambda=0.1\), we obtain \(r=6\), \(e=1\), and \(L=0.5+0.2=0.7\). The derivatives are 3.2, 2, and \(-1\). Forgetting the penalty branch would report 3 instead of 3.2 for the gain derivative. Overwriting rather than accumulating contributions can thus produce a plausible-looking but incorrect answer.</p>
+<p>The common gate rules now have a precise interpretation. Addition copies an incoming scalar derivative to each input. Multiplication scales it by the other operand. A copied value accumulates contributions from all consumers. A max operation with a unique winner routes the derivative to that winning input and gives zero to the other. At ties, max is nondifferentiable; the implementation chooses a convention or subgradient rather than applying the unique-winner rule without qualification.</p>
+<p>A sigmoid example distinguishes the derivative of a prediction from the derivative of its loss. In this local scalar example, let an input measurement be \(x=2\), weight \(w=0.5\), and bias \(b=-1\). The preactivation is \(a=wx+b=0\), and the predicted probability is \(p=\sigma(a)=0.5\). The derivative of the probability with respect to its preactivation is \(p(1-p)=0.25\). That number alone is not yet the training signal.</p>
+<p>If the binary target is one and the loss is \(L=-\log p\), then the upstream derivative with respect to \(p\) is \(-1/p=-2\). Multiplying by the local sigmoid derivative gives \(\partial L/\partial a=-0.5\). The earlier affine operation then gives \(\partial L/\partial w=-0.5x=-1\) and \(\partial L/\partial b=-0.5\). A small negative-gradient update raises both parameters here, increasing the predicted probability of the correct binary outcome. Treating 0.25 as the loss gradient would even give the wrong update direction.</p>
+<p>The same prediction can be computed by expanding sigmoid into elementary operations or by using a fused sigmoid gate. Its derivative is unchanged in exact arithmetic because both represent the same function. A fused loss implementation can additionally avoid unstable intermediates, such as computing a tiny probability and then taking its logarithm. Modularity therefore has two purposes: it avoids repeating the chain-rule derivation, and it allows a carefully implemented operation to improve numerical behavior. A fused implementation must still correspond to the intended objective and derivative convention.</p>
+<p>Why reverse order? To compute a node’s adjoint, all later operations that consume it must have contributed. Processing the graph in reverse topological order ensures that dependency. The data themselves flow forward; sensitivities of the final loss flow backward. Neither direction is an optimizer. Only after obtaining parameter gradients does an update rule such as SGD or Adam decide how to change parameters.</p>
+<p><a href="https://www.youtube.com/watch?v=25zD5qJHYsk&amp;t=2621">Lecture anchor: local and upstream derivatives</a>. The <a href="https://jmlr.org/papers/v18/17-468.html">automatic-differentiation survey by Baydin and colleagues</a> places this reverse computation in the broader family of differentiation techniques.</p>
+</section>
+
+<section aria-labelledby="jacobian">
+<h2 id="jacobian">5. Vector derivatives are products, not collections we must store <a class="timestamp" href="https://www.youtube.com/watch?v=25zD5qJHYsk&amp;t=3887" aria-label="Lecture at 64:47">64:47</a></h2>
+<p>Let \(x\in\mathbb R^d\) and \(z=f(x)\in\mathbb R^m\). Define the Jacobian with output index first: \(J_{ij}=\partial z_i/\partial x_j\), so \(J\) has shape \(m\times d\). This convention must be stated because some presentations transpose the displayed derivative layout. Let \(\overline z=\nabla_z L\in\mathbb R^m\) be a column gradient. Then</p>
+<div class="equation">\[
+\overline x=J^\mathsf T\overline z,\qquad
+\overline x_j=\sum_{i=1}^{m}
+\overline z_i\frac{\partial z_i}{\partial x_j}.
+\]</div>
+<p>Each input coordinate receives the sum of its effects through all output coordinates. The result has shape \(d\), the same as \(x\). For a matrix or higher-order tensor variable, its gradient with respect to a scalar loss has the same shape as that variable when we arrange the partial derivatives by its entries.</p>
+<p>This is often called a vector–Jacobian product, using a row-vector convention, or a Jacobian-transpose–vector product using the column convention above. The mathematical information is the same. Backpropagation needs that product, not the complete Jacobian as an intermediate object.</p>
+<p>For elementwise ReLU away from zero, the Jacobian is diagonal, with ones for positive preactivations and zeros for negative ones. Therefore \(\overline x=\overline z\odot\mathbf1[x&gt;0]\), where \(\odot\) denotes elementwise multiplication. For \(x=(2,-1,0.5)\) and \(\overline z=(3,4,-2)\), the result is \((3,0,-2)\). Building a dense three-by-three matrix is unnecessary even in this small case; for millions of entries it would be disastrous.</p>
+<p>Implicit derivative products also reveal a memory tradeoff. A multiply operation needs its operands during the backward pass. ReLU needs enough information to recover the sign mask. Sigmoid can reuse its forward output for \(\sigma(1-\sigma)\). Saving these values speeds backward computation but consumes memory. Recomputing selected intermediates can trade additional work for less storage, provided the recomputation matches the original operation.</p>
+<p>The official <a href="https://docs.pytorch.org/docs/stable/notes/autograd.html">PyTorch autograd documentation</a> explains graph construction, saved tensors, and handling of nondifferentiable operations. Those implementation details clarify a boundary: automatic differentiation differentiates the executed computational program according to its operation rules. It is neither finite differencing nor a symbolic expansion of a closed-form network expression. It is also not evidence that the program computes the intended scientific objective.</p>
+</section>
+
+<section aria-labelledby="matrices">
+<h2 id="matrices">6. Derive matrix multiplication backward one index at a time <a class="timestamp" href="https://www.youtube.com/watch?v=25zD5qJHYsk&amp;t=4268" aria-label="Lecture at 71:08">71:08</a></h2>
+<p>Switch now to a row-batch convention. Let \(X\in\mathbb R^{N\times d}\) contain \(N\) examples, \(W\in\mathbb R^{d\times m}\) be a weight matrix, and \(Y=XW\in\mathbb R^{N\times m}\). A scalar objective supplies upstream gradient \(G=\partial L/\partial Y\) with shape \(N\times m\). The forward entries satisfy \(Y_{nk}=\sum_{j=1}^dX_{nj}W_{jk}\).</p>
+<p>Changing \(X_{nj}\) affects every output in row \(n\), with local derivative \(W_{jk}\) for output \(k\). It does not affect other rows. Accumulating those paths gives</p>
+<div class="equation">\[
+\frac{\partial L}{\partial X_{nj}}
+=\sum_{k=1}^m G_{nk}W_{jk},
+\qquad \frac{\partial L}{\partial X}=GW^\mathsf T.
+\]</div>
+<p>Changing \(W_{jk}\) affects output column \(k\) in every example, because the weights are shared across the batch. Its contributions therefore sum over examples:</p>
+<div class="equation">\[
+\frac{\partial L}{\partial W_{jk}}
+=\sum_{n=1}^N X_{nj}G_{nk},
+\qquad \frac{\partial L}{\partial W}=X^\mathsf TG.
+\]</div>
+<p>The transpose placements follow from dependencies, not a memorized “swap” slogan. Shape checks are useful—\(GW^\mathsf T\) is \(N\times d\), and \(X^\mathsf TG\) is \(d\times m\)—but compatible shapes alone do not prove a derivative is correct. A wrong formula can have the correct shape.</p>
+<p>For a concrete fixture, take \(X=\begin{bmatrix}1&2\\-1&1\end{bmatrix}\), \(W=\begin{bmatrix}2&0\\1&-1\end{bmatrix}\), and \(G=\begin{bmatrix}1&3\\-2&4\end{bmatrix}\). Forward multiplication gives \(Y=\begin{bmatrix}4&-2\\-1&-1\end{bmatrix}\). The gradients are \(GW^\mathsf T=\begin{bmatrix}2&-2\\-4&-6\end{bmatrix}\) and \(X^\mathsf TG=\begin{bmatrix}3&-1\\0&10\end{bmatrix}\). We can verify these by defining the scalar objective \(L=\sum_{n,k}G_{nk}Y_{nk}\) with fixed \(G\) and applying finite differences.</p>
+<p>The lecture’s memory warning becomes sharper when calculated separately for each input. If \(N=64\) and \(d=m=4096\), then both \(X\) and \(Y\) have \(2^{18}\) entries. A dense Jacobian from \(X\) to \(Y\) has \(2^{36}\) entries and takes \(2^{38}\) bytes in float32: 256 GiB. But \(W\) has \(2^{24}\) entries, so a dense Jacobian from \(W\) to \(Y\) takes \(2^{44}\) bytes: 16 TiB. These are dense-storage counts, including zeros, not the memory required by the implicit products.</p>
+<p>The matrix formulas avoid those objects entirely. The <a href="https://cs231n.stanford.edu/handouts/linear-backprop.pdf">official linear-backpropagation handout</a> supplies a complementary derivation. The computational advantage comes from exploiting the structure of the operation, which is precisely what a reusable backward rule encodes.</p>
+</section>
+
+<section aria-labelledby="network">
+<h2 id="network">7. Assemble the whole two-layer backward pass <a class="timestamp" href="https://www.youtube.com/watch?v=25zD5qJHYsk&amp;t=1588" aria-label="Lecture at 26:28">26:28</a></h2>
+<p>In the row-batch convention, use \(W_1\in\mathbb R^{d\times h}\), \(W_2\in\mathbb R^{h\times C}\), and bias row vectors \(b_1,b_2\). These weight orientations are transposes of the single-column convention at the start. Define \(A=XW_1+b_1\), \(H=\phi(A)\), and \(S=HW_2+b_2\), where broadcasting adds a bias to each row. Capital \(H\) is the matrix of hidden activations, while lowercase \(h\) remains the hidden width.</p>
+<p>Let \(P_{nc}\) be the softmax probability of class \(c\) for example \(n\), and \(Q_{nc}\) its one-hot target. For mean categorical negative log-likelihood, the score gradient is \(G_S=(P-Q)/N\). The division by \(N\) belongs to the mean objective; it should not be applied again later in the chain.</p>
+<p>Starting with this matrix, apply the local rules:</p>
+<div class="equation">\[
+G_{W_2}=H^\mathsf TG_S,\quad
+G_H=G_SW_2^\mathsf T,\quad
+G_A=G_H\odot\phi'(A),\quad
+G_{W_1}=X^\mathsf TG_A.
+\]</div>
+<p>The bias gradients are row sums: \(G_{b_2}=\sum_n(G_S)_{n,:}\) and \(G_{b_1}=\sum_n(G_A)_{n,:}\). Each bias was copied across examples in the forward pass, so backward accumulation reverses that broadcasting. If the objective adds \(\frac\lambda2(\|W_1\|_F^2+\|W_2\|_F^2)\), add \(\lambda W_1\) and \(\lambda W_2\) to the two weight gradients. The Frobenius norm squared, \(\|W\|_F^2\), is the sum of squared matrix entries. Biases are unpenalized in this stated objective.</p>
+<p>For ReLU, use a positive-preactivation mask away from its corner. For tanh, use \(1-H^{\odot2}\), reusing the forward activation. Either backward pass has the same surrounding matrix structure. Replacing the final data loss changes its seed gradient \(G_S\); preceding local rules stay valid for the new upstream signal. This modularity is the practical point of computational graphs.</p>
+<p>Parameter sharing requires the same discipline beyond this simple network. If two images or two time steps use the same weights, their derivative contributions add to one parameter gradient. Accidentally creating separate copies changes the model. Accidentally overwriting one contribution preserves the model’s forward computation but corrupts its training signal.</p>
+<p><a href="https://www.youtube.com/watch?v=25zD5qJHYsk&amp;t=3887">Lecture anchor: vector, matrix, and tensor backward rules</a>.</p>
+</section>
+
+<section aria-labelledby="implementation">
+<h2 id="implementation">8. Check derivatives before trusting a training curve</h2>
+<p>The following checks are original, small, and deterministic. They verify the scalar branch example and the matrix rules, then compare the laboratory’s two-layer tanh derivatives to central finite differences. Tanh avoids ReLU corners in this diagnostic; it is a deliberate smooth test case rather than a claim that tanh is best for image classification. The lab function omits biases, as its documented contract states.</p>
+<pre><code class="language-python">import numpy as np
+from numerical_lab import central_gradient, two_layer_loss_grad
+
+point = np.array([2., 3., 5.])
+def branch_loss(values):
+    a, b, c = values
+    return 0.5 * (a * b - c)**2 + 0.05 * a * a
+assert abs(branch_loss(point) - 0.7) &lt; 1e-12
+assert np.allclose(central_gradient(branch_loss, point),
+                   [3.2, 2., -1.], atol=1e-8)
+
+X = np.array([[1., 2.], [-1., 1.]])
+W = np.array([[2., 0.], [1., -1.]])
+G = np.array([[1., 3.], [-2., 4.]])
+assert np.array_equal(X @ W, [[4., -2.], [-1., -1.]])
+assert np.array_equal(G @ W.T, [[2., -2.], [-4., -6.]])
+assert np.array_equal(X.T @ G, [[3., -1.], [0., 10.]])
+assert np.allclose(
+    central_gradient(lambda weights: np.sum(G * (X @ weights)), W),
+    X.T @ G, atol=1e-8)
+
+first = np.array([[0.2, -0.3, 0.4], [0.5, 0.1, -0.2]])
+second = np.array([[0.3, -0.5], [0.6, 0.2], [-0.1, 0.4]])
+labels = np.array([0, 1])
+_, dfirst, dsecond = two_layer_loss_grad(X, first, second, labels)
+check_first = central_gradient(
+    lambda weights: two_layer_loss_grad(X, weights, second, labels)[0],
+    first)
+check_second = central_gradient(
+    lambda weights: two_layer_loss_grad(X, first, weights, labels)[0],
+    second)
+assert np.max(np.abs(dfirst - check_first)) &lt; 1e-8
+assert np.max(np.abs(dsecond - check_second)) &lt; 1e-8
+
+assert (64 * 4096)**2 * 4 == 256 * 2**30
+assert (4096 * 4096) * (64 * 4096) * 4 == 16 * 2**40</code></pre>
+<p>A useful debugging sequence starts with a scalar objective, checks shapes, verifies one operation, then verifies the composition. Compare derivatives at several ordinary values, avoiding undefined points unless the convention itself is under test. If a finite-difference discrepancy persists across reasonable step sizes, inspect signs, reductions, shared paths, and cached values before changing the optimizer.</p>
+<p>Passing these checks means the derivatives agree with the implemented objective at the tested points. A model can still optimize the wrong target, leak validation data, or fail under deployment shift. Derivative correctness is necessary for the intended gradient-based training procedure, but it is not a complete model evaluation.</p>
+</section>
+
+<section aria-labelledby="exercises">
+<h2 id="exercises">9. Exercises with complete solutions</h2>
+<details class="exercise"><summary>Exercise 1 · Build a nonlinear decision from simple gates</summary>
+<p>Using ReLU, express a score that is positive when \(r&lt;-2\) or \(r&gt;2\), and nonpositive for \(-2\leq r\leq2\). Explain why one affine threshold cannot do this.</p>
+<div class="solution"><p>Use \(s(r)=\max(0,r)+\max(0,-r)-2=|r|-2\). It is positive in either tail, zero at the two endpoints, and negative in the interior. A nonconstant affine scalar score changes sign at most once, whereas this target requires two boundary crossings. Two hidden ReLU features followed by an affine output provide the needed representation. The construction establishes existence, not successful recovery by any particular training run.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 2 · A shared value receives two gradients</summary>
+<p>For \(L=(w-2)^2+(2w+1)^2\), calculate the derivative by treating the two squared expressions as graph branches. Evaluate it at \(w=1\).</p>
+<div class="solution"><p>The first branch contributes \(2(w-2)\). The second contributes \(2(2w+1)\cdot2\), where the final factor is the derivative of its inner affine expression. Their sum is \(10w\), since the constants cancel. At \(w=1\), the derivative is 10. Keeping only one branch would give \(-2\) or 12, both wrong. The derivative can also be checked by expanding \(L=5w^2+5\), confirming the accumulation rule.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 3 · Explain a zero backward signal</summary>
+<p>A ReLU receives preactivation \(-0.7\) and upstream derivative 9. What is its downstream derivative? Would making the upstream derivative 900 change it? What would a negative-side slope of 0.02 do?</p>
+<div class="solution"><p>ReLU’s local derivative is zero at this negative input, so the downstream derivative is zero for either upstream value. A leaky ReLU with slope 0.02 gives downstream derivatives \(9(0.02)=0.18\) and \(900(0.02)=18\). The gate determines whether and how sensitivity flows. At zero the ordinary ReLU derivative is undefined, so a separate convention is required. A large upstream signal cannot compensate for an exactly zero local multiplier at a fixed negative preactivation.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 4 · Reverse broadcasting</summary>
+<p>A bias vector \(b\in\mathbb R^3\) is added to both rows of a two-example score matrix. Upstream derivatives are \((1,2,-1)\) and \((3,-2,4)\). What is the bias gradient, and why is it a sum rather than a mean?</p>
+<div class="solution"><p>The gradient is \((4,0,3)\). Each bias coordinate affects the corresponding score in both examples with derivative one, so the two paths add. If the scalar loss is a mean, its upstream derivatives should already include the mean’s scaling. Introducing another average here would incorrectly divide by two again. Broadcasting copies values forward and sums sensitivities backward.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 5 · Check Jacobian orientation and storage</summary>
+<p>A function maps a five-dimensional vector to a two-dimensional vector. Under the chapter’s output-by-input convention, what are the Jacobian and upstream-gradient shapes? How is the downstream gradient formed? Why might a framework never store the Jacobian?</p>
+<div class="solution"><p>The Jacobian is \(2\times5\), and the upstream column gradient is length two. Multiplying \(J^\mathsf T\), of shape \(5\times2\), by that gradient produces length five. The framework can implement this product directly from the operation’s structure, avoiding storage and multiplication of irrelevant entries. A differently oriented displayed Jacobian can be correct if the multiplication convention changes consistently; mixing conventions is the error.</p></div>
+</details>
+<details class="exercise"><summary>Exercise 6 · Distinguish a derivative bug from a scientific error</summary>
+<p>A model passes finite-difference tests and reduces training loss, but fails on a new production line. Give two possible explanations consistent with correct backpropagation, and one additional check aimed specifically at implementation.</p>
+<div class="solution"><p>The training examples may encode a lighting shortcut absent from the new line, or the labels may represent a cosmetic criterion different from the intended mechanical defect criterion. Neither contradicts correct differentiation. Another possibility is a distribution shift in the new camera. An implementation-focused check is to verify shared-weight and bias gradients on a tiny batch with known dependencies, including accumulation and mean-loss scaling. Such a check can find a bug, but it cannot resolve whether the dataset represents the deployment task.</p></div>
+</details>
+</section>
+
+<section aria-labelledby="boundaries">
+<h2 id="boundaries">10. The backward pass is a reusable calculation</h2>
+<p>The lecture’s central result is that a complicated network can be differentiated by composing simple local rules. We added explicit shape conventions, branch accumulation, a full matrix derivation, and separate dense-Jacobian memory counts. Those details turn a verbal description of “sending error backward” into a checkable algorithm.</p>
+<p>The worked examples establish derivative identities and test their implementations. They do not claim that artificial neurons reproduce biological learning or that a correct backward pass guarantees a useful model. Convolutional networks, introduced next, change the forward structure and its parameter sharing. The same chain rule will handle their backward computation.</p>
+</section>
+<!-- BOOK-CONTENT-END --></article><nav class="page-turn" aria-label="Chapter navigation"><a rel="prev" href="lecture-03-regularization-and-optimization.html">Previous available chapter</a><a href="index.html">Lecture index</a><a rel="next" href="lecture-05-convolution-and-spatial-structure.html">Next available chapter</a></nav></main></div>
+<footer class="site-footer">Independent study notes. Stanford course recordings supply the topic sequence; added explanations and teaching constructions are separately attributed. Complete local reading edition; source and validation boundaries are recorded in this repository.</footer></body></html>

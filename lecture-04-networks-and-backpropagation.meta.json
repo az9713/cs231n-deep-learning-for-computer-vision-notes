@@ -1,0 +1,141 @@
+{
+  "title": "Neural representations and the backward computation",
+  "number": 4,
+  "video_id": "25zD5qJHYsk",
+  "source_type": "Local automatic speech recognition checked against official slide text",
+  "sections": [
+    {
+      "section": "representation",
+      "start": 593,
+      "end": 1116,
+      "lecture_material": "Hidden-layer dimensions and nonlinear representations.",
+      "research_extension": "None.",
+      "teaching_construction": "Two-tail inspection construction and proof of affine collapse.",
+      "evidence_class": "Lecture material with explicitly identified original teaching construction."
+    },
+    {
+      "section": "activations",
+      "start": 1116,
+      "end": 2333,
+      "lecture_material": "Activation families, capacity, regularization, and limits of biological analogy.",
+      "research_extension": "GELU and SiLU original definitions.",
+      "teaching_construction": "Explicit piecewise-affine and zero-gradient explanations.",
+      "evidence_class": "Lecture material with explicitly identified original teaching construction."
+    },
+    {
+      "section": "graph",
+      "start": 2333,
+      "end": 2621,
+      "lecture_material": "Computation graphs, loss branches, and reusable local operations.",
+      "research_extension": "Automatic differentiation terminology.",
+      "teaching_construction": "Original branched inspection objective and graph.",
+      "evidence_class": "Lecture material with explicitly identified original teaching construction."
+    },
+    {
+      "section": "scalar",
+      "start": 2621,
+      "end": 3887,
+      "lecture_material": "Scalar chain rule, sigmoid, gates, and saved intermediate values.",
+      "research_extension": "Framework differentiation conventions.",
+      "teaching_construction": "Independent scalar fixture and sigmoid-loss calculation.",
+      "evidence_class": "Lecture material with explicitly identified original teaching construction."
+    },
+    {
+      "section": "jacobian",
+      "start": 3887,
+      "end": 4268,
+      "lecture_material": "Vector derivatives and implicit Jacobian products.",
+      "research_extension": "Reverse automatic differentiation context.",
+      "teaching_construction": "Explicit output-by-input convention and transpose.",
+      "evidence_class": "Lecture material with explicitly identified original teaching construction."
+    },
+    {
+      "section": "matrices",
+      "start": 4268,
+      "end": 4601,
+      "lecture_material": "Matrix and tensor backpropagation.",
+      "research_extension": "Official linear-layer handout.",
+      "teaching_construction": "Original matrix fixture and separate 256 GiB versus 16 TiB dense-memory counts.",
+      "evidence_class": "Lecture material with explicitly identified original teaching construction."
+    },
+    {
+      "section": "network",
+      "start": 1588,
+      "end": 4601,
+      "lecture_material": "Forward/backward training and composition.",
+      "research_extension": "None.",
+      "teaching_construction": "Complete two-layer batch derivative chain, shape ledger, and bias reduction.",
+      "evidence_class": "Lecture material with explicitly identified original teaching construction."
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "Derivative verification principles.",
+      "research_extension": "None.",
+      "teaching_construction": "Executed finite-difference checks for scalar, matrix, and two-layer models.",
+      "evidence_class": "Lecture material with explicitly identified original teaching construction."
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Chapter concepts revisited.",
+      "research_extension": "None.",
+      "teaching_construction": "Six original exercises with complete solutions.",
+      "evidence_class": "Lecture material with explicitly identified original teaching construction."
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Modular differentiation and next lecture connection.",
+      "research_extension": "None.",
+      "teaching_construction": "Distinguishes derivative correctness from model validity.",
+      "evidence_class": "Lecture material with explicitly identified original teaching construction."
+    }
+  ],
+  "references": [
+    {
+      "title": "Lecture 4 recording",
+      "url": "https://www.youtube.com/watch?v=25zD5qJHYsk",
+      "supports": "Primary lecture sequence and content."
+    },
+    {
+      "title": "Official Lecture 4 slides",
+      "url": "https://cs231n.stanford.edu/2025/slides/lecture_4.pdf",
+      "supports": "Dimensions, activation families, computational graphs, and backward rules."
+    },
+    {
+      "title": "Backpropagation for a Linear Layer",
+      "url": "https://cs231n.stanford.edu/handouts/linear-backprop.pdf",
+      "supports": "Matrix gradient identities, checked against independent derivation."
+    },
+    {
+      "title": "Automatic Differentiation in Machine Learning: a Survey",
+      "url": "https://jmlr.org/papers/v18/17-468.html",
+      "supports": "Distinction between automatic, numerical, and symbolic differentiation."
+    },
+    {
+      "title": "Gaussian Error Linear Units",
+      "url": "https://arxiv.org/abs/1606.08415",
+      "supports": "Definition of GELU."
+    },
+    {
+      "title": "Sigmoid-Weighted Linear Units for Neural Network Function Approximation in Reinforcement Learning",
+      "url": "https://arxiv.org/abs/1702.03118",
+      "supports": "Definition of SiLU."
+    },
+    {
+      "title": "PyTorch autograd mechanics",
+      "url": "https://docs.pytorch.org/docs/stable/notes/autograd.html",
+      "supports": "Current reference for graphs, saved tensors, and nonsmooth conventions; not attributed to the 2025 lecture."
+    }
+  ],
+  "limitations": [
+    "Automatic speech recognition can contain errors; mathematical notation was corrected using official slides and independent derivation.",
+    "The complete transcript and extracted slide text were read; this does not claim complete audiovisual review.",
+    "Numerical fixtures are original teaching constructions, not lecture experiments.",
+    "Final rendered reader validation is recorded separately."
+  ]
+}

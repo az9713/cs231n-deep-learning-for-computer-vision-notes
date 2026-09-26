@@ -1,0 +1,187 @@
+{
+  "title": "Attention, transformers, and the geometry of information exchange",
+  "number": 8,
+  "video_id": "RQowiOF_FvQ",
+  "source_type": "local machine transcription and official extracted slide text",
+  "sections": [
+    {
+      "section": "bottleneck",
+      "start": 188,
+      "end": 572,
+      "lecture_material": "Recurrent encoder-decoder context bottleneck",
+      "research_extension": "Finite-precision and representation limits",
+      "teaching_construction": "Inspection report retrieval",
+      "evidence_class": "lecture synthesis plus identified enhancement"
+    },
+    {
+      "section": "alignment",
+      "start": 572,
+      "end": 1626,
+      "lecture_material": "Soft alignment, context vectors, decoder state, translation alignment",
+      "research_extension": "Primary additive-attention score corrects affine shorthand",
+      "teaching_construction": "Query cancellation derivation",
+      "evidence_class": "lecture synthesis plus identified enhancement"
+    },
+    {
+      "section": "operator",
+      "start": 1626,
+      "end": 1953,
+      "lecture_material": "Attention abstracted from recurrence; keys and values introduced later at 2299\u20132750",
+      "research_extension": "Dimensionally explicit convention",
+      "teaching_construction": "Exact scalar weighted read",
+      "evidence_class": "lecture synthesis plus identified enhancement"
+    },
+    {
+      "section": "scaling",
+      "start": 1953,
+      "end": 2058,
+      "lecture_material": "Scaled dot products and softmax saturation",
+      "research_extension": "Variance assumptions and full score derivative",
+      "teaching_construction": "Zero-sum score-gradient check",
+      "evidence_class": "lecture synthesis plus identified enhancement"
+    },
+    {
+      "section": "symmetry",
+      "start": 2750,
+      "end": 3225,
+      "lecture_material": "Self-attention, projections, permutation equivariance and positions",
+      "research_extension": "Decoder versus encoder terminology correction",
+      "teaching_construction": "Permutation proof",
+      "evidence_class": "lecture synthesis plus identified enhancement"
+    },
+    {
+      "section": "masking",
+      "start": 3225,
+      "end": 3330,
+      "lecture_material": "Masked attention for autoregressive prediction",
+      "research_extension": "Padding and all-masked-row boundary",
+      "teaching_construction": "Masked fixture and causality perturbation",
+      "evidence_class": "lecture synthesis plus identified enhancement"
+    },
+    {
+      "section": "heads",
+      "start": 3330,
+      "end": 3501,
+      "lecture_material": "Multihead attention and four matrix multiplication stages",
+      "research_extension": "Fixed total width versus fixed head width",
+      "teaching_construction": "Parameter accounting",
+      "evidence_class": "lecture synthesis plus identified enhancement"
+    },
+    {
+      "section": "cost",
+      "start": 3501,
+      "end": 3755,
+      "lecture_material": "RNN/convolution/attention communication and parallelism",
+      "research_extension": "FlashAttention from slide 78; online normalization explanation",
+      "teaching_construction": "256 MiB storage calculation",
+      "evidence_class": "lecture synthesis plus identified enhancement"
+    },
+    {
+      "section": "block",
+      "start": 3755,
+      "end": 3865,
+      "lecture_material": "Transformer residual, normalization, shared FFN block",
+      "research_extension": "Explicit post-normalization equations",
+      "teaching_construction": "Communication versus local processing",
+      "evidence_class": "lecture synthesis plus identified enhancement"
+    },
+    {
+      "section": "vision",
+      "start": 3865,
+      "end": 3986,
+      "lecture_material": "Patch tokenization and image classification",
+      "research_extension": "ViT classification-token distinction; attention explanation limits",
+      "teaching_construction": "Resolution scaling and inspection design",
+      "evidence_class": "lecture synthesis plus identified enhancement"
+    },
+    {
+      "section": "extensions",
+      "start": null,
+      "end": null,
+      "lecture_material": "Slides 110\u2013120, left as extra reading in lecture",
+      "research_extension": "Pre-norm, RMSNorm, SwiGLU, sparse MoE primary papers",
+      "teaching_construction": "Equal-parameter FFN calculation",
+      "evidence_class": "official slide-only material plus primary research"
+    },
+    {
+      "section": "implementation",
+      "start": null,
+      "end": null,
+      "lecture_material": "None",
+      "research_extension": "None",
+      "teaching_construction": "Original numerical gradient, mask, causality, symmetry checks",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "exercises",
+      "start": null,
+      "end": null,
+      "lecture_material": "Consolidates lecture concepts",
+      "research_extension": "None",
+      "teaching_construction": "Six original solved exercises",
+      "evidence_class": "original teaching construction"
+    },
+    {
+      "section": "boundaries",
+      "start": null,
+      "end": null,
+      "lecture_material": "Architecture synthesis",
+      "research_extension": "None",
+      "teaching_construction": "Evidence and resource boundaries",
+      "evidence_class": "original teaching construction"
+    }
+  ],
+  "references": [
+    {
+      "title": "Official Lecture 8 slides",
+      "url": "https://cs231n.stanford.edu/slides/2025/lecture_8.pdf",
+      "supports": "All 122 pages of extracted slide text; extra-reading boundary"
+    },
+    {
+      "title": "Neural Machine Translation by Jointly Learning to Align and Translate",
+      "url": "https://arxiv.org/abs/1409.0473",
+      "supports": "Soft alignment and nonlinear additive scorer; appendix checked"
+    },
+    {
+      "title": "Attention Is All You Need",
+      "url": "https://arxiv.org/abs/1706.03762",
+      "supports": "Transformer architecture and score variance argument"
+    },
+    {
+      "title": "FlashAttention",
+      "url": "https://arxiv.org/abs/2205.14135",
+      "supports": "Exact attention with reduced memory traffic"
+    },
+    {
+      "title": "Vision Transformer",
+      "url": "https://arxiv.org/abs/2010.11929",
+      "supports": "Patch tokenization and visual transformer precedent"
+    },
+    {
+      "title": "Attention is not Explanation",
+      "url": "https://arxiv.org/abs/1902.10186",
+      "supports": "Limits of attention weights as explanations"
+    },
+    {
+      "title": "Root Mean Square Layer Normalization",
+      "url": "https://arxiv.org/abs/1910.07467",
+      "supports": "RMSNorm"
+    },
+    {
+      "title": "GLU Variants Improve Transformer",
+      "url": "https://arxiv.org/abs/2002.05202",
+      "supports": "Gated feed-forward extension"
+    },
+    {
+      "title": "Sparsely-Gated Mixture-of-Experts Layer",
+      "url": "https://arxiv.org/abs/1701.06538",
+      "supports": "Conditional expert computation"
+    }
+  ],
+  "limitations": [
+    "Transcript read completely from 4.46 through 3985.71 seconds.",
+    "Slide text read completely; no claim of complete audiovisual review.",
+    "Slides 110\u2013120 are a labeled extension; no unsupported claims about proprietary architectures.",
+    "The numerical fixture checks algebraic properties, not learned benchmark performance."
+  ]
+}

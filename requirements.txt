@@ -1,0 +1,2 @@
+# Used by the original numerical lab; reading HTML needs only a browser.
+numpy==2.2.6
